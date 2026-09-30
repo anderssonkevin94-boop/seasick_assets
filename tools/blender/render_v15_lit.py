@@ -4,13 +4,17 @@ shadow. Cycles on the CPU, so it runs headless. These are presentation
 renders for comparing against the painted reference, not the game's look
 (Unity uses its own toon lighting)."""
 import math
+import sys
 from pathlib import Path
 import bpy
 from mathutils import Vector
 
 ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'crew-meshy-v15'
-bpy.ops.wm.open_mainfile(filepath=str(ROOT/'tools/blender/source/crew-meshy-v15.blend'))
+# Optional: python render_v15_lit.py -- <blend name> <file prefix>
+ARGS=sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else []
+BLEND=ARGS[0] if ARGS else 'crew-meshy-v15.blend';PREFIX=ARGS[1] if len(ARGS)>1 else 'lit'
+bpy.ops.wm.open_mainfile(filepath=str(ROOT/'tools/blender/source'/BLEND))
 scene=bpy.context.scene
 scene.frame_set(1)
 for o in list(scene.objects):
@@ -58,18 +62,18 @@ def shot(name,eye,target,size,lens=None,ortho=None):
 
 
 # Hero: three-quarter from his left-front, as in the reference (framed wide for the T-pose).
-shot('lit-hero',(1.3,-2.6,.95),(0,0,.64),(1100,1000),lens=50)
+shot(PREFIX+'-hero',(1.3,-2.6,.95),(0,0,.64),(1100,1000),lens=50)
 for name,eye in [('lit-front',(0,-7,.7)),('lit-back',(0,7,.7))]:
-    shot(name,eye,(0,0,.66),(900,700),ortho=1.75)
+    shot(PREFIX+name[3:],eye,(0,0,.66),(900,700),ortho=1.75)
 for name,eye in [('lit-left',(7,-.1,.7)),('lit-right',(-7,-.1,.7))]:
-    shot(name,eye,(0,0,.66),(520,700),ortho=1.4)
-shot('lit-face',(.55,-2.2,1.12),(0,-.1,.98),(700,700),lens=70)
+    shot(PREFIX+name[3:],eye,(0,0,.66),(520,700),ortho=1.4)
+shot(PREFIX+'-face',(.55,-2.2,1.12),(0,-.1,.98),(700,700),lens=70)
 
 
 # Composite every render onto the reference's flat blue backdrop.
 import numpy as np
 BACK=np.array([95,142,178],dtype=np.float32)/255
-for png in OUT.glob('lit-*.png'):
+for png in OUT.glob(PREFIX+'-*.png'):
     img=bpy.data.images.load(str(png));w,h=img.size
     px=np.array(img.pixels[:],dtype=np.float32).reshape(h,w,4)
     y=np.linspace(0,1,h)[:,None,None]

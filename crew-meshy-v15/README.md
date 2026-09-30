@@ -45,8 +45,23 @@ planks with a stitch on the tunic's front, as in the reference. **Total: 3,135 t
 | `../tools/blender/render_v15_lit.py` | Review renders |
 | `../tools/blender/source/crew-meshy-v15.blend` | Editable coloured source |
 
-## Next
+## Rig and idle pose
 
-Rig to the game's 16-bone deckhand skeleton (the T-pose and separate pieces make the weights
-much cleaner than v14's), split `CREW_Skin` / `CREW_Cloth` and export skin white, as in v14.
-The hands are open and pointing rather than the reference's fists.
+![idle](pose-hero.png)
+
+`../tools/blender/crew_meshy_v15_pose.py` adds the game's 16-bone deckhand skeleton (same names
+and hierarchy as v5 and v14) and poses him like the reference: arms hanging clear of the tunic,
+elbows softly bent, head turned a little. Weights come from Meshy's pieces instead of a heat
+solve: head pieces follow the head, hands the hands, sleeves the upper arms, the sash knot and
+tails the hips. Only the one-piece arms blend across the elbow and wrist, and the tunic's
+shoulder frill follows the arm a little.
+
+| File | What |
+|---|---|
+| `deckhand-v15-rigged.fbx` | Rigged, T-pose rest, skin exported white (same runtime contract as v14) |
+| `pose-*.png` | Idle pose renders |
+| `../tools/blender/source/crew-meshy-v15-posed.blend` | Rig with the idle pose applied |
+
+Still to do for the game: the `CREW_Skin` / `CREW_Cloth` split, checks against the generated
+walk and work clips, and an FBX re-import check. The hands are Meshy's open shape, though
+they read as loose fists once the arms hang.
