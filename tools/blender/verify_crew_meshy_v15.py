@@ -60,7 +60,14 @@ def check(path):
                 bpy.context.scene.frame_set(int(f0+(f1-f0)*k/7.3))
                 far=max(far,max((x.translation-b.matrix.translation).length for x,b in zip(p0,rig.pose.bones)))
             if far>.01:moving+=1
+        fps=bpy.context.scene.render.fps/bpy.context.scene.render.fps_base
+        clips=json.loads((OUT/'anims/clips.json').read_text());wrong=[]
+        for a in takes:                              # lengths in seconds must match the authored clip
+            k=a.name.split('Crew_')[-1];secs=(a.frame_range[1]-a.frame_range[0])/fps
+            if abs(secs-clips[k]['seconds'])>.05:wrong.append((k,round(secs,3),clips[k]['seconds']))
+        assert not wrong,wrong
         report['takes']=sorted(a.name.split('|')[-1] for a in takes);report['takes_that_move']=moving
+        report['fps']=fps;report['take_lengths_match']=True
         assert moving==len(takes),[a.name for a in takes]
     return report
 

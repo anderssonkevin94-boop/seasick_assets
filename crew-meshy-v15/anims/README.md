@@ -14,6 +14,13 @@ for the Unity agent (notes below).
 
 Each clip also has an animated preview, `<Clip>.gif`, and a six-frame strip, `<Clip>-strip.png`.
 
+## Viewer
+
+`../viewer/index.html` plays every clip in 3D in a browser: pick a clip, play, pause, step frames,
+scrub, change speed, turn and zoom, and show or hide the clip's tools and props. The model is
+embedded, so the one file opens on its own. Rebuild it with
+`../../tools/blender/export_v15_viewer.py` after changing the clips.
+
 ## Clips
 
 | Take | Building / task | Length | Right hand | Left hand | What he does |
@@ -54,7 +61,7 @@ Each clip also has an animated preview, `<Clip>.gif`, and a six-frame strip, `<C
 | `Crew_Row` | jolly boat (`JollyBoatDuty`) | 1.7 s | oar | oar | seated, rowing: reach, pull, feather, return |
 | `Crew_Soaked` | resting after a rescue (`restLeft`) | 1.0 s | - | - | arms wrapped round himself, shivering |
 
-All clips are 30 fps, and every loop's last frame matches its first. Walk and Carry are in place
+All clips are 30 fps (the scene is set to 30 fps before export, and the verifier checks every take's length in seconds), and every loop's last frame matches its first. Walk and Carry are in place
 (the game moves him); the stride is about 0.44 m a cycle at this 1.30 m source size.
 
 ## How they are made

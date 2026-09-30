@@ -648,6 +648,7 @@ def bake(rig,solver):
 def main():
     body,rig=P.build()
     body.name='Deckhand_v15'
+    bpy.context.scene.render.fps=FPS;bpy.context.scene.render.fps_base=1   # exporters time keys by the scene rate
     solver=Solver(rig)
     info=bake(rig,solver)
     OUT.mkdir(parents=True,exist_ok=True)

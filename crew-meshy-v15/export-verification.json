@@ -69,6 +69,8 @@
       "Crew_ThrowLine",
       "Crew_Walk"
     ],
-    "takes_that_move": 35
+    "takes_that_move": 35,
+    "fps": 30.0,
+    "take_lengths_match": true
   }
 ]

@@ -1,0 +1,296 @@
+<title>SeaSick Deckhand Clips</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: an animation review bench. Clip list on the left, the stage (3D viewport) in the
+   middle with its transport bar under it; on phones the stage comes first, then the list. */
+:root{
+  --bg:#E7ECEE; --panel:#F6F8F8; --ink:#16252C; --muted:#5A6B72; --line:#CBD5D8;
+  --accent:#2D5664; --accent-ink:#FFFFFF; --sash:#C63C33; --chip:#DCE5E8;
+  --sky-top:#A9C9DD; --sky-bottom:#DCE8EE; --deck:#B8966A;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E181D; --panel:#142229; --ink:#E4ECEE; --muted:#93A6AD; --line:#27404A;
+  --accent:#6FB2C4; --accent-ink:#0B1519; --sash:#EF6A5E; --chip:#1C2F37;
+  --sky-top:#1E3A4C; --sky-bottom:#3E6276; --deck:#6F5638; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E181D; --panel:#142229; --ink:#E4ECEE; --muted:#93A6AD; --line:#27404A;
+  --accent:#6FB2C4; --accent-ink:#0B1519; --sash:#EF6A5E; --chip:#1C2F37;
+  --sky-top:#1E3A4C; --sky-bottom:#3E6276; --deck:#6F5638; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--body)}
+.app{box-sizing:border-box;min-height:100%;padding-inline:16px;padding-block:14px 18px;display:grid;
+  grid-template-columns:280px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:14px 18px;max-width:1500px;margin:0 auto}
+header{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+h1{font:800 clamp(22px,3vw,30px)/1.1 var(--display);letter-spacing:-.01em;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:14px}
+aside{min-width:0;display:flex;flex-direction:column;gap:14px;overflow:auto;max-height:calc(100vh - 90px)}
+.group h2{font:600 12px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 0 6px}
+.group ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.clip{width:100%;display:flex;justify-content:space-between;gap:8px;align-items:baseline;text-align:left;border:0;
+  background:transparent;color:var(--ink);font:500 14px/1.3 var(--body);padding:7px 10px;border-radius:6px;cursor:pointer}
+.clip small{color:var(--muted);font:12px var(--mono);white-space:nowrap}
+.clip:hover{background:var(--chip)}
+.clip[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+.clip[aria-current="true"] small{color:var(--accent-ink);opacity:.8}
+.clip:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--sash);outline-offset:2px}
+main{min-width:0;display:flex;flex-direction:column;gap:10px}
+.stage{position:relative;flex:1;min-height:420px;border-radius:10px;overflow:hidden;
+  background:linear-gradient(var(--sky-top),var(--sky-bottom));border:1px solid var(--line)}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.card{position:absolute;left:12px;top:12px;max-width:min(360px,calc(100% - 24px));background:var(--panel);
+  border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;
+  box-shadow:0 4px 18px rgba(0,0,0,.12)}
+.card .name{font:800 20px/1.1 var(--display)}
+.card .where{font-weight:600;color:var(--accent)}
+.card .what{color:var(--ink)}
+.facts{display:flex;flex-wrap:wrap;gap:4px 12px;color:var(--muted);font:12px var(--mono)}
+.status[hidden]{display:none}
+.status{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink);font-weight:600;text-align:center;padding:16px}
+.hint{position:absolute;right:12px;bottom:10px;color:var(--ink);opacity:.7;font:12px var(--body);text-align:right}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;background:var(--panel);border:1px solid var(--line);
+  border-radius:10px;padding:10px 12px}
+.bar button{font:600 13px var(--body);border:1px solid var(--line);background:var(--bg);color:var(--ink);
+  border-radius:6px;padding:7px 11px;cursor:pointer}
+.bar button:hover{border-color:var(--accent)}
+#play{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);min-width:78px}
+.scrub{flex:1 1 220px;display:flex;align-items:center;gap:10px;min-width:0}
+.scrub input{flex:1;min-width:0;accent-color:var(--sash)}
+.time{font:12px var(--mono);font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;border-radius:0;padding:7px 9px;font:12px var(--mono)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.toggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink)}
+.toggle input{accent-color:var(--accent);width:16px;height:16px}
+@media (max-width:820px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto}
+  main{order:1} aside{order:2;max-height:none}
+  .stage{min-height:0;aspect-ratio:4/5;max-height:70vh;flex:none;max-width:100%}
+  .group ul{flex-direction:row;flex-wrap:wrap}
+  .clip{width:auto;background:var(--chip)}
+  .card{position:static;max-width:none;border-radius:0;border:0;border-bottom:1px solid var(--line);box-shadow:none}
+  .stage{display:flex;flex-direction:column}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+
+<div class="app">
+  <header>
+    <h1>SeaSick deckhand clips</h1>
+    <span class="sub" id="count">35 animations for the v15 deckhand, played on the game's 16-bone rig</span>
+  </header>
+  <aside id="list" aria-label="Clips"></aside>
+  <main>
+    <div class="stage" id="stage">
+      <div class="card" id="card" aria-live="polite">
+        <div class="name" id="c-name">Loading</div>
+        <div class="where" id="c-where"></div>
+        <div class="what" id="c-what"></div>
+        <div class="facts" id="c-facts"></div>
+      </div>
+      <canvas id="view" aria-label="3D view of the deckhand"></canvas>
+      <div class="status" id="status">Loading the deckhand…</div>
+      <div class="hint">Drag to turn · scroll or pinch to zoom · right-drag to pan</div>
+    </div>
+    <div class="bar" role="group" aria-label="Playback">
+      <button id="play" type="button">Pause</button>
+      <button id="step-back" type="button" aria-label="Previous frame">◀ frame</button>
+      <button id="step-fwd" type="button" aria-label="Next frame">frame ▶</button>
+      <div class="scrub">
+        <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Position in the clip">
+        <span class="time" id="time">0.00 s · frame 1 / 1</span>
+      </div>
+      <div class="seg" id="speed" role="group" aria-label="Speed">
+        <button type="button" data-s="0.25">¼×</button><button type="button" data-s="0.5">½×</button><button type="button" data-s="1" aria-pressed="true">1×</button><button type="button" data-s="2">2×</button>
+      </div>
+      <label class="toggle"><input id="props" type="checkbox" checked> Props</label>
+      <label class="toggle"><input id="spin" type="checkbox"> Turntable</label>
+      <button id="reset" type="button">Reset view</button>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const CLIPS = /*CLIPS_DATA*/;
+const GROUPS = /*GROUPS_DATA*/;
+const FPS = 30;
+
+const $ = id => document.getElementById(id);
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+// ---- clip list
+const buttons = {};
+for (const g of GROUPS) {
+  const sec = document.createElement('section'); sec.className = 'group';
+  const h = document.createElement('h2'); h.textContent = g.name; sec.appendChild(h);
+  const ul = document.createElement('ul');
+  for (const key of g.clips) {
+    const c = CLIPS[key]; if (!c) continue;
+    const li = document.createElement('li');
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'clip'; b.id = 'clip-' + key;
+    b.innerHTML = `<span>${c.label}</span><small>${c.loop ? '' : 'once · '}${c.seconds.toFixed(1)} s</small>`;
+    b.addEventListener('click', () => select(key, true));
+    li.appendChild(b); ul.appendChild(li); buttons[key] = b;
+  }
+  sec.appendChild(ul); $('list').appendChild(sec);
+}
+$('count').textContent = `${Object.keys(CLIPS).length} animations for the v15 deckhand, played on the game's 16-bone rig`;
+
+// ---- scene
+const canvas = $('view'), stage = $('stage');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 60);
+const HOME = {pos:new THREE.Vector3(-2.3, 1.45, 3.4), target:new THREE.Vector3(0, 0.6, -0.1)};
+camera.position.copy(HOME.pos);
+const controls = new THREE.OrbitControls(camera, canvas);
+controls.target.copy(HOME.target); controls.enableDamping = true; controls.minDistance = 1; controls.maxDistance = 9;
+controls.maxPolarAngle = Math.PI * 0.52; controls.autoRotateSpeed = 1.2;
+
+scene.add(new THREE.HemisphereLight(0xdfeefa, 0x5b4a36, 0.75));
+const key = new THREE.DirectionalLight(0xfff3e6, 1.15); key.position.set(-2.5, 4, 3); key.castShadow = true;
+key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, {left:-2, right:2, top:2, bottom:-2, near:.5, far:12});
+key.shadow.bias = -0.0005; scene.add(key);
+const fill = new THREE.DirectionalLight(0xcfe0ff, 0.35); fill.position.set(3, 2, -1); scene.add(fill);
+
+const deckMat = new THREE.MeshStandardMaterial({roughness:.95, metalness:0});
+const deck = new THREE.Mesh(new THREE.CircleGeometry(2.4, 64), deckMat);
+deck.rotation.x = -Math.PI / 2; deck.receiveShadow = true; scene.add(deck);
+const rings = new THREE.Group(); scene.add(rings);
+function themeColours(){
+  const cs = getComputedStyle(document.documentElement);
+  deckMat.color.set(cs.getPropertyValue('--deck').trim() || '#B8966A').convertSRGBToLinear();
+  rings.clear();
+  const lineCol = new THREE.Color(cs.getPropertyValue('--ink').trim() || '#16252C').convertSRGBToLinear();
+  for (const r of [0.5, 1.0, 1.5]) {
+    const g = new THREE.RingGeometry(r - 0.004, r + 0.004, 96);
+    const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({color:lineCol, transparent:true, opacity:.12}));
+    m.rotation.x = -Math.PI / 2; m.position.y = 0.002; rings.add(m);
+  }
+}
+themeColours();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', themeColours);
+new MutationObserver(themeColours).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+
+function resize(){
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(canvas); resize();
+
+// ---- model
+let mixer = null, actions = {}, extras = [], current = null, action = null;
+let t = 0, playing = true, speed = 1, holdUntil = 0;
+const GLB_B64 = '/*GLB_DATA*/';
+const glbBytes = Uint8Array.from(atob(GLB_B64), ch => ch.charCodeAt(0)).buffer;
+new THREE.GLTFLoader().parse(glbBytes, '', gltf => {
+  const root = gltf.scene; scene.add(root);
+  root.traverse(o => {
+    if (o.isMesh) {
+      o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;
+      const m = o.material; m.vertexColors = true; m.flatShading = true; m.roughness = .85; m.metalness = 0; m.needsUpdate = true;
+    }
+    const n = o.name || '';
+    if (n.startsWith('prop__') || n.startsWith('tool__')) extras.push({obj:o, clip:n.split('__')[1]});
+  });
+  mixer = new THREE.AnimationMixer(root);
+  for (const clip of gltf.animations) actions[clip.name.replace(/^.*Crew_/, '')] = mixer.clipAction(clip);
+  $('status').hidden = true;
+  const fromHash = decodeURIComponent((location.hash || '').slice(1));
+  select(CLIPS[fromHash] ? fromHash : (CLIPS[store.get('clip')] ? store.get('clip') : 'Chop'), false);
+}, err => {
+  $('status').textContent = 'The 3D model could not load. Reload the page to try again.';
+  console.error(err);
+});
+
+function select(key, user){
+  if (!actions[key]) return;
+  if (action) action.stop();
+  current = key; action = actions[key];
+  action.reset(); action.setLoop(THREE.LoopRepeat); action.play(); action.paused = true;
+  t = 0; holdUntil = 0; playing = true; $('play').textContent = 'Pause';
+  for (const b of Object.values(buttons)) b.removeAttribute('aria-current');
+  buttons[key].setAttribute('aria-current', 'true');
+  if (user) { buttons[key].scrollIntoView({block:'nearest'}); history.replaceState(null, '', '#' + key); }
+  store.set('clip', key);
+  const c = CLIPS[key];
+  $('c-name').textContent = c.label;
+  $('c-where').textContent = c.where;
+  $('c-what').textContent = c.what;
+  const facts = [`${c.seconds.toFixed(2)} s`, `${c.frames} frames`, c.loop ? 'loops' : 'plays once'];
+  if (c.rtool) facts.push(`right hand: ${c.rtool}`);
+  if (c.ltool) facts.push(`left hand: ${c.ltool}`);
+  $('c-facts').innerHTML = facts.map(f => `<span>${f}</span>`).join('');
+  showExtras();
+  apply();
+}
+function showExtras(){
+  const on = $('props').checked;
+  for (const e of extras) e.obj.visible = on && e.clip === current;
+}
+function duration(){ return action ? action.getClip().duration : 1; }
+function apply(){
+  if (!action) return;
+  action.time = Math.min(t, duration()); mixer.update(0);
+  const d = duration(), frame = Math.round(Math.min(t, d) * FPS);
+  $('scrub').value = String(Math.round(1000 * Math.min(t, d) / d));
+  $('time').textContent = `${Math.min(t, d).toFixed(2)} s · frame ${frame + 1} / ${Math.round(d * FPS) + 1}`;
+}
+
+// ---- transport
+$('play').addEventListener('click', () => { playing = !playing; $('play').textContent = playing ? 'Pause' : 'Play';
+  if (playing && !CLIPS[current].loop && t >= duration()) t = 0; });
+function step(n){ playing = false; $('play').textContent = 'Play'; t = Math.max(0, Math.min(duration(), Math.round(t * FPS + n) / FPS)); apply(); }
+$('step-back').addEventListener('click', () => step(-1));
+$('step-fwd').addEventListener('click', () => step(1));
+$('scrub').addEventListener('input', e => { playing = false; $('play').textContent = 'Play'; t = duration() * e.target.value / 1000; apply(); });
+for (const b of $('speed').querySelectorAll('button')) b.addEventListener('click', () => {
+  speed = parseFloat(b.dataset.s);
+  for (const o of $('speed').querySelectorAll('button')) o.setAttribute('aria-pressed', String(o === b));
+});
+$('props').addEventListener('change', showExtras);
+$('spin').addEventListener('change', e => { controls.autoRotate = e.target.checked; });
+$('reset').addEventListener('click', () => { camera.position.copy(HOME.pos); controls.target.copy(HOME.target); controls.update(); });
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' && e.target.type === 'range') return;
+  const order = GROUPS.flatMap(g => g.clips).filter(k => CLIPS[k]);
+  if (e.key === ' ') { e.preventDefault(); $('play').click(); }
+  else if (e.key === 'ArrowRight') step(1);
+  else if (e.key === 'ArrowLeft') step(-1);
+  else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault(); const i = order.indexOf(current) + (e.key === 'ArrowDown' ? 1 : -1);
+    select(order[(i + order.length) % order.length], true);
+  }
+});
+
+// ---- loop
+const clock = new THREE.Clock();
+function frame(){
+  requestAnimationFrame(frame);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  if (action && playing) {
+    const d = duration();
+    if (CLIPS[current].loop) { t = (t + dt * speed) % d; }
+    else {
+      const now = performance.now();
+      if (t < d) { t = Math.min(d, t + dt * speed); if (t >= d) holdUntil = now + 900; }
+      else if (now > holdUntil) t = 0;          // one-shots replay after a short hold
+    }
+    apply();
+  }
+  controls.update();
+  renderer.render(scene, camera);
+}
+frame();
+</script>
