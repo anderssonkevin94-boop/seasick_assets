@@ -34,7 +34,7 @@ if c.get('env')=='tree':      # the canopy hides him from above: side and low an
     for o in env.values():
         if 'Canopy' in o.name:o.hide_render=True
 n=int(act.frame_end);keys=[round(n*k/4) for k in range(4)] if c['loop'] else [round(n*k/4) for k in range(5)]
-if name=='Chop':keys=[0,round(n*.30),round(n*.40),round(n*.76)]   # wound, swinging, the bite, pulled free
+if name=='Chop':keys=[0,round(n*.28),round(n*.33),round(n*.40)]   # cocked, hands dropped, sweeping level, the bite
 rows=[]
 for f in keys:
     sc.frame_set(f);row=[]

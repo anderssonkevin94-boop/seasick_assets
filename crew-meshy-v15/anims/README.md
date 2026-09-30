@@ -27,7 +27,7 @@ embedded, so the one file opens on its own. Rebuild it with
 |---|---|---|---|---|---|
 | `Crew_Idle` | standing | 2.4 s | - | - | breathing, weight settling, a glance round |
 | `Crew_Walk` | walking | 0.9 s | - | - | in place: the game moves him; stride about 0.44 m a cycle |
-| `Crew_Chop` | timber, clearing | 1.15 s | axe | - | two-handed axe into a log (timber, clearing) |
+| `Crew_Chop` | timber, clearing | 1.3 s | axe | - | one-handed flat swing like a bat, from his right into the trunk's side |
 | `Crew_Mine` | stone, ore | 1.1 s | pick | - | pickaxe into rock (stone, ore) |
 | `Crew_Forage` | spice, food | 1.7 s | - | basket | crouch, pick from a bush, drop it in the basket (spice, food) |
 | `Crew_Build` | raising a building | 0.95 s | hammer | - | nailing a board to a post (raising any building) |
@@ -114,8 +114,12 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   (tool frame +Z), so the game's saw mesh (blade up +Y) needs turning +90 degrees about X (blade +Y to +Z, teeth to -Y).
 - **Chop is set at a tree** (`CLIPS['Chop']['env']='tree'`: Astra's `Tree_B1` at its smallest game
   size, 9 m, the trunk 1.1 m (game) in front of him as `CampWorker.Stand` places a chopper). It is
-  **one-handed**, from his right side, the whole upper body winding 45 degrees right and unwinding
-  into the strike; the blade bites 2 cm into the bark at his chest. With his short arms and round
+  **one-handed and swung flat like a bat**: the axe cocked up in front of his right shoulder with
+  the body wound 35 degrees right; the fist drops to chest height with the head trailing level
+  behind him; the body unwinds and the axe sweeps round level into the trunk's right flank (145
+  degrees round from his left), the edge travelling straight at the trunk's centre and biting 2 cm
+  into the bark at his chest; he tugs it free and it goes back up the way it came. The haft stays
+  clear of the trunk on every frame. With his short arms and round
   belly, every two-handed side swing put one arm through his body at contact. The axe is in his
   right hand at the end of the haft, the game's own grip; the game's two-handed second-hand
   placement (`VillagerActing`, 0.11 m up the haft) is not used by this clip. Chest height is lower

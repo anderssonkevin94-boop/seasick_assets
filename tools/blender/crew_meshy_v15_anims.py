@@ -256,23 +256,25 @@ clip('Walk',.9,walk_pose,what='in place: the game moves him; stride about 0.44 m
 
 # --- camp tasks
 # Chop: felling a standing tree (Astra's Tree_B1 at its smallest game size),
-# one-handed, from his right side, driven by his whole upper body: wound
-# right with the axe cocked behind the right shoulder, unwinding left to whip
-# the blade into the trunk's front, holding, pulling free. One-handed on
-# purpose: with his short arms and round belly every two-handed side swing
-# put the upper hand's arm 5-8 cm through his body at contact. The axe is in
-# his right hand at the end of the haft, the game's own grip.
+# one-handed, swung flat like a bat: cocked up in front of his right shoulder,
+# the body wound right; the fist drops to chest height with the head trailing
+# level behind him; the body unwinds and the axe sweeps round flat into the
+# trunk's right flank, the edge travelling straight at the trunk's centre;
+# it bites and holds, is pulled free, and goes back up the way it came.
+# One-handed on purpose: with his short arms and round belly every two-handed
+# side swing put the upper hand's arm 5-8 cm through his body at contact. The
+# axe is in his right hand at the end of the haft, the game's own grip.
 # CampWorker.Stand puts him 1.1 m (game) from the trunk's centre: no offset.
 # Key poses found by search against crew_v15_anatomy (no clipping, joints in
-# range) with the blade exactly on the notch at contact.
+# range, the haft clear of the trunk) with the blade exactly on the notch.
 AXE_EDGE=V(0,.56,.13)*TOOL_SCALE                  # the edge's middle in the tool frame (Astra's manifest)
 AXE_SECOND=.11*TOOL_SCALE                          # second hand up the haft (two-handed tools)
-CHOP_BACK=0.
 CHOP_HEIGHT=.62                                    # the notch, above his feet: his chest, where the arm swings level
 TREE_D=.84                                         # 1.1 m (game) at his scale; matches crew_v15_mill.TREE_STAND
 TRUNK_R=.27                                        # the bark at his chest height (measured on the placed tree), less a 2 cm bite: see CHOP_BITE
 CHOP_BITE=.02
-CHOP_WIND,CHOP_HIT=-45,-10                         # upper-body twist (degrees, - is to his right): wound, at contact
+CHOP_AT=145                                        # the notch, degrees round the trunk from his left (180 is its right flank)
+CHOP_WIND,CHOP_SLOT,CHOP_SIDE,CHOP_HIT=-35,-28,-6,16   # upper-body twist (degrees, - is to his right): cocked, hands dropped, sweeping, at contact
 
 
 def axe_hand(edge_at,fist_near,swing,elbow):
@@ -288,36 +290,34 @@ def axe_hand(edge_at,fist_near,swing,elbow):
     return {'grip':F,'face':f,'haft':h,'elbow':V(*elbow)}
 
 
-def twist(sy):return dict(pelvis=(0,sy*.35,0),spine=None,head=(0,-sy*.75,0))
-
-
 def chop_keys():
     T=V(0,-TREE_D,CHOP_HEIGHT)
-    notch=T+nrm((math.cos(math.radians(100)),math.sin(math.radians(100)),0))*(TRUNK_R-CHOP_BITE)   # the trunk's front, a touch to his right, the blade 2 cm into the bark
-    into=nrm((T-notch).normalized()+V(0,0,-.4))
+    a=math.radians(CHOP_AT)
+    notch=T+V(math.cos(a),math.sin(a),0)*(TRUNK_R-CHOP_BITE)   # the blade 2 cm into the bark
+    into=nrm(V(*(T-notch).xy,0))                   # level, straight at the trunk's centre
+    haft=Matrix.Rotation(math.radians(12),3,'Z')@V(into.y,-into.x,0)   # square to the swing, a little ahead of it
+    haft=nrm(haft+V(0,0,math.tan(math.radians(10))))                 # the head a touch above the fist
     feet=dict(rf=(-.03,.07,0,0),lf=(.03,-.07,0,0))
-    balance_top=hand((.36,-.30,.60),(.3,-.8,-.3),(0,0,1),(.9,.3,-.2))
-    balance_hit=hand((.38,-.10,.52),(.4,-.2,-1),(0,-1,0),(.8,.6,0))
-    G=Matrix.Rotation(math.radians(CHOP_WIND),3,'Z')
-    top=K_(root=V(0,0,-.03),**feet,pelvis=(0,CHOP_WIND*.35,0),spine=(4,CHOP_WIND*.65,-4),head=(4,-CHOP_WIND*.75,0),
-           rh=hand(tuple(G@V(-.36,-.12,.88)),G@nrm((-.3,-.3,.9)),G@nrm((-.3,.45,.85)),(-.9,.4,0)),lh=balance_top)
-    hit_rh=axe_hand(notch,V(-.3,-.3,.58),into,(-.9,.3,-.3))
-    hit=K_(root=V(0,0,-.05),**feet,pelvis=(0,CHOP_HIT*.4,0),spine=(10,CHOP_HIT,0),head=(8,-CHOP_HIT*.6,0),rh=hit_rh,lh=balance_hit)
-    pull=dict(hit_rh);pull['grip']=hit_rh['grip']-hit_rh['haft']*.07
-    out=K_(root=V(0,0,-.04),**feet,pelvis=(0,-6,0),spine=(8,-16,0),head=(6,8,0),rh=pull,lh=balance_hit)
     def wound(sy,grip,face,haft,elbow,balance):     # a pose with the upper body twisted sy, hand targets turning with it
-        R=Matrix.Rotation(math.radians(sy),3,'Z')
-        return K_(root=V(0,0,-.04),**feet,pelvis=(0,sy*.35,0),spine=(6,sy*.65,-2),head=(6,-sy*.75,0),
-                  rh=hand(tuple(R@V(*grip)),R@nrm(face),R@nrm(haft),elbow),lh=balance)
+        R=Matrix.Rotation(math.radians(sy),3,'Z');haft=nrm(haft);face=nrm(face);face=nrm(face-haft*face.dot(haft))
+        return K_(root=V(0,0,-.04),**feet,pelvis=(0,sy*.35,0),spine=(4,sy*.65,-2),head=(6,-sy*.75,0),
+                  rh=hand(tuple(R@V(*grip)),R@face,R@haft,elbow),lh=balance)
+    balance_top=hand((.36,-.30,.60),(.3,-.8,-.3),(0,0,1),(.9,.3,-.2))
     balance_mid=hand((.36,-.22,.62),(.3,-.8,-.3),(0,0,1),(.9,.3,-.2))
-    down=wound(-22,(-.50,-.16,.70),(-.6,-.6,.4),(-.6,.7,.4),(-.9,.3,-.2),balance_mid)    # the axe swung out wide round his right
-    up=wound(-24,(-.40,-.10,.90),(-.5,.1,.85),(-.3,.4,.85),(-.9,.4,0),balance_mid)       # lifted back round his right, clear of his head
-    low=wound(-14,(-.46,-.18,.52),(-.8,-.4,-.4),(-.3,-.8,-.4),(-.8,.5,0),balance_mid)   # pulled free, the axe dropped to his right side
-    lift=wound(-18,(-.44,-.16,.74),(-.8,-.3,.5),(-.5,-.4,.75),(-.9,.1,-.4),balance_mid)  # halfway up, the axe coming upright
-    return [(0,top),(.16,top),(.30,down),(.40,hit),(.56,hit),(.66,out),(.76,low),(.88,down)]   # recovery retraces the swing's own path
+    balance_hit=hand((.38,-.10,.52),(.4,-.2,-1),(0,-1,0),(.8,.6,0))
+    cocked=wound(CHOP_WIND,(-.30,-.16,.86),(.3,-1,.3),(-.2,.6,.8),(-.9,.2,-.4),balance_top)     # the axe standing up behind his right shoulder
+    slot=wound(CHOP_SLOT,(-.46,-.16,.66),(-.3,-1,.1),(-.1,1,.25),(-.5,.1,-.9),balance_mid)      # fist at chest height, the head trailing level behind
+    balance_side=hand((.37,-.16,.57),(.35,-.5,-.65),(0,-.5,.5),(.85,.45,-.1))
+    side=wound(CHOP_SIDE,(-.34,-.36,.62),(-.2,-1,.2),(-1,-.35,.2),(-.2,.3,-.95),balance_side)   # sweeping round: the axe level, out to his right
+    hit_rh=axe_hand(notch,notch-haft*AXE_EDGE.y-into*AXE_EDGE.z,into,(-.4,.1,-.9))
+    hit=K_(root=V(0,0,-.05),**feet,pelvis=(0,CHOP_HIT*.4,0),spine=(4,CHOP_HIT,0),head=(6,-CHOP_HIT*.6,0),rh=hit_rh,lh=balance_hit)
+    R=Matrix.Rotation(math.radians(-25),3,'Z')      # tugged back out of the cut, the head levering round to his right
+    pull=hand(tuple(hit_rh['grip']-into*.07),R@hit_rh['face'],R@hit_rh['haft'],(-.4,.1,-.9))
+    out=dict(hit);out['rh']=pull
+    return [(0,cocked),(.14,cocked),(.28,slot),(.33,side),(.40,hit),(.54,hit),(.60,out),(.68,side),(.77,slot),(.90,cocked)]   # back up the swing's own path
 
 
-clip('Chop',1.3,chop_keys(),rtool='axe',what='felling a tree: a one-handed side swing from his right, the whole upper body unwinding into it')
+clip('Chop',1.3,chop_keys(),rtool='axe',what='felling a tree: a one-handed flat swing like a bat, from his right into the trunk\'s side, the whole upper body unwinding into it')
 CLIPS['Chop']['env']='tree'
 
 PICK_ROCK=[('rock',(0,-.56,.07),(.34,.30,.16),'stone',0)]
