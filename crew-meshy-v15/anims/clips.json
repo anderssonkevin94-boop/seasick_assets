@@ -1,0 +1,173 @@
+{
+  "Idle": {
+    "take": "Crew_Idle",
+    "seconds": 2.4,
+    "frames": 73,
+    "loop": true,
+    "what": "breathing, weight settling, a glance round",
+    "tool_right_hand": null,
+    "held_left_hand": null
+  },
+  "Walk": {
+    "take": "Crew_Walk",
+    "seconds": 0.9,
+    "frames": 28,
+    "loop": true,
+    "what": "in place: the game moves him; stride about 0.44 m a cycle",
+    "tool_right_hand": null,
+    "held_left_hand": null
+  },
+  "Chop": {
+    "take": "Crew_Chop",
+    "seconds": 1.15,
+    "frames": 35,
+    "loop": true,
+    "what": "two-handed axe into a log (timber, clearing)",
+    "tool_right_hand": "axe",
+    "held_left_hand": null
+  },
+  "Mine": {
+    "take": "Crew_Mine",
+    "seconds": 1.1,
+    "frames": 34,
+    "loop": true,
+    "what": "pickaxe into rock (stone, ore)",
+    "tool_right_hand": "pick",
+    "held_left_hand": null
+  },
+  "Forage": {
+    "take": "Crew_Forage",
+    "seconds": 1.7,
+    "frames": 52,
+    "loop": true,
+    "what": "crouch, pick from a bush, drop it in the basket (spice, food)",
+    "tool_right_hand": null,
+    "held_left_hand": "basket"
+  },
+  "Build": {
+    "take": "Crew_Build",
+    "seconds": 0.95,
+    "frames": 29,
+    "loop": true,
+    "what": "nailing a board to a post (raising any building)",
+    "tool_right_hand": "hammer",
+    "held_left_hand": null
+  },
+  "Carry": {
+    "take": "Crew_Carry",
+    "seconds": 0.9,
+    "frames": 28,
+    "loop": true,
+    "what": "walking with a log on his right shoulder (the game adds 1-3)",
+    "tool_right_hand": "carrylog",
+    "held_left_hand": null
+  },
+  "PickUp": {
+    "take": "Crew_PickUp",
+    "seconds": 1.3,
+    "frames": 40,
+    "loop": false,
+    "what": "stoop, lift a load to his chest (one-shot)",
+    "tool_right_hand": "sack",
+    "held_left_hand": null
+  },
+  "Saw": {
+    "take": "Crew_Saw",
+    "seconds": 0.9,
+    "frames": 28,
+    "loop": true,
+    "what": "sawmill: sawing a plank on a trestle",
+    "tool_right_hand": "saw",
+    "held_left_hand": null
+  },
+  "Farm": {
+    "take": "Crew_Farm",
+    "seconds": 1.25,
+    "frames": 39,
+    "loop": true,
+    "what": "farm plot: hoeing the rows",
+    "tool_right_hand": "hoe",
+    "held_left_hand": null
+  },
+  "Smith": {
+    "take": "Crew_Smith",
+    "seconds": 0.8,
+    "frames": 25,
+    "loop": true,
+    "what": "forge: hammering hot iron on the anvil",
+    "tool_right_hand": "hammer",
+    "held_left_hand": null
+  },
+  "Cook": {
+    "take": "Crew_Cook",
+    "seconds": 1.6,
+    "frames": 49,
+    "loop": true,
+    "what": "kitchen: stirring the pot",
+    "tool_right_hand": "paddle",
+    "held_left_hand": null
+  },
+  "Mill": {
+    "take": "Crew_Mill",
+    "seconds": 1.5,
+    "frames": 46,
+    "loop": true,
+    "what": "mill: turning the quern stone by its peg",
+    "tool_right_hand": "peg",
+    "held_left_hand": null
+  },
+  "Lookout": {
+    "take": "Crew_Lookout",
+    "seconds": 4.0,
+    "frames": 121,
+    "loop": true,
+    "what": "watchtower: leaning on the rail, scanning the horizon, pointing out a sail",
+    "tool_right_hand": null,
+    "held_left_hand": null
+  },
+  "Quarry": {
+    "take": "Crew_Quarry",
+    "seconds": 0.95,
+    "frames": 29,
+    "loop": true,
+    "what": "quarry: mallet and chisel, dressing stone into brick",
+    "tool_right_hand": "mallet",
+    "held_left_hand": "chisel"
+  },
+  "Fletcher": {
+    "take": "Crew_Fletcher",
+    "seconds": 1.5,
+    "frames": 46,
+    "loop": true,
+    "what": "fletcher: whittling an arrow shaft",
+    "tool_right_hand": "knife",
+    "held_left_hand": "shaft"
+  },
+  "Fisher": {
+    "take": "Crew_Fisher",
+    "seconds": 1.2,
+    "frames": 37,
+    "loop": true,
+    "what": "fishing hut: gutting the catch on the prep bench",
+    "tool_right_hand": "knife",
+    "held_left_hand": null
+  },
+  "Hunt": {
+    "take": "Crew_Hunt",
+    "seconds": 2.2,
+    "frames": 67,
+    "loop": true,
+    "what": "hunting: draw, loose, reach back to the quiver for the next arrow",
+    "tool_right_hand": null,
+    "held_left_hand": "bow"
+  },
+  "SetDown": {
+    "take": "Crew_SetDown",
+    "seconds": 1.3,
+    "frames": 40,
+    "loop": false,
+    "what": "lower the load to the ground and straighten (one-shot)",
+    "tool_right_hand": "sack",
+    "held_left_hand": null
+  }
+}
