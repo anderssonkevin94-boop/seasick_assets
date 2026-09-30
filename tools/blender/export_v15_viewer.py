@@ -71,7 +71,7 @@ WHERE={'Saw':'Sawmill · sawyer','Farm':'Farm plot · farmhand','Smith':'Forge �
 LABEL={'PickUp':'Pick up','SetDown':'Set down','DeckBrace':'Deck brace','RailGrip':'Rail grip','ThrowLine':'Throw line',
        'HaulLine':'Haul line','GunRam':'Gun: ram','GunFire':'Gun: fire','SickSway':'Sick: sway','SickWalk':'Sick: walk',
        'SickClutch':'Sick: clutch','SickRail':'Sick: at the rail','SickCollapse':'Sick: collapse','SickKneel':'Sick: kneel'}
-TOOLS={'carrylog':'log','sack':'sack','peg':'quern peg','shaft':'arrow shaft','coil':'coiled line','pick':'pickaxe'}
+TOOLS={'carrylog':'log','sack':'sack','peg':'quern peg','shaft':'arrow shaft','coil':'coiled line','pick':'pickaxe','crate':'any load (crate shown)'}
 
 
 def write_page():

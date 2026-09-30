@@ -169,6 +169,11 @@ class Solver:
             pitch=math.radians(f[3]) if len(f)>3 else 0
             fd=G@(Matrix.Rotation(pitch,3,'X')@V(0,-.97,-.24))
             self.leg(side,ankle,fd,G@(V(s*.15,-1,0)))
+        if q.get('hands_on_spine'):                 # hand targets authored standing (rest), carried by the spine: a load parented there stays on the arms
+            M=self.pb['spine'].matrix@self.b['spine'].matrix_local.inverted();R=M.to_3x3()
+            for side,key in((RIGHT,'rh'),(LEFT,'lh')):
+                r=q[key];self.arm(side,M@Vector(r['grip']),R@Vector(r['face']),R@Vector(r['haft']),R@Vector(r['elbow']))
+            return
         r=q['rh'];self.arm(RIGHT,G@Vector(r['grip']),G@Vector(r['face']),G@Vector(r['haft']),G@Vector(r['elbow']))
         l=q['lh']
         if 'on_tool' in l:                          # second hand on the right hand's haft
@@ -380,12 +385,38 @@ clip('Build',.95,[
     ],rtool='hammer',props=POST,what='nailing a board to a post (raising any building)')
 
 
-def carry_log(q,sw):
-    q['rh']=hand((-.31,-.03,.86),(0,0,1),(0,1,0),(-.8,.2,-.6))
-    q['head']=(0,6,0)
+# Carry: a heavy load held out on both arms, walked in place. The arms reach
+# straight ahead at shoulder width, fists just below the shoulders, the load
+# resting across both forearms; he leans back 16 degrees against it, hips
+# pushed forward under it, head tipped only half as far forward to see past it, and walks slow and short, sinking into each
+# step with a waddle from foot to foot. The hands are keyed in the spine's
+# frame (hands_on_spine), so a load parented to the spine bone at CARRY_SOCKET
+# rides on the forearms on every frame, whatever it is: that socket is the
+# one contract for the game's stacks (logs, planks, stones, bricks, sacks).
+# Arm pose found by search against crew_v15_anatomy with a 0.54 x 0.28 x
+# 0.20 m crate (his scale) on it, its top kept under his chin.
+CARRY_FIST=V(.22,-.34,.54)                          # his left fist, standing (the right mirrors it)
+CARRY_SOCKET=V(0,-.25,.585)                         # the load's bottom centre, on the forearms (rest pose, parent: spine)
+CARRY_DEPTH=.28                                     # deepest load that clears his chest, centred on the socket
+CARRY_LEAN=-16
 
 
-clip('Carry',.9,lambda t:walk_pose(t,carry=carry_log),rtool='carrylog',what='walking with a log on his right shoulder (the game adds 1-3)')
+def carry_pose(t):
+    """Heavy in-place walk at phase t, right foot forward at t=0."""
+    a=t*2*math.pi;c,sn=math.cos(a),math.sin(a);stride=.075
+    q=K_(hands_on_spine=True)
+    q['rf']=(0,-stride*c,.03*max(0,-sn),-8*c);q['lf']=(0,stride*c,.03*max(0,sn),8*c)
+    q['root']=V(-.016*c,-.03,-.06-.024*abs(c))     # hips forward under the load, sinking into each footfall, the weight rolling over the planted foot
+    q['pelvis']=(CARRY_LEAN*.3,4*c,-4*c)
+    q['spine']=(CARRY_LEAN+2.5*abs(c),-3*c,3*c)    # leaning back, the load squashing him a little at each step
+    q['head']=(-CARRY_LEAN*.5+2*abs(c),0,-2*c)     # tipped forward to see past it: half the lean, so the lean still shows
+    tilt=math.radians(20)
+    for key,s in(('rh',-1),('lh',1)):
+        q[key]=hand((s*CARRY_FIST.x,CARRY_FIST.y,CARRY_FIST.z),(0,-math.cos(tilt),-math.sin(tilt)),(0,0,1),(s*.5,.3,-.8))
+    return q
+
+
+clip('Carry',1.2,carry_pose,rtool='crate',what='a heavy load held out on both arms, leaning back against it, walking slow and short (in place)')
 clip('PickUp',1.3,[
     (0,K_()),
     (.45,K_(root=V(0,0,-.17),spine=(46,0,0),head=(20,0,0),rh=hand((-.13,-.36,.13),(0,-.2,-1),(0,-1,.2),(-.7,.4,0)),lh=hand((.13,-.36,.13),(0,-.2,-1),(0,-1,.2),(.7,.4,0)))),
@@ -731,8 +762,9 @@ S_=TOOL_SCALE
 
 def tool_parts(kind):
     """The game's fallback tools (VillagerActing.BuildTool), scaled, in the
-    tool frame: +Y up the haft, +Z the working side."""
-    s=S_
+    tool frame: +Y up the haft, +Z the working side. Loads are at his scale
+    already, with their bottom centre at the origin (the carry socket)."""
+    s=1 if kind in LOADS else S_
     T={'hammer':[((.035,.34,.035),(0,.13,0),'wood'),((.055,.06,.16),(0,.30,.02),'iron')],
        'mallet':[((.035,.30,.035),(0,.12,0),'wood'),((.09,.09,.16),(0,.27,.0),'wood_light')],
        'axe':[((.04,.67,.04),(0,.285,0),'wood'),((.03,.14,.12),(0,.56,.07),'steel'),((.05,.08,.06),(0,.56,-.02),'iron')],
@@ -750,6 +782,7 @@ def tool_parts(kind):
        'bow':[((.03,.95,.03),(0,0,.0),'wood'),((.004,.93,.004),(0,0,-.12),'string')],
        'basket':[((.26,.26,.20),(0,0,.20),'rope')],
        'carrylog':[((.16,.80,.16),(.14,0,-.02),'wood_bark')],
+       'crate':[((.54,.28,.20),(0,0,.10),'wood'),((.55,.285,.03),(0,0,.04),'wood_bark'),((.55,.285,.03),(0,0,.16),'wood_bark')],
        'sack':[((.30,.26,.30),(.18,0,.03),'rope')],
        'bucket':[((.26,.26,.28),(0,0,.24),'wood'),((.27,.27,.03),(0,0,.12),'iron')],
        'coil':[((.26,.06,.26),(0,0,.12),'rope')],
@@ -765,6 +798,7 @@ def tool_parts(kind):
 # Blender (x, z, -y), then scaled to his 1.30 m source. The Saw clip holds its
 # saw with the blade along the forearm, so that mesh turns +90 degrees about X
 # (blade +Y -> +Z, teeth +Z -> -Y): the game's saw needs the same turn.
+LOADS={'crate'}                                     # held on both arms (Carry), not in a hand
 ASTRA_TOOLS={'axe':'Axe','hammer':'Hammer','saw':'Saw','hoe':'Hoe','paddle':'StirPaddle'}
 TOOL_DIR=Path(__file__).resolve().parents[2]/'crew-meshy-v15/anims/env/tools'
 _tool_cache={}
@@ -793,6 +827,9 @@ def attach_tool(rig,solver,kind,side):
     if kind in ASTRA_TOOLS:
         o=bpy.data.objects.new('Prop_'+kind,astra_tool(kind));bpy.context.scene.collection.objects.link(o);o['preview_prop']=True
     else:o=box_mesh('Prop_'+kind,tool_parts(kind))
+    if kind in LOADS:                                # a load rides on the spine at the carry socket
+        solver.reset();o.parent=rig;o.parent_type='BONE';o.parent_bone='spine'
+        bpy.context.view_layer.update();o.matrix_world=rig.matrix_world@Matrix.Translation(CARRY_SOCKET);return o
     s=SIDE_SIGN[side];hb='hand'+side
     # tool frame in the rest pose: +Y thumb (forward), +Z along the fist, X = Y x Z
     Y=V(0,-1,0);Z=V(s,0,0);X=Y.cross(Z)

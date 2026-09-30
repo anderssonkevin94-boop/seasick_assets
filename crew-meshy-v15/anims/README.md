@@ -31,7 +31,7 @@ embedded, so the one file opens on its own. Rebuild it with
 | `Crew_Mine` | stone, ore | 1.1 s | pick | - | one-handed vertical pickaxe swing, overhand like a bat, into the rock |
 | `Crew_Forage` | spice, food | 1.7 s | - | basket | crouch, pick from a bush, drop it in the basket (spice, food) |
 | `Crew_Build` | raising a building | 0.95 s | hammer | - | nailing a board to a post (raising any building) |
-| `Crew_Carry` | hauling | 0.9 s | carrylog | - | walking with a log on his right shoulder (the game adds 1-3) |
+| `Crew_Carry` | hauling | 1.2 s | any load on the spine socket (crate shown) | same load | a heavy load held out on both arms, leaning back against it, walking slow and short (in place) |
 | `Crew_PickUp` | lifting a load | 1.3 s, one-shot | sack | - | stoop, lift a load to his chest (one-shot) |
 | `Crew_Saw` | Sawmill (sawyer) | 0.9 s | saw | - | sawmill: sawing a plank on a trestle |
 | `Crew_Farm` | Farm plot (farmhand) | 1.25 s | hoe | - | farm plot: hoeing the rows |
@@ -124,6 +124,19 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   right hand at the end of the haft, the game's own grip; the game's two-handed second-hand
   placement (`VillagerActing`, 0.11 m up the haft) is not used by this clip. Chest height is lower
   than the tree's own `Trunk_Target` (1.3 m at game size, above his shoulders).
+- **Carry holds any load out on both arms** and looks heavy: arms straight ahead at shoulder
+  width, the load across both forearms, the body leaning back 16 degrees with the hips pushed
+  forward under it, head tipped forward half as far to see past it; a slow, short, sinking walk
+  (1.2 s a cycle, stride about 0.3 m, measured as Walk's 0.44 m) with a waddle from foot to foot. **The carry socket:**
+  the hands are keyed in the spine's frame, so the load rides with the spine bone and the fists
+  stay on its underside on every frame. To place any asset (the game's stacks of logs, planks,
+  stones, bricks or sacks): put the load's **bottom centre** at the socket in the rest (T) pose and
+  parent it to the **`spine`** bone, keeping that offset. At the 1.7 m game size the socket is
+  **(0, 0.765, 0.327) m** in the model's space (Unity: x across, y up, z forward), which is
+  (0, -0.25, 0.585) at the 1.30 m source (Blender, -Y forward), `CARRY_SOCKET` in the script.
+  Loads up to **0.37 m deep** (front to back, centred on the socket) clear his chest; width and
+  height are free (a 0.26 m tall load, game, keeps his face clear). This replaces the shoulder
+  carry and `VillagerActing`'s code-bent `Carry` arms: the clip owns the arms and the legs.
 - **Mine is set at a rock** (`CLIPS['Mine']['env']='rock'`: Astra's `Stone_Field`, the commonest
   deposit, from `art-staging/stone-resources-astra-v2`, copied to `env/Stone_Field.fbx`). He stands
   where `StoneDeposit.StandOff` puts a miner: its footprint radius plus 0.7 m, 1.80 m (game) from
@@ -139,7 +152,7 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   `art-staging/worker-tools-v1`), placed by the game's tool frame.
 - New tools the game doesn't have yet: pickaxe, mallet and chisel, quern peg, knife, arrow
   shaft, bow, basket, bucket, coiled line, rammer, linstock, oars (the clips work without them; they only show in the previews).
-- Walk, Carry and SickWalk need their playback speed matched to the move speed.
+- Walk, Carry and SickWalk need their playback speed matched to the move speed (Carry's stride is shorter: about 0.3 m a cycle against Walk's 0.44 m).
 - Aboard: `CrewAgent`'s states map straight onto the ship clips (Station -> DeckBrace,
   RailHold -> RailGrip, Bailing -> Bail, AtRail -> SickRail, HaulGoing/Hauling -> ThrowLine then
   HaulLine, JollyBoatDuty -> Row, the post-rescue rest -> Soaked); gunners play GunRam while
