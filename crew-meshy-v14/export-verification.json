@@ -1,0 +1,14 @@
+{
+  "meshes": [
+    "CREW_Cloth",
+    "CREW_Skin"
+  ],
+  "bones": 16,
+  "bone_names_match_v5": true,
+  "triangles": 2974,
+  "height_m": 1.3,
+  "vertex_colors": true,
+  "normalized_weights": true,
+  "neutral_skin_shade": true,
+  "imported_rig_deformation_max_displacement": 0.13737673036838374
+}

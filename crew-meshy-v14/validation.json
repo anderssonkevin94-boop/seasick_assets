@@ -1,0 +1,36 @@
+{
+  "source_triangles": 771306,
+  "triangles": 2974,
+  "triangles_after_cuts": 2924,
+  "heat_unweighted_vertices": 0,
+  "face_regions": {
+    "skin": 754,
+    "sash": 713,
+    "wood": 87,
+    "linen": 949,
+    "pants": 64,
+    "hair": 205,
+    "pantcuff": 98,
+    "sole": 54
+  },
+  "face_plate_triangles": 50,
+  "export_triangles": {
+    "CREW_Cloth": 2220,
+    "CREW_Skin": 754
+  },
+  "triangles_final": 2974,
+  "skin_base_color_srgb": "#D99259",
+  "rig_bones": 16,
+  "palette_srgb": {
+    "linen": "#D8CFBC",
+    "skin": "#D99259",
+    "pants": "#2D5664",
+    "pantcuff": "#2F6572",
+    "sash": "#D0443A",
+    "hair": "#3A2921",
+    "eye": "#1C1816",
+    "mouth": "#A23B2F",
+    "sole": "#4A3226",
+    "wood": "#B07A4A"
+  }
+}
