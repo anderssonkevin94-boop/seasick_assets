@@ -1,0 +1,54 @@
+{
+  "source_triangles": 3095,
+  "pieces": 40,
+  "triangles": 3135,
+  "height_m": 1.3,
+  "pieces_by_colour": {
+    "sole": [
+      "sole"
+    ],
+    "skin": [
+      "arm",
+      "ear",
+      "foot",
+      "hand",
+      "head",
+      "nose"
+    ],
+    "pants": [
+      "shorts"
+    ],
+    "sash": [
+      "headband",
+      "headband knot",
+      "headband tail",
+      "sash",
+      "sash knot",
+      "sash tail"
+    ],
+    "strap": [
+      "sandal strap"
+    ],
+    "linen": [
+      "sleeve",
+      "tunic"
+    ],
+    "wrap": [
+      "wrist wrap"
+    ],
+    "hair": [
+      "brow",
+      "hair",
+      "tuft"
+    ],
+    "eye": [
+      "eye"
+    ],
+    "patch": [
+      "shorts patch"
+    ],
+    "pantcuff": [
+      "shorts cuff"
+    ]
+  }
+}
