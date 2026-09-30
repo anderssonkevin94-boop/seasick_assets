@@ -31,7 +31,7 @@ per-face shade; skin stays flat so the game's sickness tint works.
 | Patch brown `#8A5A36` | shorts patch |
 
 Added as small plates laid on the surface (Meshy left them out): the mouth `#A23B2F`, and two
-planks with a stitch on the tunic's front, as in the reference. **Total: 3,165 triangles**,
+planks with a stitch on the tunic's front, as in the reference. **Total: 3,135 triangles**,
 1.30 m tall (`AstraPlaytestImport` rescales to 1.7 m).
 
 ## Files
