@@ -3,8 +3,14 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 OUT=Path(__file__).resolve().parents[2]/'crew-silhouettes-v7'
-COLS=[('v6','NOW (v6)','reference'),('A-hauler','A  HAULER','wedge torso, big fists'),
-      ('B-pear','B  PEAR','bell body, stubby arms'),('C-wiry','C  WIRY','lanky, stooped, long nose')]
+import sys
+SETS={'silhouettes':[('v6','NOW (v6)','reference'),('A-hauler','A  HAULER','wedge torso, big fists'),
+      ('B-pear','B  PEAR','bell body, stubby arms'),('C-wiry','C  WIRY','lanky, stooped, long nose')],
+      'silhouettes-2':[('v6','NOW (v6)','reference'),('D-bean','D  BEAN','one shape, no neck'),
+      ('E-bighead','E  BIG HEAD','head is 40% of him'),('F-block','F  BLOCK + HAT','square, wide straw hat'),
+      ('G-poncho','G  PONCHO','diamond cape, topknot')]}
+NAME=sys.argv[1] if len(sys.argv)>1 else 'silhouettes'
+COLS=SETS[NAME]
 CW,TOP=500,120
 font=lambda b,s:ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans%s.ttf'%('-Bold' if b else ''),s)
 rows=[('front34',560),('front',560),('side',560),('phone',300)]
@@ -23,4 +29,4 @@ for view,h in rows:
         else:img.paste(im,(c*CW,y))
     y+=h
 for c in range(1,len(COLS)):d.line([(c*CW,0),(c*CW,H)],fill=(200,190,170),width=3)
-img.save(OUT/'silhouettes.png')
+img.save(OUT/(NAME+'.png'))
