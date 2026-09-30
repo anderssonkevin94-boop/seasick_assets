@@ -60,7 +60,7 @@ def rot(p,y,r):
 class Solver:
     def __init__(self,rig):
         self.rig=rig;self.b=rig.data.bones;self.pb=rig.pose.bones
-        self.L={n:self.b[n].length for n in P.REST}
+        self.L={n:self.b[n].length for n in P.REST};self.miss={};self.twist_clamped={}
         # fist centre in each hand bone's rest space
         self.fist_local={}
         for side,s in SIDE_SIGN.items():
@@ -69,6 +69,7 @@ class Solver:
             self.fist_local[side]=hb.matrix_local.inverted()@centre
 
     def reset(self):
+        self.miss={};self.twist_clamped={}
         for p in self.pb:p.matrix_basis=Matrix.Identity(4)
         bpy.context.view_layer.update()
 
@@ -98,14 +99,42 @@ class Solver:
         if perp.length<1e-6:perp=V(0,-1,0)-n*n.y
         return a+n*x+perp.normalized()*h,a+n*dist
 
+    PRONATION=math.radians(85)       # forearm twist either way from neutral
+
     def arm(self,side,grip,face,haft,elbow):
+        """Place the fist centre at `grip`, knuckles along `face`, thumb along
+        `haft`, the elbow bending toward `elbow` (a hint direction).
+
+        Anatomy: the upper arm rolls with the elbow's hinge (its flexion side
+        faces the forearm), the forearm twists toward the thumb only within
+        +-85 degrees of neutral, and the hand keeps the forearm's twist (a
+        wrist bends, it does not turn). Misses (a target out of reach) are
+        recorded in self.miss."""
         s=SIDE_SIGN[side];u,f,h='upper_arm'+side,'forearm'+side,'hand'+side
         face=nrm(face);haft=Vector(haft);haft=(haft-face*haft.dot(face)).normalized()
         palm=(haft.cross(face) if s<0 else face.cross(haft))
         wrist=Vector(grip)-face*(.07*K)-palm*(.012*K)
         sh=self.pb[u].head.copy()
         el,wr=self.two_bone(sh,self.L[u],self.L[f],wrist,elbow)
-        self.orient(u,el-sh,haft);self.orient(f,wr-el,haft);self.orient(h,face,haft)
+        self.miss[side]=max(self.miss.get(side,0),(wr-wrist).length)
+        ua=el-sh;fa=wr-el;ua_n=ua.normalized();fa_n=fa.normalized()
+        bend=fa-ua_n*fa.dot(ua_n)
+        if bend.length<1e-4:                          # straight arm: flex side away from the elbow hint
+            bend=-(Vector(elbow)-ua_n*Vector(elbow).dot(ua_n))
+        self.orient(u,ua,bend)                        # upper arm: flexion side toward the forearm
+        ref=-ua_n-fa_n*(-ua_n).dot(fa_n)              # neutral thumb: carried from the upper arm across the hinge
+        if ref.length<1e-4:ref=bend-fa_n*bend.dot(fa_n)
+        ref.normalize()
+        want=haft-fa_n*haft.dot(fa_n)
+        want=want.normalized() if want.length>1e-4 else ref
+        ang=ref.angle(want)
+        if ang>self.PRONATION:                        # clamp the twist to what a forearm can do
+            axis=ref.cross(want);axis=axis.normalized() if axis.length>1e-6 else fa_n
+            want=Matrix.Rotation(self.PRONATION,3,axis)@ref
+            self.twist_clamped[side]=max(self.twist_clamped.get(side,0),math.degrees(ang))
+        self.orient(f,fa,want)
+        hand_up=haft if ang<=self.PRONATION else want
+        self.orient(h,face,hand_up)
 
     def leg(self,side,ankle,foot_dir,knee):
         t,sh,ft='thigh'+side,'shin'+side,'foot'+side
@@ -273,11 +302,29 @@ clip('PickUp',1.3,[
     ],loop=False,ltool=None,rtool='sack',what='stoop, lift a load to his chest (one-shot)')
 
 # --- building jobs
-TRESTLE=[('trestle',(0,-.40,.17),(.46,.20,.34),'wood',0),('plank',(0,-.40,.37),(.80,.14,.04),'wood_light',0)]
-clip('Saw',.9,[
-    (0,K_(root=V(0,0,-.04),spine=(26,-4,0),head=(18,0,0),rh=hand((-.12,-.14,.60),*reversed(sag(-.7,-.72)),(-.6,.6,-.1)),lh=hand((.16,-.36,.44),(0,-.3,-1),(0,-1,0),(.6,.4,0)))),
-    (.5,K_(root=V(0,0,-.04),spine=(30,-2,0),head=(18,0,0),rh=hand((-.10,-.34,.49),*reversed(sag(-.72,-.7)),(-.6,.4,-.1)),lh=hand((.16,-.36,.44),(0,-.3,-1),(0,-1,0),(.6,.4,0)))),
-    ],rtool='saw',props=TRESTLE,what='sawmill: sawing a plank on a trestle')
+# Saw, reworked for his proportions: shoulders 0.22 m out, belly 0.26 m in
+# front, arms reaching 0.42 m. The stroke runs beside his belly on his
+# right, the blade 55 degrees down, the forearm in line with the saw as a
+# sawyer's is. The left fist holds the plank's other end, out to his left
+# and clear of the belly. The teeth stay in one kerf for the whole stroke.
+SAW_DIR=nrm((0,-.57,-.82));SAW_UP=nrm((0,-.82,.57))
+SAW_PULL=V(-.37,-.24,.64);SAW_LEN=.20
+KERF=SAW_PULL+SAW_DIR*.35+SAW_UP*(-.05)          # where the teeth meet the plank
+PLANK_TOP=KERF.z+.015
+TRESTLE=[('trestle',(.16,KERF.y,(PLANK_TOP-.04)/2),(.62,.16,PLANK_TOP-.04),'wood',0),
+         ('plank',(0,KERF.y,PLANK_TOP-.02),(1.05,.15,.04),'wood_light',0)]
+
+
+def saw_pose(t):
+    s=.5-.5*math.cos(t*2*math.pi)                   # 0 at the pull, 1 at the end of the push
+    grip=SAW_PULL+SAW_DIR*(SAW_LEN*s)
+    return K_(root=V(0,.02-.012*s,-.04-.005*s),rf=(0,.07,0,0),lf=(0,-.05,0,0),
+              pelvis=(0,-2*s,0),spine=(21+3*s,4,0),head=(12-2*s,-8,0),
+              rh=hand(tuple(grip),SAW_DIR,SAW_UP,(-.8,.6,.2)),
+              lh=hand((.32,KERF.y+.04,PLANK_TOP+.05),(.1,-.2,-1),(-.6,-.8,0),(1,.2,.2)))
+
+
+clip('Saw',1.0,saw_pose,rtool='saw',props=TRESTLE,what='sawmill: sawing a plank on a trestle, the left hand holding its far end')
 
 FIELD=[('soil',(0,-.60,.015),(.6,.5,.03),'soil',0),('sprout',(.12,-.70,.06),(.05,.05,.08),'leaf',0),('sprout',(-.14,-.74,.06),(.05,.05,.08),'leaf',0)]
 clip('Farm',1.25,[
@@ -590,7 +637,10 @@ def tool_parts(kind):
        'mallet':[((.035,.30,.035),(0,.12,0),'wood'),((.09,.09,.16),(0,.27,.0),'wood_light')],
        'axe':[((.04,.67,.04),(0,.285,0),'wood'),((.03,.14,.12),(0,.56,.07),'steel'),((.05,.08,.06),(0,.56,-.02),'iron')],
        'pick':[((.04,.66,.04),(0,.28,0),'wood'),((.05,.05,.46),(0,.58,0),'iron')],
-       'saw':[((.008,.50,.11),(0,.33,0),'steel'),((.035,.13,.10),(0,.02,-.015),'wood')],
+       # the saw's blade runs on out of the fist along the forearm (+Z), teeth on the
+       # pinky side (-Y): a real handsaw grip. The game's saw (blade up +Y) needs
+       # turning -90 degrees about X for this clip.
+       'saw':[((.008,.11,.50),(0,-.01,.30),'steel'),((.035,.10,.13),(0,0,0),'wood')],
        'hoe':[((.038,1.13,.038),(0,.485,0),'wood'),((.17,.025,.15),(0,1.02,.07),'iron')],
        'paddle':[((.03,.66,.03),(0,.27,0),'wood'),((.09,.17,.02),(0,.66,0),'wood_light')],
        'peg':[((.04,.16,.04),(0,-.04,0),'wood')],
