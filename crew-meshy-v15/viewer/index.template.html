@@ -152,6 +152,10 @@ renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadow
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 60);
 const HOME = {pos:new THREE.Vector3(-2.3, 1.45, 3.4), target:new THREE.Vector3(0, 0.6, -0.1)};
+// Clips set at a tree: the trunk stands in front of him, so look past his right shoulder.
+const HOME_TREE = {pos:new THREE.Vector3(-2.7, 1.5, -1.7), target:new THREE.Vector3(0, 0.55, 0.35)};
+function home(){ const h = (current && CLIPS[current].env === 'tree') ? HOME_TREE : HOME;
+  camera.position.copy(h.pos); controls.target.copy(h.target); controls.update(); }
 camera.position.copy(HOME.pos);
 const controls = new THREE.OrbitControls(camera, canvas);
 controls.target.copy(HOME.target); controls.enableDamping = true; controls.minDistance = 1; controls.maxDistance = 9;
@@ -217,7 +221,9 @@ new THREE.GLTFLoader().parse(glbBytes, '', gltf => {
 function select(key, user){
   if (!actions[key]) return;
   if (action) action.stop();
+  const envChanged = !current || CLIPS[current].env !== CLIPS[key].env;
   current = key; action = actions[key];
+  if (envChanged) home();
   action.reset(); action.setLoop(THREE.LoopRepeat); action.play(); action.paused = true;
   t = 0; holdUntil = 0; playing = true; $('play').textContent = 'Pause';
   for (const b of Object.values(buttons)) b.removeAttribute('aria-current');
@@ -261,7 +267,7 @@ for (const b of $('speed').querySelectorAll('button')) b.addEventListener('click
 });
 $('props').addEventListener('change', showExtras);
 $('spin').addEventListener('change', e => { controls.autoRotate = e.target.checked; });
-$('reset').addEventListener('click', () => { camera.position.copy(HOME.pos); controls.target.copy(HOME.target); controls.update(); });
+$('reset').addEventListener('click', home);
 window.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' && e.target.type === 'range') return;
   const order = GROUPS.flatMap(g => g.clips).filter(k => CLIPS[k]);

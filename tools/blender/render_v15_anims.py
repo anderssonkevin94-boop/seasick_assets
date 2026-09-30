@@ -46,11 +46,15 @@ def main():
         if ONLY and name not in ONLY:continue
         act=bpy.data.actions['Crew_'+name];rig.animation_data.action=act
         extra=[];stand=Vector((0,0,0))
-        if c.get('env')=='mill':
+        if c.get('env'):
             import crew_v15_mill as MILL
-            env=MILL.load('cutting');stand=MILL.marker(env,'Worker_Stand');rig.location=stand
+            env,stand,_=MILL.load_env(c['env']);rig.location=stand
             extra+=list(env.values());ground.hide_render=False
-            cam.location=stand+Vector((-2.6,-4.2,3.0));cam.rotation_euler=(stand+Vector((0,-.2,.5))-cam.location).to_track_quat('-Z','Y').to_euler()
+            view=Vector((-2.6,-4.2,3.0)) if c['env']=='mill' else Vector((-3.2,1.2,2.2))
+            if c['env']=='tree':
+                for o in env.values():
+                    if 'Canopy' in o.name:o.hide_render=True     # the canopy would hide him from a game camera; left out of the preview
+            cam.location=stand+view;cam.rotation_euler=(stand+Vector((0,-.3,.5))-cam.location).to_track_quat('-Z','Y').to_euler()
         else:
             rig.location=(0,0,0);cam.location=eye;cam.rotation_euler=(tgt-eye).to_track_quat('-Z','Y').to_euler()
         bpy.context.view_layer.update()

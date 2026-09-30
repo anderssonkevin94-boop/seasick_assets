@@ -19,10 +19,10 @@
   },
   "Chop": {
     "take": "Crew_Chop",
-    "seconds": 1.15,
-    "frames": 35,
+    "seconds": 1.3,
+    "frames": 40,
     "loop": true,
-    "what": "two-handed axe into a log (timber, clearing)",
+    "what": "felling a tree: a one-handed side swing from his right, the whole upper body unwinding into it",
     "tool_right_hand": "axe",
     "held_left_hand": null
   },

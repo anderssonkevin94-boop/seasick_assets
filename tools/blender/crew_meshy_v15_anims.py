@@ -133,7 +133,13 @@ class Solver:
             want=Matrix.Rotation(self.PRONATION,3,axis)@ref
             self.twist_clamped[side]=max(self.twist_clamped.get(side,0),math.degrees(ang))
         self.orient(f,fa,want)
-        self.orient(h,face,want)                      # the hand always keeps the forearm's twist: no pop at the limit
+        # The hand holds the tool as asked until the forearm runs out of twist;
+        # past the limit it turns back by exactly the excess (continuous: no pop).
+        asked=haft-fa_n*haft.dot(fa_n)
+        if ang>self.PRONATION and asked.length>1e-6:
+            hand_up=asked.normalized().rotation_difference(want)@haft
+        else:hand_up=haft
+        self.orient(h,face,hand_up)
 
     def leg(self,side,ankle,foot_dir,knee):
         t,sh,ft='thigh'+side,'shin'+side,'foot'+side
@@ -249,14 +255,70 @@ def walk_pose(t,arms=True,carry=None):
 clip('Walk',.9,walk_pose,what='in place: the game moves him; stride about 0.44 m a cycle')
 
 # --- camp tasks
-AXE_LOG=[('log',(0,-.62,.09),(.46,.18,.18),'wood_bark',0)]
-clip('Chop',1.15,[
-    (0,K_(root=V(0,0,-.03),spine=(-6,-8,0),head=(-8,0,0),rh=swing_hand((-.10,.04,1.00),.55,.83),lh={'on_tool':.10,'elbow':V(.6,.3,-.4)})),
-    (.30,K_(root=V(0,0,-.03),spine=(-8,-10,0),head=(-6,0,0),rh=swing_hand((-.08,.05,1.02),.62,.78),lh={'on_tool':.10,'elbow':V(.6,.3,-.4)})),
-    (.46,K_(root=V(0,0,-.07),spine=(28,4,0),head=(12,0,0),rh=swing_hand((-.03,-.30,.44),-.86,-.5,(-.5,.4,-.2)),lh={'on_tool':.10,'elbow':V(.6,.4,0)})),
-    (.58,K_(root=V(0,0,-.07),spine=(26,4,0),head=(12,0,0),rh=swing_hand((-.03,-.29,.47),-.84,-.54,(-.5,.4,-.2)),lh={'on_tool':.10,'elbow':V(.6,.4,0)})),
-    (.80,K_(root=V(0,0,-.05),spine=(8,-2,0),head=(0,0,0),rh=swing_hand((-.07,-.12,.80),.2,1.,(-.6,.4,-.3)),lh={'on_tool':.10,'elbow':V(.6,.3,-.3)})),
-    ],rtool='axe',props=AXE_LOG,what='two-handed axe into a log (timber, clearing)')
+# Chop: felling a standing tree (Astra's Tree_B1 at its smallest game size),
+# one-handed, from his right side, driven by his whole upper body: wound
+# right with the axe cocked behind the right shoulder, unwinding left to whip
+# the blade into the trunk's front, holding, pulling free. One-handed on
+# purpose: with his short arms and round belly every two-handed side swing
+# put the upper hand's arm 5-8 cm through his body at contact. The axe is in
+# his right hand at the end of the haft, the game's own grip.
+# CampWorker.Stand puts him 1.1 m (game) from the trunk's centre: no offset.
+# Key poses found by search against crew_v15_anatomy (no clipping, joints in
+# range) with the blade exactly on the notch at contact.
+AXE_EDGE=V(0,.56,.13)*TOOL_SCALE                  # the edge's middle in the tool frame (Astra's manifest)
+AXE_SECOND=.11*TOOL_SCALE                          # second hand up the haft (two-handed tools)
+CHOP_BACK=0.
+CHOP_HEIGHT=.62                                    # the notch, above his feet: his chest, where the arm swings level
+TREE_D=.84                                         # 1.1 m (game) at his scale; matches crew_v15_mill.TREE_STAND
+TRUNK_R=.27                                        # the bark at his chest height (measured on the placed tree), less a 2 cm bite: see CHOP_BITE
+CHOP_BITE=.02
+CHOP_WIND,CHOP_HIT=-45,-10                         # upper-body twist (degrees, - is to his right): wound, at contact
+
+
+def axe_hand(edge_at,fist_near,swing,elbow):
+    """The right fist and axe frame that put the axe's edge at `edge_at`
+    (rig space), the fist as near `fist_near` as the axe allows, the edge
+    facing `swing`."""
+    swing=nrm(swing);F=Vector(fist_near);f=swing
+    for _ in range(12):
+        v=Vector(edge_at)-F
+        h=nrm(v-f*AXE_EDGE.z)                      # haft direction, the edge offset taken out
+        f=nrm(swing-h*swing.dot(h))                # edge facing the swing, square to the haft
+        F=Vector(edge_at)-h*AXE_EDGE.y-f*AXE_EDGE.z  # so the fist, haft and face agree exactly
+    return {'grip':F,'face':f,'haft':h,'elbow':V(*elbow)}
+
+
+def twist(sy):return dict(pelvis=(0,sy*.35,0),spine=None,head=(0,-sy*.75,0))
+
+
+def chop_keys():
+    T=V(0,-TREE_D,CHOP_HEIGHT)
+    notch=T+nrm((math.cos(math.radians(100)),math.sin(math.radians(100)),0))*(TRUNK_R-CHOP_BITE)   # the trunk's front, a touch to his right, the blade 2 cm into the bark
+    into=nrm((T-notch).normalized()+V(0,0,-.4))
+    feet=dict(rf=(-.03,.07,0,0),lf=(.03,-.07,0,0))
+    balance_top=hand((.36,-.30,.60),(.3,-.8,-.3),(0,0,1),(.9,.3,-.2))
+    balance_hit=hand((.38,-.10,.52),(.4,-.2,-1),(0,-1,0),(.8,.6,0))
+    G=Matrix.Rotation(math.radians(CHOP_WIND),3,'Z')
+    top=K_(root=V(0,0,-.03),**feet,pelvis=(0,CHOP_WIND*.35,0),spine=(4,CHOP_WIND*.65,-4),head=(4,-CHOP_WIND*.75,0),
+           rh=hand(tuple(G@V(-.36,-.12,.88)),G@nrm((-.3,-.3,.9)),G@nrm((-.3,.45,.85)),(-.9,.4,0)),lh=balance_top)
+    hit_rh=axe_hand(notch,V(-.3,-.3,.58),into,(-.9,.3,-.3))
+    hit=K_(root=V(0,0,-.05),**feet,pelvis=(0,CHOP_HIT*.4,0),spine=(10,CHOP_HIT,0),head=(8,-CHOP_HIT*.6,0),rh=hit_rh,lh=balance_hit)
+    pull=dict(hit_rh);pull['grip']=hit_rh['grip']-hit_rh['haft']*.07
+    out=K_(root=V(0,0,-.04),**feet,pelvis=(0,-6,0),spine=(8,-16,0),head=(6,8,0),rh=pull,lh=balance_hit)
+    def wound(sy,grip,face,haft,elbow,balance):     # a pose with the upper body twisted sy, hand targets turning with it
+        R=Matrix.Rotation(math.radians(sy),3,'Z')
+        return K_(root=V(0,0,-.04),**feet,pelvis=(0,sy*.35,0),spine=(6,sy*.65,-2),head=(6,-sy*.75,0),
+                  rh=hand(tuple(R@V(*grip)),R@nrm(face),R@nrm(haft),elbow),lh=balance)
+    balance_mid=hand((.36,-.22,.62),(.3,-.8,-.3),(0,0,1),(.9,.3,-.2))
+    down=wound(-22,(-.50,-.16,.70),(-.6,-.6,.4),(-.6,.7,.4),(-.9,.3,-.2),balance_mid)    # the axe swung out wide round his right
+    up=wound(-24,(-.40,-.10,.90),(-.5,.1,.85),(-.3,.4,.85),(-.9,.4,0),balance_mid)       # lifted back round his right, clear of his head
+    low=wound(-14,(-.46,-.18,.52),(-.8,-.4,-.4),(-.3,-.8,-.4),(-.8,.5,0),balance_mid)   # pulled free, the axe dropped to his right side
+    lift=wound(-18,(-.44,-.16,.74),(-.8,-.3,.5),(-.5,-.4,.75),(-.9,.1,-.4),balance_mid)  # halfway up, the axe coming upright
+    return [(0,top),(.16,top),(.30,down),(.40,hit),(.56,hit),(.66,out),(.76,low),(.88,down)]   # recovery retraces the swing's own path
+
+
+clip('Chop',1.3,chop_keys(),rtool='axe',what='felling a tree: a one-handed side swing from his right, the whole upper body unwinding into it')
+CLIPS['Chop']['env']='tree'
 
 PICK_ROCK=[('rock',(0,-.56,.07),(.34,.30,.16),'stone',0)]
 clip('Mine',1.1,[
@@ -666,8 +728,40 @@ def tool_parts(kind):
     return [((a*s,b*s,c*s),(x*s,y*s,z*s),col) for (a,b,c),(x,y,z),col in T[kind]]
 
 
+# Astra's worker tools v1 (approved 2026-09-30, art-staging/worker-tools-v1;
+# copies in crew-meshy-v15/anims/env/tools). Each FBX is one mesh in the game's
+# tool frame, exported as Blender (x,-z,y); read back here as game (x, y, z) =
+# Blender (x, z, -y), then scaled to his 1.30 m source. The Saw clip holds its
+# saw with the blade along the forearm, so that mesh turns +90 degrees about X
+# (blade +Y -> +Z, teeth +Z -> -Y): the game's saw needs the same turn.
+ASTRA_TOOLS={'axe':'Axe','hammer':'Hammer','saw':'Saw','hoe':'Hoe','paddle':'StirPaddle'}
+TOOL_DIR=Path(__file__).resolve().parents[2]/'crew-meshy-v15/anims/env/tools'
+_tool_cache={}
+
+
+def astra_tool(kind):
+    if kind in _tool_cache:return _tool_cache[kind]
+    before=set(bpy.data.objects);sc=bpy.context.scene;fps=(sc.render.fps,sc.render.fps_base)
+    bpy.ops.import_scene.fbx(filepath=str(TOOL_DIR/(ASTRA_TOOLS[kind]+'.fbx')))
+    sc.render.fps,sc.render.fps_base=fps
+    new=[o for o in bpy.data.objects if o not in before];src=[o for o in new if o.type=='MESH'][0]
+    me=src.data.copy();me.name='Tool_'+kind
+    mw=src.matrix_world.copy()
+    for o in new:bpy.data.objects.remove(o,do_unlink=True)
+    turn=Matrix.Rotation(math.radians(90),3,'X') if kind=='saw' else Matrix.Identity(3)
+    for v in me.vertices:
+        b=mw@v.co;g=Vector((b.x,b.z,-b.y))
+        v.co=(turn@g)*TOOL_SCALE
+    gc=me.color_attributes.get('GameColor')
+    if gc:gc.name='Col';me.color_attributes.active_color=gc;me.color_attributes.render_color_index=0
+    for p in me.polygons:p.use_smooth=False
+    _tool_cache[kind]=me;return me
+
+
 def attach_tool(rig,solver,kind,side):
-    o=box_mesh('Prop_'+kind,tool_parts(kind))
+    if kind in ASTRA_TOOLS:
+        o=bpy.data.objects.new('Prop_'+kind,astra_tool(kind));bpy.context.scene.collection.objects.link(o);o['preview_prop']=True
+    else:o=box_mesh('Prop_'+kind,tool_parts(kind))
     s=SIDE_SIGN[side];hb='hand'+side
     # tool frame in the rest pose: +Y thumb (forward), +Z along the fist, X = Y x Z
     Y=V(0,-1,0);Z=V(s,0,0);X=Y.cross(Z)

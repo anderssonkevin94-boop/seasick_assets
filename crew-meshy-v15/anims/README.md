@@ -111,7 +111,17 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   bench top 1.33 m -> 0.78 m, mallet and wedge removed, `Mallet_Tool` kept as an empty for
   `MillL1Import`; `env/bench-height.png`). He stands 10 cm behind `Worker_Stand` (baked into the
   root) so his belly clears the log. The saw's blade runs out of the fist along the forearm
-  (tool frame +Z), so the game's saw mesh (blade up +Y) needs turning -90 degrees about X.
+  (tool frame +Z), so the game's saw mesh (blade up +Y) needs turning +90 degrees about X (blade +Y to +Z, teeth to -Y).
+- **Chop is set at a tree** (`CLIPS['Chop']['env']='tree'`: Astra's `Tree_B1` at its smallest game
+  size, 9 m, the trunk 1.1 m (game) in front of him as `CampWorker.Stand` places a chopper). It is
+  **one-handed**, from his right side, the whole upper body winding 45 degrees right and unwinding
+  into the strike; the blade bites 2 cm into the bark at his chest. With his short arms and round
+  belly, every two-handed side swing put one arm through his body at contact. The axe is in his
+  right hand at the end of the haft, the game's own grip; the game's two-handed second-hand
+  placement (`VillagerActing`, 0.11 m up the haft) is not used by this clip. Chest height is lower
+  than the tree's own `Trunk_Target` (1.3 m at game size, above his shoulders).
+- Tools in the previews are **Astra's worker tools v1** (`env/tools/`, from
+  `art-staging/worker-tools-v1`), placed by the game's tool frame.
 - New tools the game doesn't have yet: pickaxe, mallet and chisel, quern peg, knife, arrow
   shaft, bow, basket, bucket, coiled line, rammer, linstock, oars (the clips work without them; they only show in the previews).
 - Walk, Carry and SickWalk need their playback speed matched to the move speed.

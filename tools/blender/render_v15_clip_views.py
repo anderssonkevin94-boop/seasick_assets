@@ -16,8 +16,8 @@ sc.world.color=(.37,.55,.68)
 g=A.box_mesh('ground',[((4,4,.02),(0,0,-.011),'soil')])
 g.data.color_attributes['Col'].data.foreach_set('color',[v for _ in range(len(g.data.loops)) for v in (*A.C.srgb('#7E9E62'),1)])
 for p in c['props']:A.box_mesh(p[0],[(p[2],p[1],p[3])])
-if c.get('env')=='mill':
-    env=MILL.load('cutting');stand=MILL.marker(env,'Worker_Stand');rig.location=stand;bpy.context.view_layer.update()
+if c.get('env'):
+    env,stand,_=MILL.load_env(c['env']);rig.location=stand;bpy.context.view_layer.update()
 else:stand=Vector((0,0,0))
 act=bpy.data.actions['Crew_'+name];rig.animation_data.action=act;sc.frame_set(0)
 if c['rtool']:A.attach_tool(rig,sv,c['rtool'],A.RIGHT)
@@ -28,7 +28,13 @@ views=[('3/4 his right',(-2.2,-2.4,1.3)),('side, his right',(-3,0,.7)),('front',
 if c.get('env')=='mill':      # game-camera angles from the front of the building, clear of its pillars
     views=[('game view, front 3/4',(-2.6,-4.2,3.0)),('front, eye level',(0,-3,.9)),('3/4 his right, low',(-2.4,-2.0,1.1)),('3/4 his left',(2.2,-2.4,1.4)),('above',(-.8,-1.6,3.2))]
     cd.ortho_scale=1.75
+if c.get('env')=='tree':      # the canopy hides him from above: side and low angles, the canopy left out of these
+    views=[('game view, his right',(-3.4,1.6,2.4)),('side, his right',(-3,.2,.8)),('behind him',(-.8,3,1.2)),('3/4 his left, low',(2.6,-.3,.9)),('game view, his left',(3.2,1.8,2.4))]
+    cd.ortho_scale=1.9
+    for o in env.values():
+        if 'Canopy' in o.name:o.hide_render=True
 n=int(act.frame_end);keys=[round(n*k/4) for k in range(4)] if c['loop'] else [round(n*k/4) for k in range(5)]
+if name=='Chop':keys=[0,round(n*.30),round(n*.40),round(n*.76)]   # wound, swinging, the bite, pulled free
 rows=[]
 for f in keys:
     sc.frame_set(f);row=[]

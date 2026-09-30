@@ -32,13 +32,14 @@ def main():
     # Worker_Stand is where he stands (the origin), under one prop__<Clip>__env node.
     import crew_v15_mill as MILL
     for name,c in A.CLIPS.items():
-        if c.get('env')!='mill':continue
-        env=MILL.load('cutting');stand=MILL.marker(env,'Worker_Stand')
+        if not c.get('env'):continue
+        env,stand,_=MILL.load_env(c['env'])
         for o in list(env.values()):
-            if o.hide_render:bpy.data.objects.remove(o,do_unlink=True)
+            if o.hide_render or 'Canopy' in o.name:bpy.data.objects.remove(o,do_unlink=True);env={k:v for k,v in env.items() if v!=o}   # a tree's canopy would hide him
         root=bpy.data.objects.new(f'prop__{name}__env',None);bpy.context.scene.collection.objects.link(root)
-        mill=bpy.data.objects['LumberMill_C_Level_1']
-        mill.parent=root;root.location=-stand;count+=1
+        for o in env.values():
+            if o.parent is None:o.parent=root
+        root.location=-stand;count+=1
     for o in bpy.data.objects:
         if o.type=='MESH':
             for p in o.data.polygons:p.use_smooth=False
@@ -78,7 +79,7 @@ def write_page():
     info=json.loads((A.OUT/'clips.json').read_text())
     clips={k:{'label':LABEL.get(k,k),'where':WHERE.get(k,''),'what':v['what'][:1].upper()+v['what'][1:]+'.',
               'seconds':v['seconds'],'frames':v['frames'],'loop':v['loop'],
-              'rtool':TOOLS.get(v['tool_right_hand'],v['tool_right_hand']),'ltool':TOOLS.get(v['held_left_hand'],v['held_left_hand'])}
+              'rtool':TOOLS.get(v['tool_right_hand'],v['tool_right_hand']),'ltool':TOOLS.get(v['held_left_hand'],v['held_left_hand']),'env':A.CLIPS[k].get('env')}
            for k,v in info.items()}
     groups=[{'name':n,'clips':[c for c in cs if c in clips]} for n,cs in GROUPS]
     missing=set(clips)-{c for g in groups for c in g['clips']}

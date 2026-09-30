@@ -61,3 +61,40 @@ def load(state='cutting',logs=3,planks=3,fbx=None):
 
 def marker(objs,name):
     return objs[name].matrix_world.translation.copy()
+
+
+# ---------------------------------------------------------------- a tree
+TREE_FBX=ROOT/'crew-meshy-v15/anims/env/Tree_B1.fbx'   # Astra's Tree_B1 (art-staging/tree-b1-astra-v1)
+TREE_STAND=1.1*SCALE          # CampWorker.Stand: a chopper stands 1.1 m (game) from the trunk's centre
+TREE_GAME_SCALE=9.0/6.94      # the game grows trees 9-14 m (WorldScale.TreeMin/Max); Tree_B1 is 6.94 m: the smallest in-game size
+TRUNK_R=.30*TREE_GAME_SCALE*SCALE   # trunk radius at his waist and chest (0.30 m on the 6.94 m model)
+TRUNK_CENTRE=(-.015,0.)       # the trunk's centre in the tree's own frame (game metres)
+
+
+def load_tree():
+    """Astra's tree at his scale, its trunk TREE_STAND in front of him (-Y),
+    where CampWorker.Stand puts a chopper. Returns {name: object}."""
+    before=set(bpy.data.objects);sc=bpy.context.scene;fps=(sc.render.fps,sc.render.fps_base)
+    bpy.ops.import_scene.fbx(filepath=str(TREE_FBX))
+    sc.render.fps,sc.render.fps_base=fps
+    objs={o.name.split('.')[0]:o for o in bpy.data.objects if o not in before}
+    for o in objs.values():
+        if o.parent is None:
+            o.scale=(SCALE*TREE_GAME_SCALE,)*3
+            o.location=(-TRUNK_CENTRE[0]*SCALE*TREE_GAME_SCALE,-TREE_STAND-TRUNK_CENTRE[1]*SCALE*TREE_GAME_SCALE,0)
+        if o.type=='MESH':
+            me=o.data;col=me.color_attributes.get('Col')
+            if col:me.color_attributes.active_color=col;me.color_attributes.render_color_index=0
+            for p in me.polygons:p.use_smooth=False
+    bpy.context.view_layer.update()
+    return objs
+
+
+def load_env(kind):
+    """(objects, where he stands, props his body must stay out of)."""
+    if kind=='mill':
+        objs=load('cutting');return objs,marker(objs,'Worker_Stand'),[objs['Bench_Cutting']]
+    if kind=='tree':
+        from mathutils import Vector
+        objs=load_tree();return objs,Vector((0,0,0)),[]
+    raise ValueError(kind)

@@ -9,8 +9,8 @@ ck=N.Checker(body,rig,A.K)
 for name in sys.argv[sys.argv.index('--')+1:]:
     c=A.CLIPS[name];rig.animation_data.action=None;bpy.context.scene.frame_set(0)
     props=[A.box_mesh(p[0],[(p[2],p[1],p[3])]) for p in c['props']]
-    if c.get('env')=='mill':
-        env=MILL.load('cutting');rig.location=MILL.marker(env,'Worker_Stand');props.append(env['Bench_Cutting'])
+    if c.get('env'):
+        env,at,extra=MILL.load_env(c['env']);rig.location=at;props+=extra
     else:rig.location=(0,0,0)
     bpy.context.view_layer.update()
     tools=[]

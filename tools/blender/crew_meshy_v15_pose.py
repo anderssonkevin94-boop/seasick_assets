@@ -59,7 +59,12 @@ def weights_for(label,p):
         t=smooth((ax-.225)/.05)                           # elbow at x .25
         if ax>.355:t2=smooth((ax-.355)/.03);return {f:1-t2,h:t2} if t2>0 else {f:1}
         return {u:1-t,f:t} if 0<t<1 else ({f:1} if t>=1 else {u:1})
-    if label=='sleeve':return {u:1}
+    if label=='sleeve':
+        # The sleeve's underside by the armpit stays partly with the torso, as
+        # cloth does: glued to the upper arm, it swung into the chest whenever
+        # the arms came forward together (axe, rope, oars).
+        a=.55*smooth((.515-p.z)/.05)*smooth((.23-ax)/.07)
+        return {u:1-a,'spine':a} if a>1e-3 else {u:1}
     if label=='tunic':
         w={'spine':1.}
         if p.z<.3:b=smooth((.3-p.z)/.06);w={'spine':1-b,'pelvis':b}
