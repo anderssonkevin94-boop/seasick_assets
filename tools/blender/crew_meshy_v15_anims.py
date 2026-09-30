@@ -360,6 +360,80 @@ clip('Hunt',2.2,[
     ],ltool='bow',what='hunting: draw, loose, reach back to the quiver for the next arrow')
 
 
+# --- seasickness (the game's own mechanic: CrewAgent.Sickness01)
+def belly(side,lift=0.,push=0.):
+    """A fist pressed to his belly (he must hunch a little to reach it)."""
+    s=SIDE_SIGN[side]
+    return hand((s*.10,-.28-push,.58+lift),(-s,-.1,-.25),(0,0,1),(s*.9,.4,-.2))
+
+
+LOOSE_L=hand((.36,-.02,.42),(.3,-.1,-1),(0,-1,0),(.6,.7,0))
+
+
+def sick_sway(t):
+    a=t*2*math.pi;b=a-.9                                   # the head lags the body
+    return K_(root=V(.022*math.sin(a),0,-.02-.006*math.cos(2*a)),yaw=3*math.sin(a),
+              pelvis=(0,0,-3*math.sin(a)),spine=(14+3*math.cos(2*a),0,6*math.sin(a)),
+              head=(12+4*math.cos(2*b),-6*math.sin(b),14*math.sin(b)),
+              rh=belly(RIGHT,.01*math.sin(2*a)),
+              lh=hand((.36+.03*math.sin(a),-.02,.42),(.3,-.1,-1),(0,-1,0),(.6,.7,0)))
+
+
+def sick_walk(t):
+    q=walk_pose(t,arms=False);a=t*2*math.pi;c=math.cos(a)
+    q['rf']=(q['rf'][0],q['rf'][1]*.6,q['rf'][2]*.7,q['rf'][3]*.6)
+    q['lf']=(q['lf'][0],q['lf'][1]*.6,q['lf'][2]*.7,q['lf'][3]*.6)
+    q['root']=q['root']+V(.028*math.sin(a+.6),0,-.02)       # lurching side to side
+    q['spine']=(16,-3*c,7*math.sin(a+.6));q['pelvis']=(0,4*c,-4*math.sin(a+.6))
+    q['head']=(14,6*math.sin(a),-12*math.sin(a))
+    q['rh']=belly(RIGHT,.012*c)
+    q['lh']=hand((.38+.04*math.sin(a+.6),-.05-.08*c,.44),(.35,-.2*c,-1),(0,-1,0),(.7,.6,0))
+    return q
+
+
+def sick_clutch(t):
+    a=t*2*math.pi;h=max(0,math.sin(a))**3                    # a cramp once a cycle
+    return K_(root=V(0,.015*h,-.05-.04*h),spine=(28+10*h,0,0),head=(18+10*h,0,0),
+              rh=belly(RIGHT,-.02*h,.01),lh=belly(LEFT,-.02*h,.01))
+
+
+RAIL_SICK=[('rail',(0,-.36,.58),(.9,.06,.05),'wood',0),('rail_post',(-.40,-.36,.29),(.05,.05,.58),'wood',0),
+           ('rail_post',(.40,-.36,.29),(.05,.05,.58),'wood',0)]
+ON_RAIL=lambda side:hand((SIDE_SIGN[side]*.17,-.35,.64),(0,-.4,-1),(0,-1,0),(SIDE_SIGN[side]*.9,.3,0))
+
+
+def sick_rail(t):
+    # two heaves a cycle, then a sag
+    h=0.
+    for c0 in (.18,.42):h=max(h,math.exp(-((t-c0)/.07)**2))
+    return K_(root=V(0,.07+.02*h,-.03-.01*h),spine=(36+10*h,0,0),head=(18+16*h,0,0),rh=ON_RAIL(RIGHT),lh=ON_RAIL(LEFT))
+
+
+KNEEL=dict(root=V(0,.02,-.23),rf=(0,.17,-.03,150),lf=(0,.17,-.03,150))
+PUDDLE=[('puddle',(0,-.40,.004),(.26,.20,.008),'sick',0)]
+
+
+def sick_kneel(t):
+    h=0.
+    for c0 in (.25,.45):h=max(h,math.exp(-((t-c0)/.08)**2))
+    return K_(**KNEEL,spine=(48+16*h,0,0),head=(24+20*h,0,0),
+              rh=hand((-.15,-.33,.07),(0,-.2,-1),(0,-1,0),(-.8,.2,.2)),lh=hand((.15,-.33,.07),(0,-.2,-1),(0,-1,0),(.8,.2,.2)))
+
+
+clip('SickSway',3.0,sick_sway,what='queasy: swaying, a fist on his stomach, head lolling')
+clip('SickWalk',1.2,sick_walk,what='queasy walk: short lurching steps, a fist on his stomach')
+clip('SickClutch',1.6,sick_clutch,what='hunched over, both fists on his stomach, a cramp each cycle')
+clip('SickRail',1.5,sick_rail,props=RAIL_SICK,what='leaning over the rail, heaving twice')
+clip('SickCollapse',1.8,[
+    (0,sick_sway(0)),
+    (.25,K_(root=V(.04,0,-.03),spine=(16,0,10),head=(14,0,16),rh=belly(RIGHT),lh=hand((.44,-.10,.52),(.8,-.2,-.6),(0,-1,0),(.8,.3,-.2)))),
+    (.55,K_(root=V(.02,.01,-.13),rf=(0,.06,0,20),lf=(0,.08,0,30),spine=(30,0,4),head=(20,0,8),rh=belly(RIGHT),lh=hand((.30,-.18,.30),(.3,-.4,-1),(0,-1,0),(.8,.3,0)))),
+    (.80,K_(**KNEEL,spine=(40,0,0),head=(20,0,0),rh=hand((-.15,-.32,.08),(0,-.2,-1),(0,-1,0),(-.8,.2,.2)),lh=hand((.15,-.32,.08),(0,-.2,-1),(0,-1,0),(.8,.2,.2)))),
+    (1,sick_kneel(0)),
+    ],loop=False,what='staggers, knees buckle, down on hands and knees (one-shot; then SickKneel)')
+clip('SickKneel',2.0,sick_kneel,props=PUDDLE,what='on hands and knees, heaving')
+
+
 def reverse(keys):return [(1-t,q) for t,q in keys]
 
 
@@ -369,7 +443,7 @@ clip('SetDown',1.3,reverse(CLIPS['PickUp']['keys']),loop=False,rtool='sack',what
 # ---------------------------------------------------------------- props
 COLOURS={'wood':'#8A5A36','wood_light':'#C09060','wood_bark':'#6B4A30','iron':'#5E6166','stone':'#9C968C',
          'stone_light':'#B8B2A6','leaf':'#4F8A3A','berry':'#B03A48','soil':'#6A4A30','hot':'#F07A28',
-         'stew':'#B8763A','fish':'#9FB4C0','rope':'#C8B080','steel':'#B8BEC6','string':'#EDE6D4'}
+         'stew':'#B8763A','fish':'#9FB4C0','sick':'#9DB04A','rope':'#C8B080','steel':'#B8BEC6','string':'#EDE6D4'}
 
 
 def box_mesh(name,parts):

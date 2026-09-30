@@ -1,4 +1,4 @@
-# Task animations (v15 deckhand)
+# Task and seasickness animations (v15 deckhand)
 
 One animation per building job and per camp task, on the game's 16-bone deckhand skeleton,
 made with `../../tools/blender/crew_meshy_v15_anims.py`. **Not wired into Unity**; that's
@@ -7,6 +7,8 @@ for the Unity agent (notes below).
 ![building jobs](overview-buildings.png)
 
 ![basics and tasks](overview-basics-and-tasks.png)
+
+![seasickness](overview-seasick.png)
 
 Each clip also has an animated preview, `<Clip>.gif`, and a six-frame strip, `<Clip>-strip.png`.
 
@@ -33,6 +35,12 @@ Each clip also has an animated preview, `<Clip>.gif`, and a six-frame strip, `<C
 | `Crew_Fisher` | Fishing hut (fisher) | 1.2 s | knife | - | fishing hut: gutting the catch on the prep bench |
 | `Crew_Hunt` | hunting | 2.2 s | - | bow | hunting: draw, loose, reach back to the quiver for the next arrow |
 | `Crew_SetDown` | dropping a load | 1.3 s, one-shot | sack | - | lower the load to the ground and straighten (one-shot) |
+| `Crew_SickSway` | seasick, standing | 3.0 s | - | - | queasy: swaying, a fist on his stomach, head lolling |
+| `Crew_SickWalk` | seasick, moving | 1.2 s | - | - | queasy walk: short lurching steps, a fist on his stomach (in place) |
+| `Crew_SickClutch` | badly seasick | 1.6 s | - | - | hunched over, both fists on his stomach, a cramp each cycle |
+| `Crew_SickRail` | seasick at the rail | 1.5 s | - | - | leaning over the rail, heaving twice |
+| `Crew_SickCollapse` | worst seasickness | 1.8 s, one-shot | - | - | staggers, knees buckle, down on hands and knees; then `Crew_SickKneel` |
+| `Crew_SickKneel` | worst seasickness | 2.0 s | - | - | on hands and knees, heaving |
 
 All clips are 30 fps, and every loop's last frame matches its first. Walk and Carry are in place
 (the game moves him); the stride is about 0.44 m a cycle at this 1.30 m source size.
@@ -55,9 +63,9 @@ clips.
 
 | File | What |
 |---|---|
-| `deckhand-v15-anims.fbx` | Rig + `CREW_Skin` / `CREW_Cloth` (skin exported white) + all clips as separate takes |
+| `deckhand-v15-anims.fbx` | Rig + `CREW_Skin` / `CREW_Cloth` (skin exported white) + all 25 clips as separate takes |
 | `clips.json` | Takes, lengths, loop flags, which tool goes in which hand |
-| `<Clip>.gif`, `<Clip>-strip.png`, `overview-*.png` | Previews |
+| `<Clip>.gif`, `<Clip>-strip.png`, `overview-*.png` | Previews (overview sheets: building jobs, basics and tasks, seasickness) |
 | `../../tools/blender/crew_meshy_v15_anims.py` | Clip definitions, IK solver, bake and export |
 | `../../tools/blender/render_v15_anims.py` | Preview renders |
 | `../../tools/blender/source/crew-meshy-v15-anims.blend` | Editable source with every action |
@@ -80,6 +88,10 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
     hunting → Hunt
 - New tools the game doesn't have yet: pickaxe, mallet and chisel, quern peg, knife, arrow
   shaft, bow, basket (the clips work without them; they only show in the previews).
-- Walk and Carry need their playback speed matched to the move speed.
+- Walk, Carry and SickWalk need their playback speed matched to the move speed.
+- Seasickness: `CrewAgent.Sickness01` could pick SickSway / SickWalk from about 0.4, SickClutch
+  from about 0.7 and SickCollapse then SickKneel near 1; SickRail when a sick hand is sent to the
+  rail. The vomit itself (a splash or particles) is for the game to add; the preview puddle is
+  a prop.
 - **Not yet tested in Unity:** the clips on the imported rig, tool placement on the real tool
   meshes, and blending between clips.

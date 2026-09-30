@@ -50,9 +50,15 @@
       "Crew_Quarry",
       "Crew_Saw",
       "Crew_SetDown",
+      "Crew_SickClutch",
+      "Crew_SickCollapse",
+      "Crew_SickKneel",
+      "Crew_SickRail",
+      "Crew_SickSway",
+      "Crew_SickWalk",
       "Crew_Smith",
       "Crew_Walk"
     ],
-    "takes_that_move": 19
+    "takes_that_move": 25
   }
 ]
