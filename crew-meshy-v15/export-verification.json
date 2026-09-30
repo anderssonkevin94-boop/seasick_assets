@@ -33,14 +33,20 @@
     "max_influences": 2,
     "rig_moves_mesh": 0.18,
     "takes": [
+      "Crew_Bail",
       "Crew_Build",
       "Crew_Carry",
       "Crew_Chop",
       "Crew_Cook",
+      "Crew_DeckBrace",
       "Crew_Farm",
       "Crew_Fisher",
       "Crew_Fletcher",
       "Crew_Forage",
+      "Crew_Gangway",
+      "Crew_GunFire",
+      "Crew_GunRam",
+      "Crew_HaulLine",
       "Crew_Hunt",
       "Crew_Idle",
       "Crew_Lookout",
@@ -48,6 +54,8 @@
       "Crew_Mine",
       "Crew_PickUp",
       "Crew_Quarry",
+      "Crew_RailGrip",
+      "Crew_Row",
       "Crew_Saw",
       "Crew_SetDown",
       "Crew_SickClutch",
@@ -57,8 +65,10 @@
       "Crew_SickSway",
       "Crew_SickWalk",
       "Crew_Smith",
+      "Crew_Soaked",
+      "Crew_ThrowLine",
       "Crew_Walk"
     ],
-    "takes_that_move": 25
+    "takes_that_move": 35
   }
 ]

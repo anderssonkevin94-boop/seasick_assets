@@ -56,12 +56,12 @@ def check(path):
             rig.animation_data.action=a;f0,f1=a.frame_range
             bpy.context.scene.frame_set(int(f0));p0=[b.matrix.copy() for b in rig.pose.bones]
             far=0.
-            for k in range(1,6):                         # several frames: some loops pass their start again mid-way
-                bpy.context.scene.frame_set(int(f0+(f1-f0)*k/6))
+            for k in range(1,8):                         # several uneven frames: some loops pass their start again mid-way
+                bpy.context.scene.frame_set(int(f0+(f1-f0)*k/7.3))
                 far=max(far,max((x.translation-b.matrix.translation).length for x,b in zip(p0,rig.pose.bones)))
             if far>.01:moving+=1
         report['takes']=sorted(a.name.split('|')[-1] for a in takes);report['takes_that_move']=moving
-        assert moving==len(takes)
+        assert moving==len(takes),[a.name for a in takes]
     return report
 
 

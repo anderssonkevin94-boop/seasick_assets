@@ -140,6 +140,9 @@ class Solver:
         if 'on_tool' in l:                          # second hand on the right hand's haft
             c,haft,face=self.fist(RIGHT)
             self.arm(LEFT,c+haft*l['on_tool'],face,haft,G@Vector(l['elbow']))
+        elif 'tool_pt' in l:                        # second hand anywhere on the held tool (tool frame, metres)
+            c,haft,face=self.fist(RIGHT);x,y,z=l['tool_pt'];X=haft.cross(face)
+            self.arm(LEFT,c+X*x+haft*y+face*z,G@Vector(l['face']),G@Vector(l['haft']),G@Vector(l['elbow']))
         else:
             self.arm(LEFT,G@Vector(l['grip']),G@Vector(l['face']),G@Vector(l['haft']),G@Vector(l['elbow']))
 
@@ -434,6 +437,120 @@ clip('SickCollapse',1.8,[
 clip('SickKneel',2.0,sick_kneel,props=PUDDLE,what='on hands and knees, heaving')
 
 
+# --- aboard ship
+def deck_brace(t):
+    a=t*2*math.pi;roll=math.sin(a)                         # the deck rolls under him
+    return K_(root=V(.03*roll,0,-.035-.012*math.cos(2*a)),rf=(-.04,0,0,0),lf=(.04,0,0,0),
+              pelvis=(0,0,4*roll),spine=(5,0,-7*roll),head=(0,4*math.sin(a+1),5*roll),
+              rh=hand((-.40+.02*roll,-.06,.50),(-.4,-.2,-1),(0,-1,0),(-.7,.6,0)),
+              lh=hand((.40+.02*roll,-.06,.50),(.4,-.2,-1),(0,-1,0),(.7,.6,0)))
+
+
+def rail_grip(t):
+    a=t*2*math.pi;j=math.exp(-((t-.55)/.06)**2)             # a sea slams him once a cycle
+    return K_(root=V(0,.05+.03*math.sin(a)+.04*j,-.06-.02*j),spine=(22+8*math.sin(a)+10*j,0,4*math.sin(a)),
+              head=(20+6*j,0,-4*math.sin(a)),rh=ON_RAIL(RIGHT),lh=ON_RAIL(LEFT))
+
+
+SIDE_RAIL=[('rail',(-.46,-.10,.58),(.06,1.0,.05),'wood',0),('rail_post',(-.46,-.50,.29),(.05,.05,.58),'wood',0),
+           ('rail_post',(-.46,.30,.29),(.05,.05,.58),'wood',0),('bilge',(0,-.36,.006),(.36,.30,.012),'water',0)]
+BUCKET_L=lambda f,h,e=(.7,.4,0):{'tool_pt':(0,0,.20),'face':V(*f),'haft':V(*h),'elbow':V(*e)}
+clip('Bail',1.6,[
+    (0,K_(root=V(0,0,-.15),spine=(44,0,0),head=(20,0,0),rh=hand((-.06,-.30,.30),(0,-.3,-1),(1,0,0),(-.7,.4,0)),lh=BUCKET_L((0,-.3,-1),(-1,0,0)))),
+    (.22,K_(root=V(0,0,-.15),spine=(46,0,0),head=(22,0,0),rh=hand((-.06,-.32,.26),(0,-.1,-1),(1,0,0),(-.7,.4,0)),lh=BUCKET_L((0,-.1,-1),(-1,0,0)))),
+    (.45,K_(root=V(0,0,-.05),spine=(12,-20,0),head=(4,-20,0),rh=hand((-.10,-.24,.56),(0,-1,.2),(1,0,0),(-.7,.4,-.2)),lh=BUCKET_L((-.2,-1,.2),(-1,0,0)))),
+    (.62,K_(root=V(-.03,0,-.03),spine=(4,-55,6),head=(0,-35,0),rh=hand((-.32,-.14,.70),(-1,-.1,.5),(0,-1,0),(-.6,.6,-.3)),lh=BUCKET_L((-1,-.1,.2),(0,-1,0),(.6,.2,-.4)))),
+    (.74,K_(root=V(-.03,0,-.03),spine=(4,-55,6),head=(0,-35,0),rh=hand((-.33,-.14,.72),(-1,-.2,.9),(0,-1,0),(-.6,.6,-.3)),lh=BUCKET_L((-1,-.2,.6),(0,-1,0),(.6,.2,-.4)))),
+    ],rtool='bucket',props=SIDE_RAIL,what='scooping bilge water and tossing it over the side')
+
+ROPE=[('rope',(-.02,-.40,.47),(.025,1.6,.025),'rope',0)]
+
+
+def rope_hand(side,t):
+    """Hand over hand: grip at the front, pull back while gripping, let go
+    and reach forward again, half a cycle apart for the two hands."""
+    ph=(t+(0 if side==RIGHT else .5))%1;s=SIDE_SIGN[side]
+    if ph<.55:y=-.34+.30*(ph/.55);lift=0.                    # pulling
+    else:u=(ph-.55)/.45;y=-.04-.30*u;lift=.06*math.sin(u*math.pi)
+    z=.40+(y+1.2)*.075+lift
+    return hand((-.02+s*.02,y,z),(s*-.5,0,-1),(0,-1,0),(s*.8,.4,-.3))
+
+
+def haul(t):
+    a=t*2*math.pi
+    return K_(root=V(0,.05,-.06),rf=(0,-.07,0,0),lf=(0,.09,0,0),spine=(-6+3*math.sin(2*a),0,0),head=(8,0,0),
+              rh=rope_hand(RIGHT,t),lh=rope_hand(LEFT,t))
+
+
+clip('HaulLine',1.2,haul,props=ROPE,what='hauling a swimmer in, hand over hand on the line')
+clip('ThrowLine',1.4,[
+    (0,K_(spine=(4,0,0),rh=hand((-.30,-.10,.50),(-.2,-.3,-1),(0,-1,0),(-.7,.5,0)))),
+    (.35,K_(root=V(0,.03,-.04),spine=(-6,-25,0),head=(0,-10,0),rh=hand((-.30,.14,.46),(-.3,.6,-.6),(0,-1,0),(-.8,.2,-.2)))),
+    (.55,K_(root=V(0,-.02,-.05),spine=(14,15,0),head=(0,5,0),rh=hand((-.12,-.38,.78),(0,-1,.4),(0,0,1),(-.7,.2,-.4)))),
+    (.70,K_(root=V(0,-.02,-.05),spine=(18,18,0),head=(4,6,0),rh=hand((-.08,-.40,.66),(0,-1,-.1),(0,0,1),(-.7,.2,-.3)))),
+    (1,K_(spine=(6,6,0),head=(2,4,0))),
+    ],loop=False,rtool='coil',what='throwing the rescue line over the rail (one-shot; then HaulLine)')
+
+GUN_RAM=[('carriage',(.62,-.02,.10),(.60,.30,.20),'wood',0),('barrel',(.60,-.02,.30),(.70,.15,.15),'iron',0)]
+RAM_R=lambda x:hand((x,-.20,.42),(0,-1,0),(1,0,0),(-.8,.3,-.2))
+RAM_L={'on_tool':.20,'elbow':V(.6,.5,-.2)}
+clip('GunRam',1.5,[
+    (0,K_(root=V(0,0,-.05),spine=(14,24,0),head=(6,20,0),rh=RAM_R(-.20),lh=RAM_L)),
+    (.25,K_(root=V(.02,0,-.06),spine=(20,28,0),head=(6,22,0),rh=RAM_R(-.02),lh=RAM_L)),
+    (.45,K_(root=V(0,0,-.05),spine=(14,24,0),head=(6,20,0),rh=RAM_R(-.18),lh=RAM_L)),
+    (.70,K_(root=V(.02,0,-.06),spine=(20,28,0),head=(6,22,0),rh=RAM_R(-.02),lh=RAM_L)),
+    ],rtool='rammer',props=GUN_RAM,what='gunner: ramming the charge home, twice (gun on his left, muzzle beside him)')
+GUN_FIRE=[('carriage',(.34,-.20,.10),(.30,.60,.20),'wood',0),('barrel',(.34,-.28,.30),(.15,.70,.15),'iron',0)]
+TOUCH=nrm((.46,.29,-.28))
+clip('GunFire',1.8,[
+    (0,K_(spine=(4,10,0),head=(0,20,0),rh=hand((-.20,-.10,.60),(0,-.4,-1),TOUCH,(-.7,.4,-.2)))),
+    (.30,K_(root=V(.02,0,-.04),spine=(18,26,0),head=(10,30,0),rh=hand((-.12,-.25,.66),nrm(TOUCH.cross(V(0,0,1))),TOUCH,(-.7,.4,-.3)))),
+    (.42,K_(root=V(.02,0,-.04),spine=(18,26,0),head=(10,30,0),rh=hand((-.12,-.25,.66),nrm(TOUCH.cross(V(0,0,1))),TOUCH,(-.7,.4,-.3)))),
+    (.52,K_(root=V(-.04,.05,-.06),spine=(-6,-20,-8),head=(-10,-45,-10),rh=hand((-.30,-.02,.64),(-.3,-.3,-1),TOUCH,(-.8,.4,-.2)),
+            lh=hand((.20,-.22,.80),(-.5,-.5,.8),(0,0,1),(.8,.2,-.2)))),
+    (.75,K_(root=V(-.03,.04,-.05),spine=(-2,-12,-4),head=(-4,-30,-4),rh=hand((-.28,-.04,.60),(-.3,-.3,-1),TOUCH,(-.8,.4,-.2)),
+            lh=hand((.24,-.18,.66),(-.3,-.6,.6),(0,0,1),(.8,.3,-.2)))),
+    (1,K_(spine=(4,10,0),head=(0,20,0),rh=hand((-.20,-.10,.60),(0,-.4,-1),TOUCH,(-.7,.4,-.2)))),
+    ],loop=False,rtool='linstock',props=GUN_FIRE,what='gunner: touching off the gun with the linstock and flinching from the blast (one-shot)')
+
+BOAT=[('hull',(0,-.10,.04),(.76,1.2,.08),'wood',0),('thwart',(0,.12,.15),(.70,.14,.04),'wood_light',0),
+      ('gunwale',(-.38,-.10,.20),(.05,1.2,.28),'wood',0),('gunwale',(.38,-.10,.20),(.05,1.2,.28),'wood',0)]
+SEAT=dict(root=V(0,.02,-.25),rf=(0,-.20,.0,-10),lf=(0,-.20,.0,-10))
+OAR_R=lambda y,z:hand((-.18,y,z),(0,-1,0),(1,0,.35),(-.8,.4,0))
+OAR_L=lambda y,z:hand((.18,y,z),(0,-1,0),(-1,0,.35),(.8,.4,0))
+clip('Row',1.7,[
+    (0,K_(**SEAT,spine=(26,0,0),head=(-12,0,0),rh=OAR_R(-.30,.40),lh=OAR_L(-.30,.40))),
+    (.45,K_(**SEAT,spine=(-16,0,0),head=(10,0,0),rh=OAR_R(-.02,.44),lh=OAR_L(-.02,.44))),
+    (.60,K_(**SEAT,spine=(-18,0,0),head=(12,0,0),rh=OAR_R(-.02,.38),lh=OAR_L(-.02,.38))),
+    (.85,K_(**SEAT,spine=(10,0,0),head=(-4,0,0),rh=OAR_R(-.22,.36),lh=OAR_L(-.22,.36))),
+    ],rtool='oar',ltool='oar',props=BOAT,what='rowing the jolly boat: reach, pull, feather, return')
+
+
+def gangway(t):
+    q=walk_pose(t,arms=False);a=t*2*math.pi
+    q['rf']=(.05,q['rf'][1]*.7,q['rf'][2],q['rf'][3]);q['lf']=(-.05,q['lf'][1]*.7,q['lf'][2],q['lf'][3])   # one foot before the other
+    w=math.sin(a*.5+.3)
+    q['root']=q['root']+V(.02*w,0,-.01);q['spine']=(6,0,-9*w);q['head']=(10,0,6*w)
+    q['rh']=hand((-.44,-.06,.60+.05*w),(-1,-.1,-.2),(0,-1,0),(-.6,.4,.3))
+    q['lh']=hand((.44,-.06,.60-.05*w),(1,-.1,-.2),(0,-1,0),(.6,.4,.3))
+    return q
+
+
+clip('Gangway',2.0,gangway,props=[('plank',(0,-.1,.01),(.18,1.8,.02),'wood_light',0)],what='balancing along the gangway, arms out (in place; two strides a cycle)')
+
+
+def soaked(t):
+    a=t*2*math.pi*6;j=math.sin(a);br=math.sin(t*2*math.pi)     # shiver on top of slow, shaky breaths
+    return K_(root=V(0,0,-.03-.01*br),spine=(16+4*br,0,2.5*j),head=(12+3*br,0,3*j),
+              rh=hand((.06,-.27,.62+.004*j),(1,.1,-.3),(0,0,1),(-.9,.3,-.3)),
+              lh=hand((-.06,-.25,.66+.004*j),(-1,.1,-.3),(0,0,1),(.9,.3,-.3)))
+
+
+clip('Soaked',1.0,soaked,props=[('drip',(0,-.05,.004),(.34,.30,.008),'water',0)],what='after a rescue: arms wrapped round himself, shivering')
+clip('DeckBrace',4.0,deck_brace,what='at his post: braced wide, riding the roll of the deck')
+clip('RailGrip',1.8,rail_grip,props=RAIL_SICK,what='gripping the rail through a warning while a sea slams him')
+
+
 def reverse(keys):return [(1-t,q) for t,q in keys]
 
 
@@ -443,7 +560,7 @@ clip('SetDown',1.3,reverse(CLIPS['PickUp']['keys']),loop=False,rtool='sack',what
 # ---------------------------------------------------------------- props
 COLOURS={'wood':'#8A5A36','wood_light':'#C09060','wood_bark':'#6B4A30','iron':'#5E6166','stone':'#9C968C',
          'stone_light':'#B8B2A6','leaf':'#4F8A3A','berry':'#B03A48','soil':'#6A4A30','hot':'#F07A28',
-         'stew':'#B8763A','fish':'#9FB4C0','sick':'#9DB04A','rope':'#C8B080','steel':'#B8BEC6','string':'#EDE6D4'}
+         'stew':'#B8763A','fish':'#9FB4C0','sick':'#9DB04A','water':'#4E86A8','rope':'#C8B080','steel':'#B8BEC6','string':'#EDE6D4'}
 
 
 def box_mesh(name,parts):
@@ -483,7 +600,12 @@ def tool_parts(kind):
        'bow':[((.03,.95,.03),(0,0,.0),'wood'),((.004,.93,.004),(0,0,-.12),'string')],
        'basket':[((.26,.26,.20),(0,0,.20),'rope')],
        'carrylog':[((.16,.80,.16),(.14,0,-.02),'wood_bark')],
-       'sack':[((.30,.26,.30),(.18,0,.03),'rope')]}
+       'sack':[((.30,.26,.30),(.18,0,.03),'rope')],
+       'bucket':[((.26,.26,.28),(0,0,.24),'wood'),((.27,.27,.03),(0,0,.12),'iron')],
+       'coil':[((.26,.06,.26),(0,0,.12),'rope')],
+       'rammer':[((.035,1.1,.035),(0,.45,0),'wood'),((.08,.10,.08),(0,1.0,0),'rope')],
+       'linstock':[((.03,.9,.03),(0,.35,0),'wood'),((.05,.06,.05),(0,.82,0),'hot')],
+       'oar':[((.04,1.0,.04),(0,-.45,0),'wood'),((.03,.30,.15),(0,-.92,0),'wood_light')]}
     return [((a*s,b*s,c*s),(x*s,y*s,z*s),col) for (a,b,c),(x,y,z),col in T[kind]]
 
 

@@ -215,6 +215,96 @@
     "tool_right_hand": null,
     "held_left_hand": null
   },
+  "Bail": {
+    "take": "Crew_Bail",
+    "seconds": 1.6,
+    "frames": 49,
+    "loop": true,
+    "what": "scooping bilge water and tossing it over the side",
+    "tool_right_hand": "bucket",
+    "held_left_hand": null
+  },
+  "HaulLine": {
+    "take": "Crew_HaulLine",
+    "seconds": 1.2,
+    "frames": 37,
+    "loop": true,
+    "what": "hauling a swimmer in, hand over hand on the line",
+    "tool_right_hand": null,
+    "held_left_hand": null
+  },
+  "ThrowLine": {
+    "take": "Crew_ThrowLine",
+    "seconds": 1.4,
+    "frames": 43,
+    "loop": false,
+    "what": "throwing the rescue line over the rail (one-shot; then HaulLine)",
+    "tool_right_hand": "coil",
+    "held_left_hand": null
+  },
+  "GunRam": {
+    "take": "Crew_GunRam",
+    "seconds": 1.5,
+    "frames": 46,
+    "loop": true,
+    "what": "gunner: ramming the charge home, twice (gun on his left, muzzle beside him)",
+    "tool_right_hand": "rammer",
+    "held_left_hand": null
+  },
+  "GunFire": {
+    "take": "Crew_GunFire",
+    "seconds": 1.8,
+    "frames": 55,
+    "loop": false,
+    "what": "gunner: touching off the gun with the linstock and flinching from the blast (one-shot)",
+    "tool_right_hand": "linstock",
+    "held_left_hand": null
+  },
+  "Row": {
+    "take": "Crew_Row",
+    "seconds": 1.7,
+    "frames": 52,
+    "loop": true,
+    "what": "rowing the jolly boat: reach, pull, feather, return",
+    "tool_right_hand": "oar",
+    "held_left_hand": "oar"
+  },
+  "Gangway": {
+    "take": "Crew_Gangway",
+    "seconds": 2.0,
+    "frames": 61,
+    "loop": true,
+    "what": "balancing along the gangway, arms out (in place; two strides a cycle)",
+    "tool_right_hand": null,
+    "held_left_hand": null
+  },
+  "Soaked": {
+    "take": "Crew_Soaked",
+    "seconds": 1.0,
+    "frames": 31,
+    "loop": true,
+    "what": "after a rescue: arms wrapped round himself, shivering",
+    "tool_right_hand": null,
+    "held_left_hand": null
+  },
+  "DeckBrace": {
+    "take": "Crew_DeckBrace",
+    "seconds": 4.0,
+    "frames": 121,
+    "loop": true,
+    "what": "at his post: braced wide, riding the roll of the deck",
+    "tool_right_hand": null,
+    "held_left_hand": null
+  },
+  "RailGrip": {
+    "take": "Crew_RailGrip",
+    "seconds": 1.8,
+    "frames": 55,
+    "loop": true,
+    "what": "gripping the rail through a warning while a sea slams him",
+    "tool_right_hand": null,
+    "held_left_hand": null
+  },
   "SetDown": {
     "take": "Crew_SetDown",
     "seconds": 1.3,

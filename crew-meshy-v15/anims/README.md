@@ -1,4 +1,4 @@
-# Task and seasickness animations (v15 deckhand)
+# Task, ship and seasickness animations (v15 deckhand)
 
 One animation per building job and per camp task, on the game's 16-bone deckhand skeleton,
 made with `../../tools/blender/crew_meshy_v15_anims.py`. **Not wired into Unity**; that's
@@ -9,6 +9,8 @@ for the Unity agent (notes below).
 ![basics and tasks](overview-basics-and-tasks.png)
 
 ![seasickness](overview-seasick.png)
+
+![aboard ship](overview-ship.png)
 
 Each clip also has an animated preview, `<Clip>.gif`, and a six-frame strip, `<Clip>-strip.png`.
 
@@ -41,6 +43,16 @@ Each clip also has an animated preview, `<Clip>.gif`, and a six-frame strip, `<C
 | `Crew_SickRail` | seasick at the rail | 1.5 s | - | - | leaning over the rail, heaving twice |
 | `Crew_SickCollapse` | worst seasickness | 1.8 s, one-shot | - | - | staggers, knees buckle, down on hands and knees; then `Crew_SickKneel` |
 | `Crew_SickKneel` | worst seasickness | 2.0 s | - | - | on hands and knees, heaving |
+| `Crew_DeckBrace` | aboard, at his post (`Station`) | 4.0 s | - | - | braced wide, riding the roll of the deck |
+| `Crew_RailGrip` | aboard, at the rail through a warning (`RailHold`) | 1.8 s | - | - | gripping the rail while a sea slams him |
+| `Crew_Gangway` | boarding (`Boarding`, the gangway) | 2.0 s | - | - | balancing along the plank, arms out (in place) |
+| `Crew_Bail` | sent to the buckets (`Bailing`) | 1.6 s | bucket | on the bucket | scooping bilge water and tossing it over the side (rail on his right) |
+| `Crew_ThrowLine` | man overboard, rescue (`HaulGoing`) | 1.4 s, one-shot | coiled line | - | throwing the line; then `Crew_HaulLine` |
+| `Crew_HaulLine` | man overboard, rescue (`Hauling`) | 1.2 s | - | - | hauling the swimmer in, hand over hand |
+| `Crew_GunRam` | gunner (`CannonBattery`) | 1.5 s | rammer | on the rammer | ramming the charge home, twice (gun on his left, muzzle beside him) |
+| `Crew_GunFire` | gunner | 1.8 s, one-shot | linstock | - | touching off the gun and flinching from the blast (breech on his left front) |
+| `Crew_Row` | jolly boat (`JollyBoatDuty`) | 1.7 s | oar | oar | seated, rowing: reach, pull, feather, return |
+| `Crew_Soaked` | resting after a rescue (`restLeft`) | 1.0 s | - | - | arms wrapped round himself, shivering |
 
 All clips are 30 fps, and every loop's last frame matches its first. Walk and Carry are in place
 (the game moves him); the stride is about 0.44 m a cycle at this 1.30 m source size.
@@ -63,9 +75,9 @@ clips.
 
 | File | What |
 |---|---|
-| `deckhand-v15-anims.fbx` | Rig + `CREW_Skin` / `CREW_Cloth` (skin exported white) + all 25 clips as separate takes |
+| `deckhand-v15-anims.fbx` | Rig + `CREW_Skin` / `CREW_Cloth` (skin exported white) + all 35 clips as separate takes |
 | `clips.json` | Takes, lengths, loop flags, which tool goes in which hand |
-| `<Clip>.gif`, `<Clip>-strip.png`, `overview-*.png` | Previews (overview sheets: building jobs, basics and tasks, seasickness) |
+| `<Clip>.gif`, `<Clip>-strip.png`, `overview-*.png` | Previews (overview sheets: building jobs, basics and tasks, seasickness, aboard ship) |
 | `../../tools/blender/crew_meshy_v15_anims.py` | Clip definitions, IK solver, bake and export |
 | `../../tools/blender/render_v15_anims.py` | Preview renders |
 | `../../tools/blender/source/crew-meshy-v15-anims.blend` | Editable source with every action |
@@ -87,8 +99,12 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   - raising a building → Build, hauling → Carry, the bend at a pile → PickUp / SetDown,
     hunting → Hunt
 - New tools the game doesn't have yet: pickaxe, mallet and chisel, quern peg, knife, arrow
-  shaft, bow, basket (the clips work without them; they only show in the previews).
+  shaft, bow, basket, bucket, coiled line, rammer, linstock, oars (the clips work without them; they only show in the previews).
 - Walk, Carry and SickWalk need their playback speed matched to the move speed.
+- Aboard: `CrewAgent`'s states map straight onto the ship clips (Station -> DeckBrace,
+  RailHold -> RailGrip, Bailing -> Bail, AtRail -> SickRail, HaulGoing/Hauling -> ThrowLine then
+  HaulLine, JollyBoatDuty -> Row, the post-rescue rest -> Soaked); gunners play GunRam while
+  reloading and GunFire on the shot.
 - Seasickness: `CrewAgent.Sickness01` could pick SickSway / SickWalk from about 0.4, SickClutch
   from about 0.7 and SickCollapse then SickKneel near 1; SickRail when a sick hand is sent to the
   rail. The vomit itself (a splash or particles) is for the game to add; the preview puddle is
