@@ -302,29 +302,34 @@ clip('PickUp',1.3,[
     ],loop=False,ltool=None,rtool='sack',what='stoop, lift a load to his chest (one-shot)')
 
 # --- building jobs
-# Saw, reworked for his proportions: shoulders 0.22 m out, belly 0.26 m in
-# front, arms reaching 0.42 m. The stroke runs beside his belly on his
-# right, the blade 55 degrees down, the forearm in line with the saw as a
-# sawyer's is. The left fist holds the plank's other end, out to his left
-# and clear of the belly. The teeth stay in one kerf for the whole stroke.
-SAW_DIR=nrm((0,-.57,-.82));SAW_UP=nrm((0,-.82,.57))
-SAW_PULL=V(-.37,-.24,.64);SAW_LEN=.20
-KERF=SAW_PULL+SAW_DIR*.35+SAW_UP*(-.05)          # where the teeth meet the plank
-PLANK_TOP=KERF.z+.015
-TRESTLE=[('trestle',(.16,KERF.y,(PLANK_TOP-.04)/2),(.62,.16,PLANK_TOP-.04),'wood',0),
-         ('plank',(0,KERF.y,PLANK_TOP-.02),(1.05,.15,.04),'wood_light',0)]
+# Saw, at the level 1 lumber mill with its bench lowered for him
+# (mill_l1_lowbench.py; crew_v15_mill.py loads it). Measured from
+# Worker_Stand, at his 1.30 m source scale: the log on the bench lies along
+# X, 0.33 to 0.61 m in front of him, its top 0.57 m up (his belly), 0.28 m
+# across. He crosscuts its right end: the stroke runs beside his belly on
+# his right, blade 35 degrees down, forearm in line with the saw; the teeth
+# stay in one kerf on the log's top. His left fist holds the log down.
+# Anatomy (every frame, crew_v15_anatomy.py): shoulders 0.22 m out inside
+# the tunic's 0.25 m, belly 0.26 m in front, reach 0.42 m.
+LOG_TOP,LOG_Y,LOG_R=.57,-.47,.14
+SAW_DIR=nrm((0,-.82,-.57));SAW_UP=nrm((0,-.57,.82))
+KERF=V(-.37,LOG_Y+.04,LOG_TOP-.005)                # the cut, on the log's top, near his side of centre
+SAW_IN=.24                                         # blade length from the fist to the kerf at the pull
+SAW_PULL=KERF-SAW_DIR*SAW_IN-SAW_UP*(-.05);SAW_LEN=.17
+TRESTLE=[]                                         # the mill is the prop now (env='mill')
 
 
 def saw_pose(t):
     s=.5-.5*math.cos(t*2*math.pi)                   # 0 at the pull, 1 at the end of the push
     grip=SAW_PULL+SAW_DIR*(SAW_LEN*s)
     return K_(root=V(0,.02-.012*s,-.04-.005*s),rf=(0,.07,0,0),lf=(0,-.05,0,0),
-              pelvis=(0,-2*s,0),spine=(21+3*s,4,0),head=(12-2*s,-8,0),
+              pelvis=(0,-2*s,0),spine=(20+3*s,4,0),head=(14-2*s,-8,0),
               rh=hand(tuple(grip),SAW_DIR,SAW_UP,(-.8,.6,.2)),
-              lh=hand((.32,KERF.y+.04,PLANK_TOP+.05),(.1,-.2,-1),(-.6,-.8,0),(1,.2,.2)))
+              lh=hand((.28,LOG_Y+.03,LOG_TOP+.065),(.1,-.2,-1),(-.6,-.8,0),(1,.2,.2)))
 
 
-clip('Saw',1.0,saw_pose,rtool='saw',props=TRESTLE,what='sawmill: sawing a plank on a trestle, the left hand holding its far end')
+clip('Saw',1.0,saw_pose,rtool='saw',props=TRESTLE,what='level 1 lumber mill: sawing the log on the bench, the left hand holding it down')
+CLIPS['Saw']['env']='mill'
 
 FIELD=[('soil',(0,-.60,.015),(.6,.5,.03),'soil',0),('sprout',(.12,-.70,.06),(.05,.05,.08),'leaf',0),('sprout',(-.14,-.74,.06),(.05,.05,.08),'leaf',0)]
 clip('Farm',1.25,[

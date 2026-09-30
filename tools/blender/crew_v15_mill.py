@@ -15,7 +15,8 @@ from pathlib import Path
 import bpy
 
 ROOT=Path(__file__).resolve().parents[2]
-FBX=ROOT/'crew-meshy-v15/anims/env/lumber-mill-state-kit.fbx'
+FBX=ROOT/'crew-meshy-v15/anims/env/lumber-mill-state-kit-lowbench.fbx'   # the bench lowered for him (mill_l1_lowbench.py)
+FBX_GAME=ROOT/'crew-meshy-v15/anims/env/lumber-mill-state-kit.fbx'
 SCALE=1.30/1.7
 TEXTURE_MEAN={'SS_LumberL1_Wood':(140,88,31),'SS_LumberL1_Hemp':(157,120,68)}   # wood-tile-512, rope-tile-512
 
@@ -24,16 +25,16 @@ def _lin(c):return c/12.92 if c<=.04045 else ((c+.055)/1.055)**2.4
 
 
 
-def load(state='cutting',logs=3,planks=3):
+def load(state='cutting',logs=3,planks=3,fbx=None):
     """Import the mill, scaled, and show one bench state ('empty', 'loaded',
     'cutting', 'finished') plus the first `logs` input logs and `planks`
     output planks. Returns {name: object}."""
     before=set(bpy.data.objects)
-    bpy.ops.import_scene.fbx(filepath=str(FBX))
-    objs={o.name:o for o in bpy.data.objects if o not in before}
+    bpy.ops.import_scene.fbx(filepath=str(fbx or FBX))
+    objs={o.name.split('.')[0]:o for o in bpy.data.objects if o not in before}
     objs['LumberMill_C_Level_1'].scale=(SCALE,)*3
     for o in objs.values():
-        n=o.name
+        n=o.name.split('.')[0]
         if n.startswith('Input_Log_'):o.hide_render=o.hide_viewport=int(n[-2:])>logs
         if n.startswith('Output_Plank_'):o.hide_render=o.hide_viewport=int(n[-2:])>planks
         if n in('Bench_Loaded','Bench_Cutting','Mallet_Tool') or n.startswith('Bench_Result'):
