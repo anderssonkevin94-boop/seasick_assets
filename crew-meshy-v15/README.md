@@ -62,6 +62,11 @@ shoulder frill follows the arm a little.
 | `pose-*.png` | Idle pose renders |
 | `../tools/blender/source/crew-meshy-v15-posed.blend` | Rig with the idle pose applied |
 
+**Fists:** Meshy's hands were open mittens (a finger slab as thick as it is long, and a thumb
+sticking forward). `close_fists` turns them into the reference's chunky block fists before
+rigging: the underside of palm and fingers drops to fist depth, tapering into the wrist, the
+bottom-front edge tucks back where the fingers curl under, and the thumb presses flat across
+the front. See `pose-fist.png`. The rigged FBX carries the fists too.
+
 Still to do for the game: the `CREW_Skin` / `CREW_Cloth` split, checks against the generated
-walk and work clips, and an FBX re-import check. The hands are Meshy's open shape, though
-they read as loose fists once the arms hang.
+walk and work clips, and an FBX re-import check.

@@ -77,9 +77,42 @@ def weights_for(label,p):
     raise ValueError(label)
 
 
+PALM,FIST_DROP,THUMB_Y=.507,.038,-.058
+
+
+def close_fists(body):
+    """Meshy's hands are open mittens: a palm, a flat finger slab pointing
+    along the arm (palm side down in the T-pose, about as thick as it is
+    long, so it cannot be folded) and a thumb sticking forward. Close them
+    into the chunky block fists of the reference: drop the whole underside
+    (palm and fingers) so the hand is as deep as a fist, tapering into the
+    wrist; tuck the bottom-front edge back where the fingers curl under;
+    press the thumb flat against the front of the fist."""
+    bm=bmesh.new();bm.from_mesh(body.data);moved=0
+    for comp in C.pieces(bm):
+        vs={v for f in comp for v in f.verts}
+        lo=Vector([min(v.co[i] for v in vs) for i in range(3)])/K;hi=Vector([max(v.co[i] for v in vs) for i in range(3)])/K
+        if C.classify(lo,hi,len(comp))[1]!='hand':continue
+        s=1 if lo.x>0 else -1
+        tip=max(abs(v.co.x)/K for v in vs)
+        for v in vs:
+            p=v.co/K;x=s*p.x;y,z=p.y,p.z
+            ramp=smooth((x-.385)/.045)                      # 0 at the wrist, 1 from the knuckles out
+            if y<THUMB_Y:                                   # thumb: flat against the front, a little lower
+                y=THUMB_Y+(y-THUMB_Y)*.35
+            elif z<PALM+.008:                               # underside: palm and fingers deepen to a fist
+                z-=FIST_DROP*ramp
+                if x>tip-.012:x-=.014*smooth((x-(tip-.012))/.012)   # fingers curl under at the front
+            else:continue
+            v.co=Vector((s*x,y,z))*K;moved+=1
+    bm.to_mesh(body.data);bm.free()
+    print('fist vertices moved',moved)
+
+
 def build():
     bpy.ops.wm.open_mainfile(filepath=str(ROOT/'tools/blender/source/crew-meshy-v15.blend'))
     body=bpy.data.objects['Deckhand_v15']
+    close_fists(body)
     data=bpy.data.armatures.new('DeckhandSkeleton')
     rig=bpy.data.objects.new('Deckhand_Rig',data);bpy.context.scene.collection.objects.link(rig)
     bpy.context.view_layer.objects.active=rig;rig.select_set(True)

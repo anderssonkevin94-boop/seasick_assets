@@ -68,6 +68,7 @@ for name,eye in [('lit-front',(0,-7,.7)),('lit-back',(0,7,.7))]:
 for name,eye in [('lit-left',(7,-.1,.7)),('lit-right',(-7,-.1,.7))]:
     shot(PREFIX+name[3:],eye,(0,0,.66),(520,700),ortho=1.4)
 shot(PREFIX+'-face',(.55,-2.2,1.12),(0,-.1,.98),(700,700),lens=70)
+if PREFIX=='pose':shot(PREFIX+'-fist',(1.0,-1.35,.62),(.4,-.05,.47),(700,700),lens=85)   # his left fist
 
 
 # Composite every render onto the reference's flat blue backdrop.
