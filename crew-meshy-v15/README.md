@@ -70,3 +70,39 @@ the front. See `pose-fist.png`. The rigged FBX carries the fists too.
 
 Still to do for the game: the `CREW_Skin` / `CREW_Cloth` split, checks against the generated
 walk and work clips, and an FBX re-import check.
+
+## Separate parts (for custom versions)
+
+![exploded](parts/exploded-front.png)
+
+`../tools/blender/crew_meshy_v15_parts.py` splits the rigged character (fists included) into
+**21 named objects** on the same 16-bone rig, so custom versions can swap or recolour one part:
+
+| Part | Contains |
+|---|---|
+| `Head` | head, ears, nose, eyes, brows, mouth |
+| `Hair` | hair and top tuft |
+| `Headband` | band, knot and tails |
+| `Torso` | tunic and its plank patch |
+| `Sash` | sash, hip knot and tails |
+| `Sleeve`, `UpperArm`, `Forearm`, `WristWrap`, `Hand` (.L/.R) | arm tube cut at the elbow |
+| `Shorts` (.L/.R) | shorts cut down the middle, with its cuff (and the patch on .R) |
+| `Shin`, `Foot` (.L/.R) | shin cut at the ankle; foot with the sandal's wood block, sole and strap |
+
+Each cut is capped, so every part is closed on its own. Sides use the skeleton's suffixes
+(`.R` is +X, as for the bones). Weights come from position, so both sides of a cut carry the
+same weights and the joints stay closed when he bends (`parts/pose-*.png` look the same as the
+one-mesh version). Every object has a `part` custom property with its name.
+
+| File | What |
+|---|---|
+| `parts/deckhand-v15-parts.fbx` | 21 parts + rig, T-pose rest, preview vertex colours (sRGB) |
+| `parts/exploded-*.png`, `parts/pose-*.png` | Exploded view; idle pose |
+| `parts/parts.json` | Triangles per part |
+| `../tools/blender/source/crew-meshy-v15-parts.blend` | Editable parts with the idle pose applied |
+
+The caps add about 390 hidden triangles (3,527 in all; the FBX re-import counts 3,524 after
+dropping three zero-area caps). FBX re-import: 21 meshes, 16 bones, colours, every vertex's
+weights sum to 1, at most 2 bones per vertex, all parented to the rig. For the game build, join
+the parts back into `CREW_Skin` / `CREW_Cloth`, or use the one-mesh `deckhand-v15-rigged.fbx`.
+

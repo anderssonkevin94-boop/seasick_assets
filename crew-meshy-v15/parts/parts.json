@@ -1,0 +1,27 @@
+{
+  "parts": 21,
+  "triangles": 3527,
+  "per_part": {
+    "Foot.L": 178,
+    "Foot.R": 174,
+    "Forearm.L": 88,
+    "Forearm.R": 92,
+    "Hair": 191,
+    "Hand.L": 126,
+    "Hand.R": 126,
+    "Head": 412,
+    "Headband": 360,
+    "Sash": 297,
+    "Shin.L": 104,
+    "Shin.R": 96,
+    "Shorts.L": 188,
+    "Shorts.R": 182,
+    "Sleeve.L": 84,
+    "Sleeve.R": 78,
+    "Torso": 519,
+    "UpperArm.L": 80,
+    "UpperArm.R": 88,
+    "WristWrap.L": 32,
+    "WristWrap.R": 32
+  }
+}

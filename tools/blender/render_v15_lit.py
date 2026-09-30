@@ -15,6 +15,16 @@ OUT=ROOT/'crew-meshy-v15'
 ARGS=sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else []
 BLEND=ARGS[0] if ARGS else 'crew-meshy-v15.blend';PREFIX=ARGS[1] if len(ARGS)>1 else 'lit'
 bpy.ops.wm.open_mainfile(filepath=str(ROOT/'tools/blender/source'/BLEND))
+EXPLODE='explode' in ARGS[2:]
+if EXPLODE:
+    # Exploded view of the separate parts (crew_meshy_v15_parts.py), in the T rest pose.
+    for pb in bpy.data.objects['Deckhand_Rig'].pose.bones:pb.matrix_basis=__import__('mathutils').Matrix.Identity(4)
+    OFF={'Head':(0,0,.16),'Headband':(0,0,.30),'Hair':(0,0,.44),'Sash':(0,-.2,.02),'Torso':(0,0,0)}
+    for base,dx,dz in [('Sleeve',.13,0),('UpperArm',.24,0),('Forearm',.34,0),('WristWrap',.43,0),('Hand',.52,0),
+                       ('Shorts',.07,-.1),('Shin',.07,-.2),('Foot',.07,-.3)]:
+        for suf,s in (('.R',1),('.L',-1)):OFF[base+suf]=(s*dx,0,dz)
+    for name,o in OFF.items():bpy.data.objects[name].location=__import__('mathutils').Vector(o)+__import__('mathutils').Vector((0,0,.32))   # feet above the floor
+    bpy.context.view_layer.update()
 scene=bpy.context.scene
 scene.frame_set(1)
 for o in list(scene.objects):
@@ -61,14 +71,20 @@ def shot(name,eye,target,size,lens=None,ortho=None):
     scene.render.filepath=str(OUT/(name+'.png'));bpy.ops.render.render(write_still=True)
 
 
+if EXPLODE:
+    shot(PREFIX+'-front',(0,-7,1.0),(0,0,1.0),(1300,1100),ortho=2.75)
+    shot(PREFIX+'-q34',(2.4,-3.9,1.9),(0,0,.86),(1300,1000),lens=38)
+    OUT_DONE=True
+else:OUT_DONE=False
 # Hero: three-quarter from his left-front, as in the reference (framed wide for the T-pose).
-shot(PREFIX+'-hero',(1.3,-2.6,.95),(0,0,.64),(1100,1000),lens=50)
-for name,eye in [('lit-front',(0,-7,.7)),('lit-back',(0,7,.7))]:
-    shot(PREFIX+name[3:],eye,(0,0,.66),(900,700),ortho=1.75)
-for name,eye in [('lit-left',(7,-.1,.7)),('lit-right',(-7,-.1,.7))]:
-    shot(PREFIX+name[3:],eye,(0,0,.66),(520,700),ortho=1.4)
-shot(PREFIX+'-face',(.55,-2.2,1.12),(0,-.1,.98),(700,700),lens=70)
-if PREFIX=='pose':shot(PREFIX+'-fist',(1.0,-1.35,.62),(.4,-.05,.47),(700,700),lens=85)   # his left fist
+if not OUT_DONE:
+    shot(PREFIX+'-hero',(1.3,-2.6,.95),(0,0,.64),(1100,1000),lens=50)
+    for name,eye in [('lit-front',(0,-7,.7)),('lit-back',(0,7,.7))]:
+        shot(PREFIX+name[3:],eye,(0,0,.66),(900,700),ortho=1.75)
+    for name,eye in [('lit-left',(7,-.1,.7)),('lit-right',(-7,-.1,.7))]:
+        shot(PREFIX+name[3:],eye,(0,0,.66),(520,700),ortho=1.4)
+    shot(PREFIX+'-face',(.55,-2.2,1.12),(0,-.1,.98),(700,700),lens=70)
+    if PREFIX=='pose':shot(PREFIX+'-fist',(1.0,-1.35,.62),(.4,-.05,.47),(700,700),lens=85)   # his left fist
 
 
 # Composite every render onto the reference's flat blue backdrop.
