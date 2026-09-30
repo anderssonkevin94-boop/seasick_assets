@@ -13,8 +13,8 @@ RIGHT hand, which is the bone NAMED `hand.L` (Blender -X), as in the game.
 Sizes are the game's fallback tools scaled from its 1.7 m body to this
 1.30 m source. Props are for the preview renders only and are not exported.
 
-Outputs crew-meshy-v15/anims/: deckhand-v15-anims.fbx (rig, mesh and every
-clip as its own take), a GIF and a filmstrip per clip, clips.json.
+Outputs crew-meshy-v15/anims/: deckhand-v15-anims.fbx (rig, CREW_Skin /
+CREW_Cloth and every clip as its own take), a GIF and a filmstrip per clip, clips.json.
 Blender coordinates: X across the shoulders (+X is his left), -Y forward, Z up.
 """
 import json
@@ -455,17 +455,10 @@ def main():
     solver=Solver(rig)
     info=bake(rig,solver)
     OUT.mkdir(parents=True,exist_ok=True)
-    # FBX: rig + mesh + every clip as its own take (skin exported white, v14 contract)
-    col=body.data.color_attributes['Col'];keep=[tuple(x.color) for x in col.data];skin=C.COL['skin']
-    for x in col.data:
-        if max(abs(a-b) for a,b in zip(x.color[:3],skin))<.01:x.color=(1,1,1,1)
+    # FBX: rig + CREW_Skin / CREW_Cloth + every clip as its own take
     rig.animation_data.action=None;solver.reset()
-    bpy.ops.object.select_all(action='DESELECT');rig.select_set(True);body.select_set(True);bpy.context.view_layer.objects.active=rig
-    bpy.ops.export_scene.fbx(filepath=str(OUT/'deckhand-v15-anims.fbx'),use_selection=True,object_types={'ARMATURE','MESH'},
-        axis_forward='-Z',axis_up='Y',add_leaf_bones=False,use_armature_deform_only=True,
-        bake_anim=True,bake_anim_use_all_actions=True,bake_anim_use_nla_strips=False,bake_anim_force_startend_keying=True,
-        bake_anim_simplify_factor=0.,use_triangles=True,colors_type='LINEAR',mesh_smooth_type='FACE')
-    for x,v in zip(col.data,keep):x.color=v
+    P.export_game_fbx(body,rig,OUT/'deckhand-v15-anims.fbx',bake_anim=True,bake_anim_use_all_actions=True,
+        bake_anim_use_nla_strips=False,bake_anim_force_startend_keying=True,bake_anim_simplify_factor=0.)
     (OUT/'clips.json').write_text(json.dumps(info,indent=2))
     bpy.ops.wm.save_as_mainfile(filepath=str(ROOT/'tools/blender/source/crew-meshy-v15-anims.blend'))
     print(json.dumps({k:v['frames'] for k,v in info.items()}))

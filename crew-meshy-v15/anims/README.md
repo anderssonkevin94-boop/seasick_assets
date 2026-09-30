@@ -55,14 +55,14 @@ clips.
 
 | File | What |
 |---|---|
-| `deckhand-v15-anims.fbx` | Rig + mesh (fists, skin exported white) + all 19 clips as separate takes |
+| `deckhand-v15-anims.fbx` | Rig + `CREW_Skin` / `CREW_Cloth` (skin exported white) + all clips as separate takes |
 | `clips.json` | Takes, lengths, loop flags, which tool goes in which hand |
 | `<Clip>.gif`, `<Clip>-strip.png`, `overview-*.png` | Previews |
 | `../../tools/blender/crew_meshy_v15_anims.py` | Clip definitions, IK solver, bake and export |
 | `../../tools/blender/render_v15_anims.py` | Preview renders |
 | `../../tools/blender/source/crew-meshy-v15-anims.blend` | Editable source with every action |
 
-FBX re-import check: 16 bones, 1 mesh (3,135 triangles), 19 takes, each one moving. Blender's
+FBX re-import check (`verify_crew_meshy_v15.py`): 16 bones, `CREW_Skin` + `CREW_Cloth` (3,135 triangles), every take moving. Blender's
 importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a similar prefix.
 
 ## Notes for the Unity agent

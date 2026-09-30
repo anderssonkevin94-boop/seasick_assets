@@ -165,20 +165,47 @@ def idle(rig):
     bpy.context.view_layer.update()
 
 
-def export_rigged(body,rig):
-    """T rest pose FBX, v14 contract: skin faces exported white."""
+def export_game_fbx(body,rig,path,**anim):
+    """Export the game's runtime contract (as v5/v14): the rig plus two
+    skinned meshes, CREW_Skin (every skin face, vertex colours white so the
+    game's CrewVertexColor tint owns its colour) and CREW_Cloth (everything
+    else), each with its vertex-colour material. Works on temporary copies;
+    `body` is left untouched. `anim`: extra FBX export options (bake_anim...)."""
     for pb in rig.pose.bones:pb.matrix_basis=Matrix.Identity(4)
     bpy.context.view_layer.update()
-    col=body.data.color_attributes['Col'];keep=[tuple(c.color) for c in col.data]
-    skin=C.COL['skin']
-    for c in col.data:
-        if max(abs(a-b) for a,b in zip(c.color[:3],skin))<.01:c.color=(1,1,1,1)
-    bpy.ops.object.select_all(action='DESELECT');rig.select_set(True);body.select_set(True)
+    skin=C.COL['skin'];made=[]
+    for name,want_skin in (('CREW_Cloth',False),('CREW_Skin',True)):
+        o=body.copy();o.data=body.data.copy();o.name=name;o.data.name=name
+        bpy.context.scene.collection.objects.link(o);made.append(o)
+        col=o.data.color_attributes['Col'].data
+        is_skin={p.index for p in o.data.polygons
+                 if max(abs(a-b) for a,b in zip(col[p.loop_indices[0]].color[:3],skin))<.01}
+        bm=bmesh.new();bm.from_mesh(o.data);bm.faces.ensure_lookup_table()
+        bmesh.ops.delete(bm,geom=[f for f in bm.faces if (f.index in is_skin)!=want_skin],context='FACES')
+        bm.to_mesh(o.data);bm.free()
+        if want_skin:
+            for c in o.data.color_attributes['Col'].data:c.color=(1,1,1,1)
+        m=bpy.data.materials.new(name.replace('CREW_','Crew_'))
+        m.use_nodes=True;vc=m.node_tree.nodes.new('ShaderNodeVertexColor');vc.layer_name='Col'
+        m.node_tree.links.new(vc.outputs['Color'],m.node_tree.nodes['Principled BSDF'].inputs['Base Color'])
+        o.data.materials.clear();o.data.materials.append(m)
+    bpy.ops.object.select_all(action='DESELECT');rig.select_set(True)
+    for o in made:o.select_set(True)
     bpy.context.view_layer.objects.active=rig
-    bpy.ops.export_scene.fbx(filepath=str(OUT/'deckhand-v15-rigged.fbx'),use_selection=True,object_types={'ARMATURE','MESH'},
-        axis_forward='-Z',axis_up='Y',add_leaf_bones=False,use_armature_deform_only=True,bake_anim=False,
-        use_triangles=True,colors_type='LINEAR',mesh_smooth_type='FACE')
-    for c,v in zip(col.data,keep):c.color=v
+    opts=dict(bake_anim=False);opts.update(anim)
+    bpy.ops.export_scene.fbx(filepath=str(path),use_selection=True,object_types={'ARMATURE','MESH'},
+        axis_forward='-Z',axis_up='Y',add_leaf_bones=False,use_armature_deform_only=True,
+        use_triangles=True,colors_type='LINEAR',mesh_smooth_type='FACE',**opts)
+    tris={o.name:sum(len(p.vertices)-2 for p in o.data.polygons) for o in made}
+    for o in made:bpy.data.objects.remove(o,do_unlink=True)
+    return tris
+
+
+def export_rigged(body,rig):
+    """The game drop-in: T rest pose, CREW_Skin / CREW_Cloth, no animation."""
+    tris=export_game_fbx(body,rig,OUT/'deckhand-v15-rigged.fbx')
+    import json;(OUT/'rigged.json').write_text(json.dumps({'triangles':sum(tris.values()),'per_mesh':tris},indent=2))
+    print('rigged',tris)
 
 
 if __name__=='__main__':

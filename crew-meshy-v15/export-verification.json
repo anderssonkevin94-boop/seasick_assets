@@ -1,0 +1,58 @@
+[
+  {
+    "file": "crew-meshy-v15/deckhand-v15-rigged.fbx",
+    "meshes": {
+      "CREW_Cloth": 2262,
+      "CREW_Skin": 873
+    },
+    "bones": 16,
+    "bone_names_match_v5": true,
+    "triangles": 3135,
+    "height_m": 1.3,
+    "vertex_colours": true,
+    "flat": true,
+    "white_skin": true,
+    "weights_sum_to_1": true,
+    "max_influences": 2,
+    "rig_moves_mesh": 0.18
+  },
+  {
+    "file": "crew-meshy-v15/anims/deckhand-v15-anims.fbx",
+    "meshes": {
+      "CREW_Cloth": 2262,
+      "CREW_Skin": 873
+    },
+    "bones": 16,
+    "bone_names_match_v5": true,
+    "triangles": 3135,
+    "height_m": 1.3,
+    "vertex_colours": true,
+    "flat": true,
+    "white_skin": true,
+    "weights_sum_to_1": true,
+    "max_influences": 2,
+    "rig_moves_mesh": 0.18,
+    "takes": [
+      "Crew_Build",
+      "Crew_Carry",
+      "Crew_Chop",
+      "Crew_Cook",
+      "Crew_Farm",
+      "Crew_Fisher",
+      "Crew_Fletcher",
+      "Crew_Forage",
+      "Crew_Hunt",
+      "Crew_Idle",
+      "Crew_Lookout",
+      "Crew_Mill",
+      "Crew_Mine",
+      "Crew_PickUp",
+      "Crew_Quarry",
+      "Crew_Saw",
+      "Crew_SetDown",
+      "Crew_Smith",
+      "Crew_Walk"
+    ],
+    "takes_that_move": 19
+  }
+]

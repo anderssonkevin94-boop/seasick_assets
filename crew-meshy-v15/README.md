@@ -68,8 +68,15 @@ rigging: the underside of palm and fingers drops to fist depth, tapering into th
 bottom-front edge tucks back where the fingers curl under, and the thumb presses flat across
 the front. See `pose-fist.png`. The rigged FBX carries the fists too.
 
-Still to do for the game: the `CREW_Skin` / `CREW_Cloth` split, checks against the generated
-walk and work clips, and an FBX re-import check.
+**Game-ready:** `deckhand-v15-rigged.fbx` carries the runtime contract of the in-game deckhand:
+the 16 v5 bones and two skinned meshes, `CREW_Skin` (873 triangles, vertex colours white for the
+sickness tint; set skin `_BaseColor` to #D99259) and `CREW_Cloth` (2,262 triangles), each with a
+vertex-colour material. `anims/deckhand-v15-anims.fbx` has the same split. Both pass
+`../tools/blender/verify_crew_meshy_v15.py` (FBX re-import: bone names, mesh names, 3,135
+triangles, colours, flat shading, white skin, weights summing to 1, rig moves the mesh, every
+take moves), written to `export-verification.json`.
+
+Still to test in Unity: the game's generated walk and the tool anchors on these proportions.
 
 ## Separate parts (for custom versions)
 
