@@ -1,0 +1,229 @@
+{
+  "topology": {
+    "Tunic": {
+      "vertices": 160,
+      "triangles": 288,
+      "components": 1,
+      "boundary_loops": 2,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Sleeves": {
+      "vertices": 96,
+      "triangles": 172,
+      "components": 2,
+      "boundary_loops": 2,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Sash": {
+      "vertices": 132,
+      "triangles": 252,
+      "components": 4,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Wrap": {
+      "vertices": 32,
+      "triangles": 64,
+      "components": 1,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Leg_Foot.L": {
+      "vertices": 40,
+      "triangles": 76,
+      "components": 1,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Sandal.L": {
+      "vertices": 64,
+      "triangles": 120,
+      "components": 3,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Leg_Foot.R": {
+      "vertices": 40,
+      "triangles": 76,
+      "components": 1,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Sandal.R": {
+      "vertices": 64,
+      "triangles": 120,
+      "components": 3,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Arm_Hand.L": {
+      "vertices": 92,
+      "triangles": 180,
+      "components": 1,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Arm_Hand.R": {
+      "vertices": 92,
+      "triangles": 180,
+      "components": 1,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Head": {
+      "vertices": 144,
+      "triangles": 284,
+      "components": 1,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Face_details": {
+      "vertices": 80,
+      "triangles": 140,
+      "components": 5,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Nose_Ears": {
+      "vertices": 37,
+      "triangles": 62,
+      "components": 3,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Hair": {
+      "vertices": 120,
+      "triangles": 232,
+      "components": 2,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Headband": {
+      "vertices": 150,
+      "triangles": 284,
+      "components": 5,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Shorts": {
+      "vertices": 144,
+      "triangles": 268,
+      "components": 2,
+      "boundary_loops": 2,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    },
+    "Patches": {
+      "vertices": 64,
+      "triangles": 112,
+      "components": 4,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0
+    }
+  },
+  "triangles": 2910,
+  "poses": {
+    "neutral": {
+      "degenerate_triangles": 0,
+      "garment_intersections": {
+        "Sleeves / Arm_Hand.L": 0,
+        "Sleeves / Arm_Hand.R": 0,
+        "Wrap / Arm_Hand.L": 0,
+        "Shorts / Leg_Foot.L": 0,
+        "Shorts / Leg_Foot.R": 0,
+        "Sandal.L / Leg_Foot.L": 0,
+        "Sandal.R / Leg_Foot.R": 0,
+        "Tunic / Head": 0
+      }
+    },
+    "working": {
+      "degenerate_triangles": 0,
+      "garment_intersections": {
+        "Sleeves / Arm_Hand.L": 0,
+        "Sleeves / Arm_Hand.R": 0,
+        "Wrap / Arm_Hand.L": 0,
+        "Shorts / Leg_Foot.L": 0,
+        "Shorts / Leg_Foot.R": 0,
+        "Sandal.L / Leg_Foot.L": 0,
+        "Sandal.R / Leg_Foot.R": 0,
+        "Tunic / Head": 0
+      }
+    },
+    "reach": {
+      "degenerate_triangles": 0,
+      "garment_intersections": {
+        "Sleeves / Arm_Hand.L": 0,
+        "Sleeves / Arm_Hand.R": 0,
+        "Wrap / Arm_Hand.L": 0,
+        "Shorts / Leg_Foot.L": 0,
+        "Shorts / Leg_Foot.R": 0,
+        "Sandal.L / Leg_Foot.L": 0,
+        "Sandal.R / Leg_Foot.R": 0,
+        "Tunic / Head": 0
+      }
+    },
+    "crouch": {
+      "degenerate_triangles": 0,
+      "garment_intersections": {
+        "Sleeves / Arm_Hand.L": 0,
+        "Sleeves / Arm_Hand.R": 0,
+        "Wrap / Arm_Hand.L": 0,
+        "Shorts / Leg_Foot.L": 0,
+        "Shorts / Leg_Foot.R": 0,
+        "Sandal.L / Leg_Foot.L": 0,
+        "Sandal.R / Leg_Foot.R": 0,
+        "Tunic / Head": 0
+      }
+    },
+    "stride": {
+      "degenerate_triangles": 0,
+      "garment_intersections": {
+        "Sleeves / Arm_Hand.L": 0,
+        "Sleeves / Arm_Hand.R": 0,
+        "Wrap / Arm_Hand.L": 0,
+        "Shorts / Leg_Foot.L": 0,
+        "Shorts / Leg_Foot.R": 0,
+        "Sandal.L / Leg_Foot.L": 0,
+        "Sandal.R / Leg_Foot.R": 0,
+        "Tunic / Head": 0
+      }
+    }
+  },
+  "skin_base_color_srgb": "#D99259",
+  "rig_bones": 16,
+  "palette_srgb": {
+    "linen": "#E4DDCD",
+    "fold": "#CFC6B2",
+    "skin": "#D99259",
+    "pants": "#2E5A69",
+    "pantcuff": "#3A6979",
+    "sash": "#CF4136",
+    "knot": "#B53A31",
+    "hair": "#35271F",
+    "eye": "#1D1916",
+    "mouth": "#9B3A2E",
+    "sole": "#3F2B20",
+    "wood": "#A0703F",
+    "strap": "#6A4A2F",
+    "patch": "#8C5B35",
+    "stitch": "#3E2A1C",
+    "wrap": "#ECE6D8"
+  },
+  "notes": "Five keyed deformation tests, not polished gameplay animations. No Unity integration."
+}
