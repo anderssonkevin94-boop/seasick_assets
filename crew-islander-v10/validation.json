@@ -1,0 +1,246 @@
+{
+  "topology": {
+    "Tunic": {
+      "vertices": 160,
+      "triangles": 275,
+      "components": 1,
+      "boundary_loops": 2,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Sleeves": {
+      "vertices": 130,
+      "triangles": 240,
+      "components": 2,
+      "boundary_loops": 2,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Sash": {
+      "vertices": 331,
+      "triangles": 650,
+      "components": 4,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Wrap": {
+      "vertices": 46,
+      "triangles": 92,
+      "components": 1,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Leg_Foot.L": {
+      "vertices": 53,
+      "triangles": 102,
+      "components": 1,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Sandal.L": {
+      "vertices": 64,
+      "triangles": 120,
+      "components": 3,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Leg_Foot.R": {
+      "vertices": 53,
+      "triangles": 102,
+      "components": 1,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Sandal.R": {
+      "vertices": 64,
+      "triangles": 120,
+      "components": 3,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Arm_Hand.L": {
+      "vertices": 128,
+      "triangles": 252,
+      "components": 1,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Arm_Hand.R": {
+      "vertices": 128,
+      "triangles": 252,
+      "components": 1,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Head": {
+      "vertices": 197,
+      "triangles": 390,
+      "components": 1,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Face_details": {
+      "vertices": 80,
+      "triangles": 140,
+      "components": 5,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Nose_Ears": {
+      "vertices": 37,
+      "triangles": 62,
+      "components": 3,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Hair": {
+      "vertices": 159,
+      "triangles": 310,
+      "components": 2,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Headband": {
+      "vertices": 395,
+      "triangles": 774,
+      "components": 5,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Shorts": {
+      "vertices": 204,
+      "triangles": 380,
+      "components": 2,
+      "boundary_loops": 2,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    },
+    "Patches": {
+      "vertices": 64,
+      "triangles": 112,
+      "components": 4,
+      "boundary_loops": 0,
+      "overconnected_edges": 0,
+      "degenerate_faces": 0,
+      "weights_normalized": true
+    }
+  },
+  "triangles": 4373,
+  "poses": {
+    "neutral": {
+      "degenerate_triangles": 0,
+      "garment_intersections": {
+        "Sleeves / Arm_Hand.L": 0,
+        "Sleeves / Arm_Hand.R": 0,
+        "Wrap / Arm_Hand.L": 0,
+        "Shorts / Leg_Foot.L": 0,
+        "Shorts / Leg_Foot.R": 0,
+        "Sandal.L / Leg_Foot.L": 16,
+        "Sandal.R / Leg_Foot.R": 16,
+        "Tunic / Head": 0
+      }
+    },
+    "working": {
+      "degenerate_triangles": 0,
+      "garment_intersections": {
+        "Sleeves / Arm_Hand.L": 0,
+        "Sleeves / Arm_Hand.R": 0,
+        "Wrap / Arm_Hand.L": 0,
+        "Shorts / Leg_Foot.L": 0,
+        "Shorts / Leg_Foot.R": 0,
+        "Sandal.L / Leg_Foot.L": 4,
+        "Sandal.R / Leg_Foot.R": 8,
+        "Tunic / Head": 0
+      }
+    },
+    "reach": {
+      "degenerate_triangles": 0,
+      "garment_intersections": {
+        "Sleeves / Arm_Hand.L": 0,
+        "Sleeves / Arm_Hand.R": 0,
+        "Wrap / Arm_Hand.L": 0,
+        "Shorts / Leg_Foot.L": 0,
+        "Shorts / Leg_Foot.R": 0,
+        "Sandal.L / Leg_Foot.L": 4,
+        "Sandal.R / Leg_Foot.R": 8,
+        "Tunic / Head": 0
+      }
+    },
+    "crouch": {
+      "degenerate_triangles": 0,
+      "garment_intersections": {
+        "Sleeves / Arm_Hand.L": 0,
+        "Sleeves / Arm_Hand.R": 0,
+        "Wrap / Arm_Hand.L": 0,
+        "Shorts / Leg_Foot.L": 0,
+        "Shorts / Leg_Foot.R": 0,
+        "Sandal.L / Leg_Foot.L": 0,
+        "Sandal.R / Leg_Foot.R": 0,
+        "Tunic / Head": 0
+      }
+    },
+    "stride": {
+      "degenerate_triangles": 0,
+      "garment_intersections": {
+        "Sleeves / Arm_Hand.L": 0,
+        "Sleeves / Arm_Hand.R": 0,
+        "Wrap / Arm_Hand.L": 0,
+        "Shorts / Leg_Foot.L": 0,
+        "Shorts / Leg_Foot.R": 0,
+        "Sandal.L / Leg_Foot.L": 20,
+        "Sandal.R / Leg_Foot.R": 0,
+        "Tunic / Head": 0
+      }
+    }
+  },
+  "skin_base_color_srgb": "#D99259",
+  "rig_bones": 16,
+  "palette_srgb": {
+    "linen": "#E4DDCD",
+    "fold": "#CFC6B2",
+    "skin": "#D99259",
+    "pants": "#2E5A69",
+    "pantcuff": "#3A6979",
+    "sash": "#CF4136",
+    "knot": "#B53A31",
+    "hair": "#35271F",
+    "eye": "#1D1916",
+    "mouth": "#9B3A2E",
+    "sole": "#3F2B20",
+    "wood": "#A0703F",
+    "strap": "#6A4A2F",
+    "patch": "#8C5B35",
+    "stitch": "#3E2A1C",
+    "wrap": "#ECE6D8"
+  },
+  "notes": "Five keyed deformation tests, not polished gameplay animations. No Unity integration."
+}
