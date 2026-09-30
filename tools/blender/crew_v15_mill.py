@@ -11,6 +11,7 @@ The mill's faces are coloured in the game by a wood or rope texture times its
 `GameColor` vertex colours. For preview renders each face's colour here is
 `GameColor` times the texture's average colour, written to a `Col` layer.
 """
+import math
 from pathlib import Path
 import bpy
 
@@ -90,6 +91,30 @@ def load_tree():
     return objs
 
 
+ROCK_FBX=ROOT/'crew-meshy-v15/anims/env/Stone_Field.fbx'   # Astra's Stone_Field (art-staging/stone-resources-astra-v2), the commonest deposit
+ROCK_FOOTPRINT=1.38*.8         # StoneDeposit.FootprintRadius: the mesh's widest bounds corner, x0.8, at size 1
+ROCK_STAND=max(1.1,ROCK_FOOTPRINT+.7)*SCALE   # StoneDeposit.StandOff: the footprint plus an arm's length (1.80 m game)
+
+
+def load_rock():
+    """Astra's Stone_Field at his scale, its pivot ROCK_STAND in front of him
+    (-Y) where StoneDeposit.StandOff puts a miner, its front (and
+    __Mine_Target) turned to face him. Returns {name: object}."""
+    before=set(bpy.data.objects);sc=bpy.context.scene;fps=(sc.render.fps,sc.render.fps_base)
+    bpy.ops.import_scene.fbx(filepath=str(ROCK_FBX))
+    sc.render.fps,sc.render.fps_base=fps
+    objs={o.name.split('.')[0]:o for o in bpy.data.objects if o not in before}
+    for o in objs.values():
+        if o.parent is None:
+            o.scale=(SCALE,)*3;o.rotation_euler=(0,0,math.pi);o.location=(0,-ROCK_STAND,0)
+        if o.type=='MESH':
+            me=o.data;col=me.color_attributes.get('Col')
+            if col:me.color_attributes.active_color=col;me.color_attributes.render_color_index=0
+            for p in me.polygons:p.use_smooth=False
+    bpy.context.view_layer.update()
+    return objs
+
+
 def load_env(kind):
     """(objects, where he stands, props his body must stay out of)."""
     if kind=='mill':
@@ -97,4 +122,7 @@ def load_env(kind):
     if kind=='tree':
         from mathutils import Vector
         objs=load_tree();return objs,Vector((0,0,0)),[]
+    if kind=='rock':
+        from mathutils import Vector
+        objs=load_rock();return objs,Vector((0,0,0)),[]
     raise ValueError(kind)

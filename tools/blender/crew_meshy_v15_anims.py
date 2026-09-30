@@ -320,14 +320,45 @@ def chop_keys():
 clip('Chop',1.3,chop_keys(),rtool='axe',what='felling a tree: a one-handed flat swing like a bat, from his right into the trunk\'s side, the whole upper body unwinding into it')
 CLIPS['Chop']['env']='tree'
 
-PICK_ROCK=[('rock',(0,-.56,.07),(.34,.30,.16),'stone',0)]
-clip('Mine',1.1,[
-    (0,K_(root=V(0,0,-.03),spine=(-4,0,0),head=(-6,0,0),rh=swing_hand((-.09,.02,1.02),.35,.94),lh={'on_tool':.12,'elbow':V(.6,.3,-.4)})),
-    (.28,K_(root=V(0,0,-.03),spine=(-6,0,0),head=(-4,0,0),rh=swing_hand((-.08,.03,1.03),.42,.9),lh={'on_tool':.12,'elbow':V(.6,.3,-.4)})),
-    (.45,K_(root=V(0,0,-.10),spine=(34,0,0),head=(14,0,0),rh=swing_hand((-.04,-.28,.40),-.62,-.78,(-.5,.4,-.2)),lh={'on_tool':.12,'elbow':V(.6,.4,0)})),
-    (.56,K_(root=V(0,0,-.10),spine=(32,0,0),head=(14,0,0),rh=swing_hand((-.04,-.27,.43),-.6,-.8,(-.5,.4,-.2)),lh={'on_tool':.12,'elbow':V(.6,.4,0)})),
-    (.78,K_(root=V(0,0,-.06),spine=(10,0,0),rh=swing_hand((-.07,-.10,.82),.1,1.,(-.6,.4,-.3)),lh={'on_tool':.12,'elbow':V(.6,.3,-.3)})),
-    ],rtool='pick',props=PICK_ROCK,what='pickaxe into rock (stone, ore)')
+# Mine: a one-handed pickaxe swing, vertical, like an overhand bat swing: the
+# pick raised behind his head, the fist coming up to head height with the head
+# trailing above it, the arm reaching forward and the pick tipping over, and the
+# point driving down into the rock's upper front. It holds, levers free and goes
+# back up the way it came. Set at Astra's Stone_Field (the commonest deposit),
+# its front and __Mine_Target turned to him, where StoneDeposit.StandOff puts a
+# miner (1.80 m game from its pivot: its front face about 1 m off). Its top is
+# above his shoulders, so the pick strikes its sloping upper front, not a top.
+# Key poses found by search against crew_v15_anatomy (no clipping, joints in
+# range, the pick clear of the rock but for its point) on the real rock.
+MINE_TIP=V(0,.58,.23)*TOOL_SCALE                   # the pick's point in the tool frame (the game's fallback pick)
+MINE_AT=V(-.20,-.849,.472)                         # the point 2 cm into the rock's upper front, in line with his right shoulder
+MINE_ANGLE=60                                      # the point driving in this far below level
+
+
+def pick_pose(grip,tilt,elbow,lean,drop,balance):
+    """The pick held up in the swing plane: `tilt` degrees from straight up
+    (+ back over his head, - forward toward the rock), the point leading."""
+    a=math.radians(tilt)
+    return K_(root=V(0,0,drop),rf=(-.03,.07,0,0),lf=(.03,-.07,0,0),spine=(lean,0,0),head=(-lean*.5,0,0),
+              rh=hand(grip,(0,-math.cos(a),math.sin(a)),(0,math.sin(a),math.cos(a)),elbow),lh=balance)
+
+
+def mine_keys():
+    balance_up=hand((.36,-.26,.58),(.3,-.8,-.3),(0,0,1),(.9,.3,-.2))
+    balance_low=hand((.34,-.24,.46),(.3,-.5,-.8),(0,-1,0),(.8,.5,0))
+    cocked=pick_pose((-.32,-.04,.98),100,(-.9,.2,-.4),-10,-.02,balance_up)    # raised behind his head, the point up
+    lag=pick_pose((-.28,-.22,.90),40,(-.6,.3,-.7),0,-.03,balance_up)          # fist at head height, the head trailing above
+    over=pick_pose((-.22,-.38,.64),-20,(-.5,.3,-.8),12,-.05,balance_low)      # reaching forward, the pick tipping over
+    a=math.radians(MINE_ANGLE);face=V(0,-math.cos(a),-math.sin(a));haft=V(0,-math.sin(a),math.cos(a))
+    grip=MINE_AT-haft*MINE_TIP.y-face*MINE_TIP.z
+    hit=K_(root=V(0,0,-.07),rf=(-.03,.07,0,0),lf=(.03,-.07,0,0),spine=(20,0,0),head=(-10,0,0),
+           rh=hand(tuple(grip),face,haft,(-.5,.3,-.8)),lh=balance_low)
+    free=pick_pose(tuple(grip+V(0,.06,.03)),-45,(-.5,.3,-.8),18,-.06,balance_low)   # levered back out of the rock
+    return [(0,cocked),(.12,cocked),(.26,lag),(.34,over),(.40,hit),(.54,hit),(.62,free),(.72,over),(.82,lag),(.92,cocked)]
+
+
+clip('Mine',1.1,mine_keys(),rtool='pick',what='a one-handed vertical pickaxe swing, overhand like a bat, into the rock')
+CLIPS['Mine']['env']='rock'
 
 BUSH=[('bush',(-.02,-.40,.09),(.26,.24,.18),'leaf',0),('berries',(-.02,-.42,.17),(.08,.08,.06),'berry',0)]
 clip('Forage',1.7,[

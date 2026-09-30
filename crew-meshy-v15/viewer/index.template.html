@@ -152,9 +152,9 @@ renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadow
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 60);
 const HOME = {pos:new THREE.Vector3(-2.3, 1.45, 3.4), target:new THREE.Vector3(0, 0.6, -0.1)};
-// Clips set at a tree: the trunk stands in front of him, so look past his right shoulder.
+// Clips set at a tree or a rock: it stands in front of him, so look past his right shoulder.
 const HOME_TREE = {pos:new THREE.Vector3(-2.7, 1.5, -1.7), target:new THREE.Vector3(0, 0.55, 0.35)};
-function home(){ const h = (current && CLIPS[current].env === 'tree') ? HOME_TREE : HOME;
+function home(){ const h = (current && ['tree','rock'].includes(CLIPS[current].env)) ? HOME_TREE : HOME;
   camera.position.copy(h.pos); controls.target.copy(h.target); controls.update(); }
 camera.position.copy(HOME.pos);
 const controls = new THREE.OrbitControls(camera, canvas);

@@ -33,7 +33,11 @@ if c.get('env')=='tree':      # the canopy hides him from above: side and low an
     cd.ortho_scale=1.9
     for o in env.values():
         if 'Canopy' in o.name:o.hide_render=True
+if c.get('env')=='rock':      # the rock stands in front of him: side and back angles
+    views=[('game view, his right',(-3.4,1.6,2.4)),('side, his right',(-3,.2,.8)),('behind him',(-.8,3,1.2)),('3/4 his left, low',(2.6,-.3,.9)),('side, his left',(3,.2,.8))]
+    cd.ortho_scale=1.9
 n=int(act.frame_end);keys=[round(n*k/4) for k in range(4)] if c['loop'] else [round(n*k/4) for k in range(5)]
+if name=='Mine':keys=[0,round(n*.26),round(n*.34),round(n*.40)]   # raised, head trailing, tipping over, the strike
 if name=='Chop':keys=[0,round(n*.28),round(n*.33),round(n*.40)]   # cocked, hands dropped, sweeping level, the bite
 rows=[]
 for f in keys:

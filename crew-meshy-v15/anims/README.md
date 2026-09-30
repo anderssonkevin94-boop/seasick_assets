@@ -28,7 +28,7 @@ embedded, so the one file opens on its own. Rebuild it with
 | `Crew_Idle` | standing | 2.4 s | - | - | breathing, weight settling, a glance round |
 | `Crew_Walk` | walking | 0.9 s | - | - | in place: the game moves him; stride about 0.44 m a cycle |
 | `Crew_Chop` | timber, clearing | 1.3 s | axe | - | one-handed flat swing like a bat, from his right into the trunk's side |
-| `Crew_Mine` | stone, ore | 1.1 s | pick | - | pickaxe into rock (stone, ore) |
+| `Crew_Mine` | stone, ore | 1.1 s | pick | - | one-handed vertical pickaxe swing, overhand like a bat, into the rock |
 | `Crew_Forage` | spice, food | 1.7 s | - | basket | crouch, pick from a bush, drop it in the basket (spice, food) |
 | `Crew_Build` | raising a building | 0.95 s | hammer | - | nailing a board to a post (raising any building) |
 | `Crew_Carry` | hauling | 0.9 s | carrylog | - | walking with a log on his right shoulder (the game adds 1-3) |
@@ -124,6 +124,17 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   right hand at the end of the haft, the game's own grip; the game's two-handed second-hand
   placement (`VillagerActing`, 0.11 m up the haft) is not used by this clip. Chest height is lower
   than the tree's own `Trunk_Target` (1.3 m at game size, above his shoulders).
+- **Mine is set at a rock** (`CLIPS['Mine']['env']='rock'`: Astra's `Stone_Field`, the commonest
+  deposit, from `art-staging/stone-resources-astra-v2`, copied to `env/Stone_Field.fbx`). He stands
+  where `StoneDeposit.StandOff` puts a miner: its footprint radius plus 0.7 m, 1.80 m (game) from
+  the rock's pivot, so its front face is about 1 m off. The rock's front and `__Mine_Target` are
+  turned to him (in the game its yaw is random). Its top (1.11 m) is above his shoulders, so the
+  swing is **one-handed and vertical, overhand like a bat**: the pick raised behind his head, the
+  fist coming up to head height with the pick's head trailing above, the arm reaching forward as
+  the pick tips over, and the point driving 60 degrees down into the rock's sloping upper front
+  (0.63 m game), in line with his right shoulder. It holds, levers free and goes back up the way
+  it came. The pick clears the rock on every frame but for its point. The pick is still the
+  game's fallback box pick: the game has no pickaxe model yet.
 - Tools in the previews are **Astra's worker tools v1** (`env/tools/`, from
   `art-staging/worker-tools-v1`), placed by the game's tool frame.
 - New tools the game doesn't have yet: pickaxe, mallet and chisel, quern peg, knife, arrow

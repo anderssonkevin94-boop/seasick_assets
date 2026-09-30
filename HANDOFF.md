@@ -54,7 +54,7 @@ Tools go in his **right hand, the bone named `hand.L` (Blender -X)**, as the gam
 | `check_v15_clip.py -- Clip ...` | Runs the check on every frame, with tools, props and environment |
 | `render_v15_clip_views.py -- Clip` (env `OUT=dir`) | Five-angle review sheet at key frames |
 | `render_v15_anims.py -- Clip ...` | GIF and filmstrip per clip in `crew-meshy-v15/anims/` |
-| `crew_v15_mill.py` | Environments: `load_env('mill')` (lowered level 1 lumber mill), `load_env('tree')` (Astra's tree) |
+| `crew_v15_mill.py` | Environments: `load_env('mill')` (lowered level 1 lumber mill), `load_env('tree')` (Astra's tree), `load_env('rock')` (Astra's Stone_Field) |
 | `mill_l1_lowbench.py` | Makes the lowered-bench mill FBX from the game's kit |
 | `export_v15_viewer.py` | GLB + the self-contained viewer page `crew-meshy-v15/viewer/index.html` |
 | `verify_crew_meshy_v15.py` | FBX re-import check (names, weights, white skin, every take moves, lengths) |
@@ -83,8 +83,8 @@ https://claude.ai/artifact/GcDxNt3L667f99DjPvV5Kt). After a rig change, rerun
 
 | Status | Clips |
 |---|---|
-| **Reworked and clean on every frame** | `Saw` (level 1 lumber mill, lowered bench, sawing the log), `Chop` (Astra's tree, one-handed flat bat swing into the trunk's right flank) |
-| Made before the anatomy rules; **need rework the same way** | Idle, Walk, Mine, Forage, Build, Carry, PickUp, SetDown, Hunt, Farm, Smith, Cook, Mill, Lookout, Quarry, Fletcher, Fisher, SickSway, SickWalk, SickClutch, SickRail, SickCollapse, SickKneel, Bail, ThrowLine, HaulLine, GunRam, GunFire, Row, Gangway, Soaked, DeckBrace, RailGrip |
+| **Reworked and clean on every frame** | `Saw` (level 1 lumber mill, lowered bench, sawing the log), `Chop` (Astra's tree, one-handed flat bat swing into the trunk's right flank), `Mine` (Astra's Stone_Field, one-handed vertical overhand swing into its upper front) |
+| Made before the anatomy rules; **need rework the same way** | Idle, Walk, Forage, Build, Carry, PickUp, SetDown, Hunt, Farm, Smith, Cook, Mill, Lookout, Quarry, Fletcher, Fisher, SickSway, SickWalk, SickClutch, SickRail, SickCollapse, SickKneel, Bail, ThrowLine, HaulLine, GunRam, GunFire, Row, Gangway, Soaked, DeckBrace, RailGrip |
 
 Kevin goes down the list one clip at a time. Ask which is next.
 

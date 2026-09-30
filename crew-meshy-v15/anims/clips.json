@@ -31,7 +31,7 @@
     "seconds": 1.1,
     "frames": 34,
     "loop": true,
-    "what": "pickaxe into rock (stone, ore)",
+    "what": "a one-handed vertical pickaxe swing, overhand like a bat, into the rock",
     "tool_right_hand": "pick",
     "held_left_hand": null
   },
