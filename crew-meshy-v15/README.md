@@ -22,13 +22,17 @@ per-face shade; skin stays flat so the game's sickness tint works.
 | Colour | Pieces |
 |---|---|
 | Skin `#D99259` | head, ears, nose, arms, hands, feet |
-| Cream linen `#D8CFBC` | tunic, sleeves; wrist wraps a lighter `#E6E0D2` |
+| Cream linen `#D8CFBC` | tunic, sleeves; wrist wraps a lighter `#E6E0D2`; the arm under the sleeve, up to the shoulder |
 | Red `#D0443A` | sash, sash knot and tails, headband, headband knot and tails |
 | Dark brown `#3A2921` | hair, tuft, brows |
 | Near black `#1C1816` | eyes |
 | Teal `#2D5664` / `#2F6572` | shorts / rolled cuffs |
 | Sandal | sole `#3E2A20`, wood block `#B07A4A` (bottom of the foot piece), strap `#5A3A28` |
 | Patch brown `#8A5A36` | shorts patch |
+
+The arm tubes run on inside the sleeves to the shoulder. That hidden part is painted linen, not
+skin, so a raised arm that pokes through the sleeve doesn't show a skin patch
+(`shoulder-linen.png`, before and after). It belongs to `CREW_Cloth`.
 
 Added as small plates laid on the surface (Meshy left them out): the mouth `#A23B2F`, and two
 planks with a stitch on the tunic's front, as in the reference. **Total: 3,135 triangles**,
@@ -69,8 +73,8 @@ bottom-front edge tucks back where the fingers curl under, and the thumb presses
 the front. See `pose-fist.png`. The rigged FBX carries the fists too.
 
 **Game-ready:** `deckhand-v15-rigged.fbx` carries the runtime contract of the in-game deckhand:
-the 16 v5 bones and two skinned meshes, `CREW_Skin` (873 triangles, vertex colours white for the
-sickness tint; set skin `_BaseColor` to #D99259) and `CREW_Cloth` (2,262 triangles), each with a
+the 16 v5 bones and two skinned meshes, `CREW_Skin` (789 triangles, vertex colours white for the
+sickness tint; set skin `_BaseColor` to #D99259) and `CREW_Cloth` (2,346 triangles), each with a
 vertex-colour material. `anims/deckhand-v15-anims.fbx` has the same split. Both pass
 `../tools/blender/verify_crew_meshy_v15.py` (FBX re-import: bone names, mesh names, 3,135
 triangles, colours, flat shading, white skin, weights summing to 1, rig moves the mesh, every

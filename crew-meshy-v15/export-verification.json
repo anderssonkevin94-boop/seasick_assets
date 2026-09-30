@@ -2,8 +2,8 @@
   {
     "file": "crew-meshy-v15/deckhand-v15-rigged.fbx",
     "meshes": {
-      "CREW_Cloth": 2262,
-      "CREW_Skin": 873
+      "CREW_Cloth": 2346,
+      "CREW_Skin": 789
     },
     "bones": 16,
     "bone_names_match_v5": true,
@@ -19,8 +19,8 @@
   {
     "file": "crew-meshy-v15/anims/deckhand-v15-anims.fbx",
     "meshes": {
-      "CREW_Cloth": 2262,
-      "CREW_Skin": 873
+      "CREW_Cloth": 2346,
+      "CREW_Skin": 789
     },
     "bones": 16,
     "bone_names_match_v5": true,

@@ -25,6 +25,7 @@ ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'crew-meshy-v15'
 SRC=OUT/'source/meshy-red-bandana-adventure.fbx'
 HEIGHT=1.30          # game source height; AstraPlaytestImport rescales to 1.7 m
+SLEEVE_END=.22       # arm faces nearer the shoulder than this (Meshy units) are under the sleeve
 
 
 def srgb(h):
@@ -107,6 +108,9 @@ def main():
         for f in comp:
             name=col
             if label=='foot' and f.calc_center_median().z<.058:name='wood'   # wooden sandal block
+            # The arm tube runs on inside the sleeve to the shoulder. Paint that hidden
+            # part linen, like the sleeve, so a raised arm poking through doesn't show skin.
+            if label=='arm' and abs(f.calc_center_median().x)<SLEEVE_END:name='linen'
             face_col[f.index]=name
         report.append((label,col,len(comp)))
     bm.free()
