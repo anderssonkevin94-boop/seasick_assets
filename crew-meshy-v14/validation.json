@@ -1,24 +1,28 @@
 {
   "source_triangles": 771306,
-  "triangles": 2974,
+  "triangles": 2962,
   "triangles_after_cuts": 2924,
-  "heat_unweighted_vertices": 0,
+  "limb_seam_edges": 75,
+  "limb_corner_rips": 2,
+  "heat_unweighted_vertices": 6,
+  "limb_vertices": 148,
   "face_regions": {
-    "skin": 754,
-    "sash": 713,
+    "skin": 803,
+    "sash": 672,
     "wood": 87,
-    "linen": 949,
+    "linen": 941,
     "pants": 64,
     "hair": 205,
     "pantcuff": 98,
     "sole": 54
   },
+  "armpit_slivers_removed": 12,
   "face_plate_triangles": 50,
   "export_triangles": {
-    "CREW_Cloth": 2220,
-    "CREW_Skin": 754
+    "CREW_Cloth": 2166,
+    "CREW_Skin": 796
   },
-  "triangles_final": 2974,
+  "triangles_final": 2962,
   "skin_base_color_srgb": "#D99259",
   "rig_bones": 16,
   "palette_srgb": {

@@ -92,6 +92,52 @@ def cut_boundaries(o):
 def side_name(base,s):return base+('.R' if s>0 else '.L')
 
 
+def seg_dist(p,a,b):
+    a,b,p=Vector(a),Vector(b),Vector(p);ab=b-a
+    t=max(0,min(1,(p-a).dot(ab)/ab.length_squared));return (a+ab*t-p).length
+
+
+def limb_face(c,n=None):
+    """True for faces of a fist or forearm (below the sleeve), by distance to
+    that side's forearm and hand bones. The sash knot tails in front of his
+    right hip are excluded even where Meshy fused them to the fist, and so
+    is the hip's side facing out at the fist (n: the face normal)."""
+    c=Vector(c)
+    if c.z>=.62:return False
+    for s in (-1,1):
+        if s*c.x<=.2:continue
+        if s<0 and c.y<-.14:return False
+        if n is not None and s*c.x<.265 and s*n[0]>.6:return False
+        f,h=side_name('forearm',s),side_name('hand',s)
+        if (c.z>.5 and region(tuple(c))=='linen'
+                and seg_dist(c,*REST[side_name('upper_arm',s)][:2])<seg_dist(c,*REST[h][:2])):
+            return False                                     # torn sleeve flaps stay with the sleeve
+        if min(seg_dist(c,*REST[f][:2]),seg_dist(c,*REST[h][:2]))<.105:return True
+    return False
+
+
+def split_limbs(o):
+    """Cut the mesh wherever a fist/forearm face meets a body face below the
+    sleeves, so the fist and the body (sash knot, tunic, hip) own separate
+    vertices: invisible at rest, and each side moves with its own bones."""
+    me=o.data;bm=bmesh.new();bm.from_mesh(me)
+    for f in bm.faces:f.normal_update()
+    cls={f.index:limb_face(f.calc_center_median(),f.normal) for f in bm.faces}
+    seam=[e for e in bm.edges if len(e.link_faces)==2 and e.verts[0].co.z<.62
+          and cls[e.link_faces[0].index]!=cls[e.link_faces[1].index]]
+    bmesh.ops.split_edges(bm,edges=seam)
+    # Faces that touch a fist only at a corner (Meshy's fused sash knot) share
+    # no edge with it, so rip those corners too; the fist's own copies are
+    # then welded back together so the fist stays closed.
+    limb=[f for f in bm.faces if cls[f.index]]
+    mixed=[v for v in bm.verts if v.co.z<.62 and len({cls[f.index] for f in v.link_faces})>1]
+    for v in mixed:
+        for f in [f for f in v.link_faces if cls[f.index]]:bmesh.utils.face_vert_separate(f,v)
+    bmesh.ops.remove_doubles(bm,verts=list({v for f in limb for v in f.verts}),dist=1e-6)
+    bm.to_mesh(me);bm.free()
+    AUDIT['limb_seam_edges']=len(seam);AUDIT['limb_corner_rips']=len(mixed)
+
+
 # Landmarks measured from 1 px = 1 mm front and side silhouettes of the
 # normalised Meshy mesh (see README). +X is his left, -Y his front.
 REST={'root':((0,0,.02),(0,0,.20),None),
@@ -138,27 +184,37 @@ def clean_weights(body):
     front (the sash knot sits right by the right fist); vertices the solver
     missed take the nearest bone. Then keep 4 influences and normalise."""
     rig=body.parent
+    # Soften the heat weights first: lone torn-cloth vertices under the arms
+    # otherwise keep a different mix from their neighbours and spike out
+    # when the arms lift.
+    bpy.context.view_layer.objects.active=body;bpy.ops.object.select_all(action='DESELECT');body.select_set(True)
+    bpy.ops.object.mode_set(mode='WEIGHT_PAINT')
+    bpy.ops.object.vertex_group_smooth(group_select_mode='ALL',factor=.5,repeat=3)
+    bpy.ops.object.mode_set(mode='OBJECT')
     vg={g.name:g for g in body.vertex_groups}
     for name in REST:
         if name not in vg:vg[name]=body.vertex_groups.new(name=name)
     idx={g.index:g.name for g in body.vertex_groups}
-    def seg_dist(p,a,b):
-        a,b=Vector(a),Vector(b);ab=b-a;t=max(0,min(1,(p-a).dot(ab)/ab.length_squared));return (a+ab*t-p).length
     arm_bones=[n for n in REST if n.split('.')[0] in ('upper_arm','forearm','hand')]
+    me=body.data
+    limb={vi for p in me.polygons if limb_face(tuple(p.center),p.normal) for vi in p.vertices}
+    AUDIT['limb_vertices']=len(limb)
     for v in body.data.vertices:
         p=v.co;w={idx[g.group]:g.weight for g in v.groups if g.weight>1e-4}
         if p.z>.86:w={'head':1.}
         elif p.z>.80 and abs(p.x)<.19:w={'head':.3,'spine':.7}
-        if abs(p.x)<.245 and p.z<.58:
-            for n in arm_bones:w.pop(n,None)
-        sash_tail=p.y<-.13 and -.33<p.x<-.19 and .15<p.z<.5
-        if sash_tail:                               # knot and tails follow the hips
-            for n in arm_bones:w.pop(n,None)
-        elif abs(p.x)>.255 and .33<p.z<.60:        # fists and forearms: arm bones only
+        elif p.z>.80 and region(tuple(p))!='linen':w={'head':1.}   # ears: never the arms
+        if v.index in limb:                        # fists and forearms: arm bones only
             w={n:x for n,x in w.items() if n in arm_bones}
             if not w:
                 d={n:seg_dist(p,*REST[n][:2]) for n in arm_bones}
                 w={min(d,key=d.get):1.}
+        elif p.z<.60:
+            s=1 if p.x>0 else -1
+            u,f=side_name('upper_arm',s),side_name('forearm',s)
+            sleeve=s*p.x>.24 and p.z>.50 and min(seg_dist(p,*REST[u][:2]),seg_dist(p,*REST[f][:2]))<.13
+            for n in arm_bones:                    # tunic, sash knot and tails: never the arms;
+                if not sleeve or n.startswith('hand'):w.pop(n,None)   # sleeves never the hand
         if not w:
             d={n:seg_dist(p,a,b) for n,(a,b,_) in REST.items() if n!='root'}
             n=min(d,key=d.get);w={n:1.}
@@ -238,12 +294,26 @@ def region(c):
     return 'linen'
 
 
+def face_region(c,n,on_arm=False):
+    """region() for a face, with the limb split: fist and forearm faces are
+    skin whole (on_arm: every vertex follows the arm, as the sash-knot
+    pieces Meshy fused into the right fist do), and the hip's side hidden
+    behind the fist is tunic."""
+    name=region(tuple(c))
+    if limb_face(tuple(c),n) or (on_arm and c[2]<.6):return 'skin'
+    if name=='skin' and .3<c[2]<.575 and abs(c[0])<.27:return 'linen'
+    return name
+
+
 def colour(body):
     me=body.data
     attr=me.color_attributes.new('Col','BYTE_COLOR','CORNER')
+    arm={g.index for g in body.vertex_groups if g.name.split('.')[0] in ('upper_arm','forearm','hand')}
+    def on_arm(vi):
+        return sum(g.weight for g in me.vertices[vi].groups if g.group in arm)>.5
     counts={}
     for k,p in enumerate(me.polygons):
-        name=region(tuple(p.center))
+        name=face_region(p.center,p.normal,all(on_arm(vi) for vi in p.vertices))
         counts[name]=counts.get(name,0)+1
         col=COL[name]
         if name!='skin':
@@ -289,14 +359,54 @@ def face_plates(body):
     return po
 
 
+def prune_armpit_slivers(body,rig):
+    """Raise both arms straight out and delete armpit slivers: long, thin
+    reduction triangles (area < 8% of their longest edge squared) joining a
+    sleeve edge to the tunic side, which stretch over 1.6x. Wide faces that
+    stretch at the shoulder are kept."""
+    rest={v.index:v.co.copy() for v in body.data.vertices}
+    for pb in rig.pose.bones:pb.matrix_basis=Matrix.Identity(4)
+    bpy.context.view_layer.update()
+    def aim(name,head,direction):
+        bone=rig.data.bones[name];length=bone.length
+        delta=(bone.tail_local-bone.head_local).rotation_difference(Vector(direction).normalized())
+        m=delta.to_matrix().to_4x4()@bone.matrix_local.to_quaternion().to_matrix().to_4x4()
+        m.translation=Vector(head);rig.pose.bones[name].matrix=m
+        bpy.context.view_layer.update()
+        return Vector(head)+Vector(direction).normalized()*length
+    for s in (-1,1):
+        u,f,h=side_name('upper_arm',s),side_name('forearm',s),side_name('hand',s)
+        e=aim(u,REST[u][0],(s,0,0));w=aim(f,e,(s,0,0));aim(h,w,(s,0,0))
+    graph=bpy.context.evaluated_depsgraph_get();ev=body.evaluated_get(graph);em=ev.to_mesh()
+    posed={v.index:v.co.copy() for v in em.vertices}
+    posed_area={p.index:p.area for p in em.polygons};ev.to_mesh_clear()
+    def longest(pts,poly):return max((pts[poly.vertices[i]]-pts[poly.vertices[i-1]]).length for i in range(len(poly.vertices)))
+    def thin(p):   # area relative to the square of the longest edge: slivers are near 0
+        L=longest(rest,p);return p.area/max(L*L,1e-9)
+    def posed_sliver(p):   # long and nearly zero-width once the arms are up
+        L=longest(posed,p);return L>.12 and posed_area[p.index]/(L*L)<.035
+    doomed=[p.index for p in body.data.polygons
+            if .40<p.center.z<.82 and abs(p.center.x)>.15
+            and ((thin(p)<.08 and longest(posed,p)>1.6*max(longest(rest,p),.01)) or posed_sliver(p))]
+    for pb in rig.pose.bones:pb.matrix_basis=Matrix.Identity(4)
+    bpy.context.view_layer.update()
+    bm=bmesh.new();bm.from_mesh(body.data);bm.faces.ensure_lookup_table()
+    bmesh.ops.delete(bm,geom=[bm.faces[i] for i in doomed],context='FACES_ONLY')
+    bm.to_mesh(body.data);bm.free()
+    AUDIT['armpit_slivers_removed']=len(doomed)
+
+
 def split_and_export(body,plates):
     """CREW_Skin: every skin face, vertex colours exported white so the
     game's CrewVertexColor tint (skin _BaseColor #D99259, sickness green) owns
     its colour. CREW_Cloth: everything else plus the face plates."""
     rig=body.parent
     def keep(o,want_skin):
-        bm=bmesh.new();bm.from_mesh(o.data)
-        doomed=[f for f in bm.faces if (region(tuple(f.calc_center_median()))=='skin')!=want_skin]
+        col=o.data.color_attributes['Col'].data   # skin faces carry the exact skin colour
+        skin_faces={p.index for p in o.data.polygons
+                    if max(abs(a-b) for a,b in zip(col[p.loop_indices[0]].color[:3],COL['skin']))<.01}
+        bm=bmesh.new();bm.from_mesh(o.data);bm.faces.ensure_lookup_table()
+        doomed=[f for f in bm.faces if (f.index in skin_faces)!=want_skin]
         bmesh.ops.delete(bm,geom=doomed,context='FACES');bm.to_mesh(o.data);bm.free()
     skin=body.copy();skin.data=body.data.copy();bpy.context.scene.collection.objects.link(skin)
     keep(skin,True);keep(body,False)
@@ -330,10 +440,12 @@ def split_and_export(body,plates):
 if __name__=='__main__':
     body=load_and_reduce()
     cut_boundaries(body)
+    split_limbs(body)
     rig=build_rig()
     missed=bind(body,rig)
     clean_weights(body)
     colour(body)
+    prune_armpit_slivers(body,rig)
     plates=face_plates(body)
     split_and_export(body,plates)
     AUDIT['triangles']=AUDIT['triangles_final']

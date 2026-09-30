@@ -16,12 +16,12 @@ This folder turns that model into a drop-in replacement for the in-game deckhand
 | Reduce | Collapse to 40k, dissolve near-coplanar faces (keeps Meshy's flat facets), collapse to 2,300 |
 | Clean colour edges | Mesh sliced along the sash's two edges and the headband's top and bottom (+624 triangles) |
 | Rig | The game's 16-bone skeleton, placed on landmarks measured from 1 px = 1 mm silhouettes of this mesh |
-| Weights | Blender automatic (heat) weights, then rules: the head owns everything above the collar; fists and forearms follow only arm bones (they hang beside the thighs); the sash knot and tails follow the hips; max 4 bones per vertex; normalised |
+| Weights | Blender automatic (heat) weights, smoothed, then rules: the head owns everything above the collar (ears included); fists and forearms are cut free of the hip (edge seams and corner rips) and follow only arm bones; the tunic, sash knot and tails never follow the arms below the sleeves; max 4 bones per vertex; normalised |
 | Colour | By region (Meshy gave no texture): sandal sole and wood, skin, teal shorts and cuffs, cream tunic, red sash, headband, knot and tails, dark hair |
 | Face | Eyes, brows and mouth as crisp plates laid on the face (Meshy's fine eye outlines don't survive the reduction), 50 triangles |
-| Split | `CREW_Skin` (754 triangles, vertex colours white for the tint) and `CREW_Cloth` (2,220 triangles) |
+| Split | `CREW_Skin` (796 triangles, vertex colours white for the tint) and `CREW_Cloth` (2,166 triangles) |
 
-**Total: 2,974 triangles** (in-game v5: 1,560; earlier hand-built v11: 4,288).
+**Total: 2,962 triangles** (in-game v5: 1,560; earlier hand-built v11: 4,288).
 
 ## Runtime contract (same as the in-game deckhand)
 
@@ -37,13 +37,32 @@ This folder turns that model into a drop-in replacement for the in-game deckhand
 
 ## Verification
 
-- FBX re-import: 2 meshes, 16 bones with v5's names, 2,974 triangles, vertex colours, flat shading,
+- FBX re-import: 2 meshes, 16 bones with v5's names, 2,962 triangles, vertex colours, flat shading,
   white skin, every vertex's weights sum to 1 with at most 4 bones, and the rig moves the mesh.
 - Deformation reviewed in five poses (`poses.png`): rest, walk, work, reach and crouch. The
   sleeves stretch a little at full forward reach, which is well beyond the game's generated clips.
 
 **Not yet tested:** Unity lighting, the generated walk and idle clips, tool and carry anchors
 (the fists are big and sit at hip height), and on-device performance.
+
+## T-pose
+
+![T-pose](tpose/tpose-front.png)
+
+| File | Use it for |
+|---|---|
+| `tpose/deckhand-tpose-rigged.fbx` | Same skeleton, weights and runtime contract, but the **T-pose is the rest pose**: for retargeting (Unity Humanoid, Mixamo animations on an existing rig, other animation libraries) |
+| `tpose/deckhand-tpose-mesh.fbx` | The mesh alone in a T, no rig, preview skin colour: for auto-riggers such as Mixamo, which want an unrigged mesh |
+
+Arms straight out at shoulder height, legs straight. Both files are 2,962 triangles, 1.27 m
+fingertip to fingertip, 1.30 m tall, feet on the ground. The game FBX (`deckhand-rigged.fbx`)
+stays in its relaxed rest pose, because the game's generated clips are built relative to it.
+
+Lifting the arms exposed weighting that the relaxed poses hid. Meshy fused the right fist to
+the sash knot and the hip, and torn sleeve flaps rode with the fists. The rebuild now cuts
+the fists free and keeps sash, tunic and ears off the arm bones. A few knot fragments that sit
+inside the right fist move with it, coloured skin. The armpits stretch a little, as any
+T-pose does.
 
 ## Known gaps, and the easy fix
 
@@ -65,6 +84,8 @@ This folder turns that model into a drop-in replacement for the in-game deckhand
 | `../tools/blender/crew_meshy_v14_poses.py`, `crew_meshy_v14_views.py` | Pose and view renders |
 | `../tools/blender/render_v14_lit.py`, `crew_v14_sheet.py` | Soft-lit renders and the reference comparison |
 | `../tools/blender/source/crew-meshy-v14.blend` | Editable rigged source |
+| `../tools/blender/crew_meshy_v14_tpose.py` | T-pose FBXs and renders (`tpose/`) |
+| `../tools/blender/source/crew-meshy-v14-tpose.blend` | Editable T-pose source |
 
 Rebuild: `blender -b -P tools/blender/crew_meshy_v14.py` (or python with the `bpy` module).
 
