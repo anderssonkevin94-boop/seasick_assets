@@ -3,7 +3,7 @@ import sys,os;sys.path.insert(0,'tools/blender')
 import bpy
 from mathutils import Vector
 from PIL import Image,ImageDraw
-import crew_meshy_v15_anims as A
+import crew_meshy_v15_anims as A, crew_v15_mill as MILL
 name=sys.argv[sys.argv.index('--')+1];out=os.environ['OUT']
 bpy.ops.wm.open_mainfile(filepath='tools/blender/source/crew-meshy-v15-anims.blend')
 sc=bpy.context.scene;sc.render.fps=30
@@ -16,18 +16,24 @@ sc.world.color=(.37,.55,.68)
 g=A.box_mesh('ground',[((4,4,.02),(0,0,-.011),'soil')])
 g.data.color_attributes['Col'].data.foreach_set('color',[v for _ in range(len(g.data.loops)) for v in (*A.C.srgb('#7E9E62'),1)])
 for p in c['props']:A.box_mesh(p[0],[(p[2],p[1],p[3])])
+if c.get('env')=='mill':
+    env=MILL.load('cutting');stand=MILL.marker(env,'Worker_Stand');rig.location=stand;bpy.context.view_layer.update()
+else:stand=Vector((0,0,0))
 act=bpy.data.actions['Crew_'+name];rig.animation_data.action=act;sc.frame_set(0)
 if c['rtool']:A.attach_tool(rig,sv,c['rtool'],A.RIGHT)
 if c['ltool']:A.attach_tool(rig,sv,c['ltool'],A.LEFT)
 cd=bpy.data.cameras.new('c');cam=bpy.data.objects.new('c',cd);sc.collection.objects.link(cam);sc.camera=cam;cd.type='ORTHO';cd.ortho_scale=1.45
 sc.render.resolution_x=sc.render.resolution_y=380
 views=[('3/4 his right',(-2.2,-2.4,1.3)),('side, his right',(-3,0,.7)),('front',(0,-3,.8)),('3/4 his left',(2.2,-2.4,1.3)),('above',(-.8,-1.6,3.2))]
+if c.get('env')=='mill':      # game-camera angles from the front of the building, clear of its pillars
+    views=[('game view, front 3/4',(-2.6,-4.2,3.0)),('front, eye level',(0,-3,.9)),('3/4 his right, low',(-2.4,-2.0,1.1)),('3/4 his left',(2.2,-2.4,1.4)),('above',(-.8,-1.6,3.2))]
+    cd.ortho_scale=1.75
 n=int(act.frame_end);keys=[round(n*k/4) for k in range(4)] if c['loop'] else [round(n*k/4) for k in range(5)]
 rows=[]
 for f in keys:
     sc.frame_set(f);row=[]
     for vn,eye in views:
-        tgt=Vector((0,-.2,.55));cam.location=eye;cam.rotation_euler=(tgt-Vector(eye)).to_track_quat('-Z','Y').to_euler()
+        tgt=stand+Vector((0,-.2,.55));eye=stand+Vector(eye);cam.location=eye;cam.rotation_euler=(tgt-Vector(eye)).to_track_quat('-Z','Y').to_euler()
         sc.render.filepath=out+'/_v.png';bpy.ops.render.render(write_still=True);row.append(Image.open(out+'/_v.png').convert('RGB'))
     rows.append((f,row))
 W=380;sheet=Image.new('RGB',(W*len(views),W*len(rows)+24),'white');d=ImageDraw.Draw(sheet)

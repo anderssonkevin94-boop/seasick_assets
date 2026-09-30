@@ -28,6 +28,17 @@ def main():
         for kind,side,tag in((c['rtool'],A.RIGHT,'R'),(c['ltool'],A.LEFT,'L')):
             if kind:
                 o=A.attach_tool(rig,solver,kind,side);o.name=f'tool__{name}__{tag}';count+=1
+    # Clips set in a building: the building itself is their prop, placed so its
+    # Worker_Stand is where he stands (the origin), under one prop__<Clip>__env node.
+    import crew_v15_mill as MILL
+    for name,c in A.CLIPS.items():
+        if c.get('env')!='mill':continue
+        env=MILL.load('cutting');stand=MILL.marker(env,'Worker_Stand')
+        for o in list(env.values()):
+            if o.hide_render:bpy.data.objects.remove(o,do_unlink=True)
+        root=bpy.data.objects.new(f'prop__{name}__env',None);bpy.context.scene.collection.objects.link(root)
+        mill=bpy.data.objects['LumberMill_C_Level_1']
+        mill.parent=root;root.location=-stand;count+=1
     for o in bpy.data.objects:
         if o.type=='MESH':
             for p in o.data.polygons:p.use_smooth=False

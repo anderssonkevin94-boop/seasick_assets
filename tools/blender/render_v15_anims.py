@@ -45,7 +45,15 @@ def main():
     for name,c in A.CLIPS.items():
         if ONLY and name not in ONLY:continue
         act=bpy.data.actions['Crew_'+name];rig.animation_data.action=act
-        extra=[]
+        extra=[];stand=Vector((0,0,0))
+        if c.get('env')=='mill':
+            import crew_v15_mill as MILL
+            env=MILL.load('cutting');stand=MILL.marker(env,'Worker_Stand');rig.location=stand
+            extra+=list(env.values());ground.hide_render=False
+            cam.location=stand+Vector((-2.6,-4.2,3.0));cam.rotation_euler=(stand+Vector((0,-.2,.5))-cam.location).to_track_quat('-Z','Y').to_euler()
+        else:
+            rig.location=(0,0,0);cam.location=eye;cam.rotation_euler=(tgt-eye).to_track_quat('-Z','Y').to_euler()
+        bpy.context.view_layer.update()
         for pname,centre,size,colour,_ in c['props']:
             extra.append(A.box_mesh(pname,[(size,centre,colour)]))
         sc.frame_set(0)

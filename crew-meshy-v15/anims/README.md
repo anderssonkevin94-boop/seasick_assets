@@ -105,6 +105,13 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   - timber and clearing → Chop, stone and ore → Mine, spice and food → Forage
   - raising a building → Build, hauling → Carry, the bend at a pile → PickUp / SetDown,
     hunting → Hunt
+- **Saw is the level 1 lumber mill's clip** (`CLIPS['Saw']['env']='mill'`): authored at the
+  mill's `Worker_Stand`, sawing the log on the bench. It needs the **lowered bench**
+  (`env/lumber-mill-state-kit-lowbench.fbx`, made by `../../tools/blender/mill_l1_lowbench.py`;
+  bench top 1.33 m -> 0.78 m, mallet and wedge removed, `Mallet_Tool` kept as an empty for
+  `MillL1Import`; `env/bench-height.png`). He stands 10 cm behind `Worker_Stand` (baked into the
+  root) so his belly clears the log. The saw's blade runs out of the fist along the forearm
+  (tool frame +Z), so the game's saw mesh (blade up +Y) needs turning -90 degrees about X.
 - New tools the game doesn't have yet: pickaxe, mallet and chisel, quern peg, knife, arrow
   shaft, bow, basket, bucket, coiled line, rammer, linstock, oars (the clips work without them; they only show in the previews).
 - Walk, Carry and SickWalk need their playback speed matched to the move speed.

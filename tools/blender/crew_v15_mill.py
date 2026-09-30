@@ -29,8 +29,9 @@ def load(state='cutting',logs=3,planks=3,fbx=None):
     """Import the mill, scaled, and show one bench state ('empty', 'loaded',
     'cutting', 'finished') plus the first `logs` input logs and `planks`
     output planks. Returns {name: object}."""
-    before=set(bpy.data.objects)
+    before=set(bpy.data.objects);sc=bpy.context.scene;fps=(sc.render.fps,sc.render.fps_base)
     bpy.ops.import_scene.fbx(filepath=str(fbx or FBX))
+    sc.render.fps,sc.render.fps_base=fps           # the FBX importer resets the scene rate to the file's
     objs={o.name.split('.')[0]:o for o in bpy.data.objects if o not in before}
     objs['LumberMill_C_Level_1'].scale=(SCALE,)*3
     for o in objs.values():
@@ -51,7 +52,8 @@ def load(state='cutting',logs=3,planks=3,fbx=None):
                 for li in p.loop_indices:
                     g=gc.data[li].color
                     col.data[li].color=(*[g[i]*_lin(t[i]/255) for i in range(3)],1)   # byte colours read and write linear
-            me.color_attributes.active_color=col
+            me.color_attributes.remove(me.color_attributes['GameColor'])   # previews and the viewer's GLB use Col only
+            col=me.color_attributes['Col'];me.color_attributes.active_color=col;me.color_attributes.render_color_index=0
             for p in me.polygons:p.use_smooth=False
     bpy.context.view_layer.update()
     return objs

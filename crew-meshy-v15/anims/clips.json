@@ -76,7 +76,7 @@
     "seconds": 1.0,
     "frames": 31,
     "loop": true,
-    "what": "sawmill: sawing a plank on a trestle, the left hand holding its far end",
+    "what": "level 1 lumber mill: sawing the log on the bench, the left hand holding it down",
     "tool_right_hand": "saw",
     "held_left_hand": null
   },

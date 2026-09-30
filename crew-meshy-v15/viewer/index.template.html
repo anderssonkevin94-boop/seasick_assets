@@ -165,7 +165,7 @@ const fill = new THREE.DirectionalLight(0xcfe0ff, 0.35); fill.position.set(3, 2,
 
 const deckMat = new THREE.MeshStandardMaterial({roughness:.95, metalness:0});
 const deck = new THREE.Mesh(new THREE.CircleGeometry(2.4, 64), deckMat);
-deck.rotation.x = -Math.PI / 2; deck.receiveShadow = true; scene.add(deck);
+deck.rotation.x = -Math.PI / 2; deck.position.y = -0.012; deck.receiveShadow = true; scene.add(deck);   // just under a building's own ground
 const rings = new THREE.Group(); scene.add(rings);
 function themeColours(){
   const cs = getComputedStyle(document.documentElement);

@@ -56,6 +56,19 @@ class Checker:
             self.arm_verts[side]=[i for i in self.arm_verts[side] if inside(rest[i])[0]==0]
 
     def _inside_fn(self,co):
+        def parity(t,p):
+            """Confirm with rays: inside if at least 2 of 3 rays cross the
+            surface an odd number of times (the nearest-normal test alone
+            misreads points near a crease)."""
+            odd=0
+            for d in(Vector((0,0,1)),Vector((0,-1,0)),Vector((1,0,0))):
+                n=0;o=p.copy()
+                for _ in range(16):
+                    hit=t.ray_cast(o,d)
+                    if hit[0] is None:break
+                    n+=1;o=hit[0]+d*1e-4
+                odd+=n%2
+            return odd>=2
         trees=[]
         for label,vs,faces in self.pieces:
             if label not in BODY_PIECES:continue
@@ -69,7 +82,7 @@ class Checker:
                 hit=t.find_nearest(p)
                 if hit[0] is None:continue
                 loc,n,_,d=hit
-                if (p-loc).dot(n)<0 and d>worst[0]:worst=(d,label)
+                if (p-loc).dot(n)<0 and d>worst[0] and parity(t,p):worst=(d,label)
             return worst
         return inside
 
@@ -86,7 +99,7 @@ class Checker:
             deep=(0,None);where=0;piece=''
             for i in vs:
                 d=inside(co[i])
-                if d[0]>deep[0]:deep=d;where=(co[i]-pbs['upper_arm'+side].head).length;piece=self.vert_piece[i]
+                if d[0]>deep[0]:deep=d;where=(co[i]-self.rig.matrix_world@pbs['upper_arm'+side].head).length;piece=self.vert_piece[i]   # world, the rig may stand anywhere
             part='shoulder' if where<.12 else 'upper arm' if where<.2 else 'forearm' if where<.36 else 'fist'
             limit=LIMITS['shoulder_mm'] if part=='shoulder' else LIMITS['clip_mm']   # the sleeve covers the shoulder's own give
             if deep[0]*1000>limit:

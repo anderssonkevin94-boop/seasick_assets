@@ -133,8 +133,7 @@ class Solver:
             want=Matrix.Rotation(self.PRONATION,3,axis)@ref
             self.twist_clamped[side]=max(self.twist_clamped.get(side,0),math.degrees(ang))
         self.orient(f,fa,want)
-        hand_up=haft if ang<=self.PRONATION else want
-        self.orient(h,face,hand_up)
+        self.orient(h,face,want)                      # the hand always keeps the forearm's twist: no pop at the limit
 
     def leg(self,side,ankle,foot_dir,knee):
         t,sh,ft='thigh'+side,'shin'+side,'foot'+side
@@ -312,20 +311,23 @@ clip('PickUp',1.3,[
 # Anatomy (every frame, crew_v15_anatomy.py): shoulders 0.22 m out inside
 # the tunic's 0.25 m, belly 0.26 m in front, reach 0.42 m.
 LOG_TOP,LOG_Y,LOG_R=.57,-.47,.14
-SAW_DIR=nrm((0,-.82,-.57));SAW_UP=nrm((0,-.57,.82))
+SAW_ANGLE=math.radians(26)                          # blade below horizontal
+SAW_DIR=nrm((0,-math.cos(SAW_ANGLE),-math.sin(SAW_ANGLE)));SAW_UP=nrm((0,-math.sin(SAW_ANGLE),math.cos(SAW_ANGLE)))
 KERF=V(-.37,LOG_Y+.04,LOG_TOP-.005)                # the cut, on the log's top, near his side of centre
-SAW_IN=.24                                         # blade length from the fist to the kerf at the pull
-SAW_PULL=KERF-SAW_DIR*SAW_IN-SAW_UP*(-.05);SAW_LEN=.17
+SAW_IN=.27                                         # blade from the fist to the kerf at the pull ...
+SAW_LEN=.15                                        # ... and the stroke, so the fist stays 12 cm off the log
+SAW_PULL=KERF-SAW_DIR*SAW_IN+SAW_UP*.05
+STAND_BACK=.10                                     # he stands 10 cm behind Worker_Stand: his belly clears the log
 TRESTLE=[]                                         # the mill is the prop now (env='mill')
 
 
 def saw_pose(t):
     s=.5-.5*math.cos(t*2*math.pi)                   # 0 at the pull, 1 at the end of the push
     grip=SAW_PULL+SAW_DIR*(SAW_LEN*s)
-    return K_(root=V(0,.02-.012*s,-.04-.005*s),rf=(0,.07,0,0),lf=(0,-.05,0,0),
-              pelvis=(0,-2*s,0),spine=(20+3*s,4,0),head=(14-2*s,-8,0),
+    return K_(root=V(0,STAND_BACK-.012*s,-.04-.005*s),rf=(0,.07,0,0),lf=(0,-.05,0,0),
+              pelvis=(0,-2*s,0),spine=(26+3*s,4,0),head=(12-2*s,-8,0),
               rh=hand(tuple(grip),SAW_DIR,SAW_UP,(-.8,.6,.2)),
-              lh=hand((.28,LOG_Y+.03,LOG_TOP+.065),(.1,-.2,-1),(-.6,-.8,0),(1,.2,.2)))
+              lh=hand((.40,LOG_Y+.14,LOG_TOP+.08),(.1,-.7,-.7),(-.6,-.8,0),(1,.5,-.2)))   # on the log's left end, outside his belly
 
 
 clip('Saw',1.0,saw_pose,rtool='saw',props=TRESTLE,what='level 1 lumber mill: sawing the log on the bench, the left hand holding it down')
@@ -672,7 +674,7 @@ def attach_tool(rig,solver,kind,side):
     m=Matrix((X,Y,Z)).transposed().to_4x4();m.translation=P.P(s*.44,0,.513)
     solver.reset()
     o.parent=rig;o.parent_type='BONE';o.parent_bone=hb
-    bpy.context.view_layer.update();o.matrix_world=m
+    bpy.context.view_layer.update();o.matrix_world=rig.matrix_world@m      # the rig may stand anywhere (a building's Worker_Stand)
     return o
 
 
