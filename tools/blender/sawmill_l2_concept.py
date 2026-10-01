@@ -9,13 +9,15 @@ iron saw blade). So the shed is the level 1 tarp camp rebuilt with what the
 hamlet makes: brick, sawn boards and iron.
 
   - Same plot (7.56 x 5.85 m, ridge under 3.84 m) and the same markers as
-    MillL1Import, so the building swaps in place and the worker stands where
-    he stood at level 1.
+    MillL1Import, so the building swaps in place; only Worker_Stand moves,
+    behind the crank.
   - The canvas becomes a plank gable roof on four squared posts, each on a
     brick pier; the work floor is a brick plinth at the same 0.16 m height.
-  - The bench becomes a rip trestle along the worker's line of sight: the log
-    points at him and he rips it toward himself with an iron-bladed frame
-    saw (a straight push-pull stroke, both fists in front of his belly).
+  - The bench becomes a saw table with an iron saw wheel (Kevin: "the
+    cutting mechanism should be a saw wheel cutting the logs and he has a
+    cranking lever to operate it"). He turns a crank wheel in front of him;
+    a belt drives the saw's arbor pulley; the log is fed left to right by a
+    rope and a hanging stone. Both wheels spin about their own origins.
   - A grindstone and a spare blade on the back wall: the saw blade wears.
   - Input cradle, log slots, output rack and plank slots are the level 1
     kit's own, unchanged; the upper plank slots show fine boards (paler,
@@ -43,11 +45,11 @@ SKIN=(217,146,89)                  # the README's skin #D99259
 
 PLOT=(7.56,5.85);RIDGE_LIMIT=3.84
 PLATFORM=.16                       # Worker_Stand height, as at level 1
-STAND=Vector((-.04,.66,PLATFORM))  # Worker_Stand, unchanged
+STAND=Vector((-.55,.8,PLATFORM))   # Worker_Stand: moved behind the crank (level 1: -0.04, 0.66)
 
 # Palette (sRGB), sampled from the level 1 mill's preview colours where they exist.
 C=dict(
-    wood=(140,88,31),wood_d=(129,81,28),wood_l=(161,100,46),hemp=(157,120,68),
+    wood=(140,88,31),wood_d=(129,81,28),wood_l=(161,100,46),hemp=(157,120,68),hide=(92,58,34),
     canvas=(189,158,110),stripe=(133,57,26),hem=(145,110,64),
     bark=(45,22,2),endgrain=(168,110,56),sign=(10,36,31),
     roof=(118,74,30),roof_d=(102,63,26),
@@ -63,8 +65,8 @@ def lin(c):
 
 class Part:
     """One named mesh object, built from coloured primitives."""
-    def __init__(self,name,parent=None):
-        self.name=name;self.parent=parent;self.bm=bmesh.new();self.cols=[]
+    def __init__(self,name,parent=None,pivot=None):
+        self.name=name;self.parent=parent;self.pivot=Vector(pivot or (0,0,0));self.bm=bmesh.new();self.cols=[]
 
     def _add(self,verts,faces,col):
         vs=[self.bm.verts.new(v) for v in verts]
@@ -110,6 +112,7 @@ class Part:
     def build(self,objs):
         me=bpy.data.meshes.new(self.name);self.bm.normal_update()
         bmesh.ops.recalc_face_normals(self.bm,faces=self.bm.faces[:])
+        for v in self.bm.verts:v.co-=self.pivot
         self.bm.to_mesh(me);self.bm.free()
         col=me.color_attributes.new('Col','BYTE_COLOR','CORNER')
         for p,c in zip(me.polygons,self.cols):
@@ -117,6 +120,7 @@ class Part:
         me.color_attributes.active_color=col
         o=bpy.data.objects.new(self.name,me);bpy.context.scene.collection.objects.link(o)
         if self.parent:o.parent=objs[self.parent]
+        bpy.context.view_layer.update();o.matrix_world=Matrix.Translation(self.pivot)   # built in world coordinates
         objs[self.name]=o;return o
 
 
@@ -148,9 +152,13 @@ def brick_courses(p,x0,x1,y0,y1,z0,z1,course=.075,brick=.23):
 POST_X=1.22;POST_YF=-1.45;POST_YB=1.75
 PLATE_Z=2.45;RIDGE_Z=3.68         # ridge runs front to back: the open gable faces the camera
 EAVE=.38;GABLE=.4
-LOG_Y0,LOG_Y1=-1.2,.04            # rip log: far end, near end (he stands at STAND.y, his belly ~0.3 m ahead of it)
-LOG_R=.17;LOG_Z=.80+LOG_R          # log rests on the trestle tops at 0.80
-CUT=.46                            # how far the rip has gone from the near end
+TABLE_Y=-.35;TABLE_Z=.78           # saw table: centre line of the cut, top (his hip, as the lowered level 1 bench)
+BLADE=Vector((.05,TABLE_Y,.8));BLADE_R=.52    # the saw wheel: axle along Y at the table top, half of it above the log
+FLY=Vector((-.55,.12,.85));FLY_R=.4           # the crank wheel in front of him, axle along Y
+CRANK_R=.2                                    # crank throw: the handle circles 0.65-1.05 m, belly to shoulder
+PULLEY_R=.07                                  # on the saw's arbor: the big wheel turns it ~6x
+LOG_R=.17;LOG_Z=TABLE_Z+LOG_R
+LOG_X0=-1.08                                  # the log's tail; it is fed +X into the wheel
 SIGN_POST=(-1.98,.9)               # the level 1 sign's bracket hung off a canvas pillar; it gets its own post
 
 
@@ -247,58 +255,111 @@ def build_shed(objs):
     sp.build(objs)
 
 
-def half_log(p,sx,y0,y1,gap):
-    """One half of a ripped octagonal log, its flat sawn face toward x=0."""
+def half_log(p,sz,x0,x1,gap):
+    """A sawn slab of the octagonal log along X: sz=1 the half toward +Y, -1 toward -Y."""
     a=LOG_R*math.cos(math.pi/8)
     prof=[(0,-a)]+[(LOG_R*math.cos(t),LOG_R*math.sin(t)) for t in(-3*math.pi/8,-math.pi/8,math.pi/8,3*math.pi/8)]+[(0,a)]
-    prof=[(sx*(u+gap),LOG_Z+v) for u,v in prof]
-    n=len(prof);vs=[Vector((u,y0,v)) for u,v in prof]+[Vector((u,y1,v)) for u,v in prof]
+    prof=[(TABLE_Y+sz*(u+gap),LOG_Z+v) for u,v in prof]
+    n=len(prof);vs=[Vector((x0,y,z)) for y,z in prof]+[Vector((x1,y,z)) for y,z in prof]
     p._add(vs,[(i,i+1,n+i+1,n+i) for i in range(n-1)],'bark')
-    p._add(vs,[(n-1,0,n,2*n-1)],'endgrain')                       # the sawn face
+    p._add(vs,[(n-1,0,n,2*n-1)],'endgrain')
     p._add(vs,[tuple(reversed(range(n))),tuple(range(n,2*n))],'endgrain')
 
 
+def wheel(p,c,r,t,col,spokes=6,rim=.06,n=16,hub='iron'):
+    """Spoked wheel in the XZ plane (axle along Y) centred at c, thickness t."""
+    c=Vector(c)
+    for i in range(n):                                       # rim segments
+        a0,a1=2*math.pi*i/n,2*math.pi*(i+1)/n;rm=r-rim/2
+        pa=c+Vector((math.cos(a0)*rm,0,math.sin(a0)*rm));pb=c+Vector((math.cos(a1)*rm,0,math.sin(a1)*rm))
+        p.beam(pa,pb+(pb-pa).normalized()*.01,t,rim,col,up=(0,1,0))
+    for i in range(spokes):
+        a=2*math.pi*i/spokes+.3
+        p.beam(c,c+Vector((math.cos(a),0,math.sin(a)))*(r-rim*.8),t*.6,.04,col,up=(0,1,0))
+    p.cyl(c-Vector((0,t*.9,0)),c+Vector((0,t*.9,0)),.06,hub,n=8)
+
+
 def build_station(objs):
-    # rip trestle: two heavy sawhorses, the log along Y pointing at the worker
-    t=Part('Mill2_RipTrestle','Bench_Anchor')
-    for y in(-.95,-.22):
-        t.box((0,y,.775),(.62,.16,.05),'wood_l')
-        for sx in(-1,1):
-            for sy in(-1,1):
-                t.beam((sx*.12,y+sy*.03,.76),(sx*.3,y+sy*.09,PLATFORM),.08,.08,'wood')
-        t.box((0,y,.36),(.5,.06,.06),'wood_d')
-        for sx in(-1,1):t.box((sx*.2,y,.83),(.06,.17,.06),'wood_d')            # chocks
-    for sx in(-1,1):                                                         # iron log dogs at the far end
-        t.beam((sx*.06,LOG_Y0+.12,LOG_Z+LOG_R-.03),(sx*.3,LOG_Y0+.12,.79),.025,.025,'iron')
+    # saw table: logs come in from the input cradle on the left, boards leave toward the output rack
+    t=Part('Mill2_SawTable','Bench_Anchor')
+    x0,x1=-1.15,1.15;w=.62
+    for side in(-1,1):                                       # top boards either side of the blade slot
+        t.box((0,TABLE_Y+side*(w/4+.015),TABLE_Z-.03),(x1-x0,w/2-.03,.06),'wood_l')
+    t.box((0,TABLE_Y,TABLE_Z-.075),(x1-x0,w,.03),'wood_d')
+    for x in(x0+.12,-.5,.6,x1-.12):
+        for side in(-1,1):t.box((x,TABLE_Y+side*(w/2-.06),(PLATFORM+TABLE_Z-.09)/2),(.09,.09,TABLE_Z-.09-PLATFORM),'wood')
+        t.box((x,TABLE_Y,.34),(.06,w-.1,.06),'wood_d')
+    t.box((0,TABLE_Y-w/2+.06,.34),(x1-x0-.2,.06,.06),'wood_d')
+    for x in(-.95,-.62):t.cyl((x,TABLE_Y-.2,TABLE_Z+.015),(x,TABLE_Y+.2,TABLE_Z+.015),.03,'wood_d',n=6)   # feed rollers
+    t.box((0,TABLE_Y-.29,TABLE_Z+.05),(x1-x0-.1,.04,.1),'wood_d')                   # fence along the far edge
+    # the saw's arbor: two bearing blocks under the table, the shaft back to the drive pulley
+    for y in(TABLE_Y-.24,-.02):t.box((BLADE.x,y,BLADE.z),(.16,.1,.16),'iron')
+    t.cyl((BLADE.x,TABLE_Y-.3,BLADE.z),(BLADE.x,FLY.y+.03,BLADE.z),.025,'iron',n=6)
+    for y in(TABLE_Y-.24,-.02):t.box((BLADE.x,y,(PLATFORM+BLADE.z-.08)/2),(.1,.08,BLADE.z-.08-PLATFORM),'wood_d')
+    # the guard: a bent iron hood over the top of the wheel
+    gr=BLADE_R+.07;arc=[BLADE+Vector((math.cos(a),0,math.sin(a)))*gr for a in [math.radians(20+14*i) for i in range(11)]]
+    for a,b2 in zip(arc,arc[1:]):t.beam(a,b2,.12,.02,'iron',up=(0,1,0))
+    t.beam(arc[0],Vector((arc[0].x,TABLE_Y-.29,TABLE_Z+.1)),.03,.03,'iron')            # its stay to the fence
+    # gravity feed: a rope from the push block over a sheave at the table end to a hanging stone
+    t.box((LOG_X0-.06,TABLE_Y,LOG_Z),(.08,.3,.24),'wood_d')
+    t.beam((LOG_X0-.06,TABLE_Y+.2,LOG_Z),(x1,TABLE_Y+.24,LOG_Z),.012,.012,'hemp')
+    t.beam((LOG_X0-.06,TABLE_Y+.2,LOG_Z),(LOG_X0-.06,TABLE_Y+.15,LOG_Z),.012,.012,'hemp')
+    t.cyl((x1+.02,TABLE_Y+.24,LOG_Z-.06),(x1+.02,TABLE_Y+.24,LOG_Z+.06),.06,'iron',n=8)
+    t.box((x1,TABLE_Y+.24,LOG_Z-.04),(.12,.04,.12),'wood_d')
+    t.beam((x1+.08,TABLE_Y+.24,LOG_Z),(x1+.08,TABLE_Y+.24,.52),.012,.012,'hemp')
+    t.box((x1+.08,TABLE_Y+.24,.42),(.18,.18,.2),'stone')
     t.build(objs)
 
-    # the log being ripped: whole at the far end, two slabs where the saw has been
-    lg=Part('Bench2_Cutting','Bench_Anchor')
-    yc=LOG_Y1-CUT
-    lg.cyl((0,LOG_Y0,LOG_Z),(0,yc,LOG_Z),LOG_R,'bark',n=8,cap='endgrain')
-    for sx in(-1,1):half_log(lg,sx,yc,LOG_Y1,.012)
-    lg.box((0,(LOG_Y0+yc)/2,LOG_Z+LOG_R*.93),(.01,yc-LOG_Y0-.06,.006),'fine_e')   # chalk line ahead of the cut
-    lg.build(objs)
+    # the crank wheel stand: one heavy upright on the far side, the shaft cantilevered toward him
+    f=Part('Mill2_CrankStand','Bench_Anchor')
+    fy=FLY.y-.12
+    f.box((FLY.x,fy,(PLATFORM+FLY.z)/2+.04),(.14,.12,FLY.z-PLATFORM+.08),'wood')
+    for sx in(-1,1):f.beam((FLY.x,fy,.6),(FLY.x+sx*.38,fy,PLATFORM),.08,.08,'wood_d',up=(0,1,0))
+    f.box((FLY.x,fy,PLATFORM+.03),(.9,.2,.06),'wood_d')
+    f.box((FLY.x,fy,FLY.z),(.18,.14,.16),'iron')
+    f.build(objs)
 
-    # iron-bladed frame saw in the kerf: blade along the cut, cheeks at its
-    # ends, a stretcher, the twisted cord and its toggle; the near cheek
-    # comes down past the log's end to a cross handle at belly height
-    s=Part('Saw2_Tool','Bench_Anchor')
-    yb0,yb1=yc-.08,LOG_Y1+.08
-    zb=LOG_Z+.03
-    s.box((0,(yb0+yb1)/2,zb),(.004,yb1-yb0,.08),'steel')
-    s.box((0,yb0,zb+.22),(.05,.06,.44),'wood_l')                           # far cheek
-    s.box((0,yb1,zb+.06),(.05,.06,.76),'wood_l')                           # near cheek, longer
-    for y in(yb0,yb1):s.box((0,y,zb),(.02,.065,.05),'iron')                # blade pins
-    s.box((0,(yb0+yb1)/2,zb+.22),(.04,yb1-yb0,.04),'wood')                 # stretcher
-    s.box((0,(yb0+yb1)/2,zb+.41),(.012,yb1-yb0,.012),'hemp')               # cord
-    s.box((.03,(yb0+yb1)/2,zb+.35),(.02,.02,.14),'wood_d')                 # toggle
-    s.cyl((-.13,yb1,zb-.22),(.13,yb1,zb-.22),.022,'wood_d',n=6)            # cross handle
-    s.build(objs)
+    # the crank wheel: it spins about its axle (object origin), crank arm and handle included
+    k=Part('Mill2_CrankWheel','Bench_Anchor',pivot=FLY)
+    wheel(k,FLY,FLY_R,.07,'fine')
+    k.cyl((FLY.x,FLY.y-.1,FLY.z),(FLY.x,FLY.y+.08,FLY.z),.03,'iron',n=6)
+    hy=FLY.y+.09;hz=FLY.z+CRANK_R
+    k.box((FLY.x,hy,FLY.z+CRANK_R/2),(.06,.03,CRANK_R+.06),'iron')                    # crank arm, at the top of its turn
+    k.cyl((FLY.x,hy,hz),(FLY.x,hy+.16,hz),.022,'wood_d',n=6)                           # the handle: a long grip for both fists
+    k.build(objs)
+
+    # the saw wheel: iron disc with teeth, the small drive pulley on the same arbor (object origin)
+    b=Part('Saw2_Wheel','Bench_Anchor',pivot=BLADE)
+    n=24
+    ring=[BLADE+Vector((math.cos(2*math.pi*i/n),0,math.sin(2*math.pi*i/n)))*(BLADE_R-.03) for i in range(n)]
+    teeth=[BLADE+Vector((math.cos(2*math.pi*(i+.15)/n),0,math.sin(2*math.pi*(i+.15)/n)))*BLADE_R for i in range(n)]
+    pts=[];[pts.extend((ring[i],teeth[i])) for i in range(n)]
+    b.tri_board([tuple(v) for v in pts],.008,'steel')
+    b.cyl((BLADE.x,BLADE.y-.03,BLADE.z),(BLADE.x,BLADE.y+.03,BLADE.z),.07,'iron',n=8)
+    py=FLY.y
+    b.cyl((BLADE.x,py-.035,BLADE.z),(BLADE.x,py+.035,BLADE.z),PULLEY_R,'wood_d',n=10,cap='iron')
+    b.build(objs)
+
+    # the belt: open run from the crank wheel's rim to the arbor pulley
+    e=Part('Mill2_Belt','Bench_Anchor')
+    d=Vector((BLADE.x-FLY.x,0,BLADE.z-FLY.z));L=d.length;d.normalize()
+    nrm=Vector((-d.z,0,d.x));sa=(FLY_R-PULLEY_R)/L;ca=math.sqrt(1-sa*sa)
+    for sgn in(-1,1):
+        u=(nrm*ca*sgn+d*sa).normalized()     # outer tangents
+        u=Vector((u.x,0,u.z))
+        e.beam(FLY+u*(FLY_R+.01),BLADE+Vector((0,py-BLADE.y,0))+u*(PULLEY_R+.01),.05,.012,'hide',up=(0,1,0))
+    e.build(objs)
+
+    # the log being fed into the wheel, and the two slabs that have passed it
+    lg=Part('Bench2_Cutting','Bench_Anchor')
+    lg.cyl((LOG_X0,TABLE_Y,LOG_Z),(BLADE.x-.03,TABLE_Y,LOG_Z),LOG_R,'bark',n=8,cap='endgrain')
+    for sz in(-1,1):half_log(lg,sz,BLADE.x-.03,BLADE.x+.5,.006+(.02 if sz>0 else 0))
+    lg.box(((LOG_X0+BLADE.x)/2,TABLE_Y,LOG_Z+LOG_R*.93),(-LOG_X0-.06,.01,.006),'fine_e')   # chalk line ahead of the cut
+    lg.build(objs)
 
     # the grindstone: the saw blade wears and is ground true here
     g=Part('Mill2_Grindstone','LumberMill_C_Level_2')
-    gx,gy=-.78,1.32
+    gx,gy=-.98,1.42
     for sx in(-1,1):
         g.box((gx+sx*.17,gy,.45),(.06,.5,.06),'wood')
         for sy in(-1,1):g.beam((gx+sx*.17,gy+sy*.08,.48),(gx+sx*.2,gy+sy*.22,PLATFORM),.06,.06,'wood_d')
@@ -355,6 +416,7 @@ def build(objs_l1):
     for n,o in objs_l1.items():
         if o.parent==old_root and n in keep:
             mw=o.matrix_world.copy();o.parent=root;o.matrix_world=mw
+    ws=objs_l1['Worker_Stand'];ws.matrix_world=Matrix.Translation(STAND)
     for n,o in objs_l1.items():
         if n in keep or n.startswith(('Input_Log_','Output_Plank_')):objs[n]=o
     for n in('Mill_Pillars','Mill_TriangularCanvas','Mill_CanvasHem','Mill_GroundTies','Mill_WorkPlatform','Mill_Workbench',
@@ -444,11 +506,18 @@ def main():
     # with the deckhand at the worker stand, for scale and the work line
     holder,_=load_deckhand()
     shoot(cam,OUT/'l2-hero-crew.png',-35,30,9.2)
-    shoot(cam,OUT/'l2-work-closeup.png',-62,18,3.4,target=(0,.1,.95),res=(1200,1000))
-    side=('Input_','Output_','Mill_InputCradle','Mill_OutputRack','Mill_Trade','Mill2_OutputCanvas','Mill2_SignPost','Mill2_LevelPlate')
+    roof=[o for o in objs.values() if o.name.startswith('Mill2_BoardRoof')]
+    for o in roof:o.hide_render=True
+    shoot(cam,OUT/'l2-work-closeup.png',-28,24,3.3,target=(-.2,-.1,.85),res=(1200,1000))
+    for o in roof:o.hide_render=False
+    # the mechanism alone with him, the shed hidden: his side of the crank wheel
+    shed=('Mill2_BoardRoof','Mill2_BackWall','Mill2_ToolRail','Mill2_Grindstone','Mill2_Frame','Mill2_Piers',
+          'Mill2_OutputCanvas','Mill2_SignPost','Mill2_LevelPlate','Mill_Trade','Mill_InputCradle','Mill_OutputRack',
+          'Input_Log','Output_Plank')
     for o in bpy.data.objects:
-        if o.name.startswith(side) and not o.hide_render:o.hide_render=True
-    shoot(cam,OUT/'l2-work-side.png',-90,6,3.0,target=(0,-.2,1.0),res=(1200,1000))
+        if o.name.startswith(shed):o.hide_render=True
+    shoot(cam,OUT/'l2-work-rear.png',150,30,3.0,target=(-.25,-.1,.75),res=(1200,1000))
+    shoot(cam,OUT/'l2-mechanism.png',-25,25,3.0,target=(-.25,-.1,.75),res=(1200,1000))
     # level 1 (bench lowered for him, as the animations use it) from the same camera
     bpy.ops.wm.read_factory_settings(use_empty=True)
     l1=M.load('cutting',logs=6,planks=12)
