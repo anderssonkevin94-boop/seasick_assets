@@ -271,65 +271,65 @@
   },
   "GunRam": {
     "take": "Crew_GunRam",
-    "seconds": 1.6,
-    "frames": 49,
+    "seconds": 3.2,
+    "frames": 97,
     "loop": true,
-    "what": "gunner: the gun run in, ramming the charge home with two lunges",
-    "tool_right_hand": "rammer",
+    "what": "gunner: behind the gun, sighting along the barrel and laying it with the elevation wedge, from his station beside it",
+    "tool_right_hand": null,
     "held_left_hand": null,
     "cannon": {
       "run_in_m_game": 0.55,
-      "elevation_deg": 6,
+      "elevation_deg": 4,
       "keys_frame_runin_game_m": [
         [
           0,
-          0.55
+          0.0
         ],
         [
-          48,
-          0.55
+          96,
+          0.0
         ]
       ]
     }
   },
   "GunFire": {
     "take": "Crew_GunFire",
-    "seconds": 2.4,
-    "frames": 73,
+    "seconds": 2.0,
+    "frames": 61,
     "loop": false,
-    "what": "gunner: back to the station as the gun runs out, yanks the firing lanyard, flinches as it recoils past him, back to ramming (one-shot)",
-    "tool_right_hand": "rammer",
-    "held_left_hand": "lanyard",
+    "what": "gunner: from his station beside the back of the gun, touches the linstock to the vent; the gun fires and recoils past him; he flinches away and watches the shot (one-shot)",
+    "tool_right_hand": "linstock",
+    "held_left_hand": null,
     "cannon": {
       "run_in_m_game": 0.55,
-      "elevation_deg": 6,
+      "elevation_deg": 4,
       "keys_frame_runin_game_m": [
         [
           0,
-          0.55
-        ],
-        [
-          11,
-          0.55
-        ],
-        [
-          20,
           0.0
         ],
         [
-          30,
+          24,
           0.0
+        ],
+        [
+          26,
+          0.55
         ],
         [
           33,
           0.55
         ],
         [
-          72,
-          0.55
+          54,
+          0.0
+        ],
+        [
+          60,
+          0.0
         ]
       ],
-      "fires_frame": 30
+      "fires_frame": 24
     }
   },
   "Row": {

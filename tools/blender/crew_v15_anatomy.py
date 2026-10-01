@@ -117,7 +117,27 @@ class Checker:
                     q=inv@p
                     if all(lo[j]<q[j]<hi[j] for j in range(3)):dl=max(dl,min(min(q[j]-lo[j],hi[j]-q[j]) for j in range(3)))
                 if dl*1000>LIMITS['clip_mm']:issues.append(('clip','body into '+obj.name,round(dl,3)))
-        for obj in props:                                  # his body inside a prop box
+        for obj in props:
+            if obj.get('exact'):                           # a shaped prop (a cannon's barrel, wheels): its real surface, not its box
+                dg=bpy.context.evaluated_depsgraph_get();ev=obj.evaluated_get(dg);mw=obj.matrix_world
+                pts=[mw@v.co for v in ev.data.vertices];t=BVHTree.FromPolygons(pts,[tuple(p.vertices) for p in ev.data.polygons])
+                lo=Vector([min(q[j] for q in pts) for j in range(3)]);hi=Vector([max(q[j] for q in pts) for j in range(3)]);deep=0
+                for p in co:
+                    if not all(lo[j]<p[j]<hi[j] for j in range(3)):continue
+                    loc,n,_,d=t.find_nearest(p)
+                    if loc is None or (p-loc).dot(n)>=0 or d<=deep:continue
+                    odd=0
+                    for dr in(Vector((0,0,1)),Vector((0,-1,0)),Vector((1,0,0))):
+                        k=0;o=p.copy()
+                        for _ in range(16):
+                            hit=t.ray_cast(o,dr)
+                            if hit[0] is None:break
+                            k+=1;o=hit[0]+dr*1e-4
+                        odd+=k%2
+                    if odd>=2:deep=d
+                if deep*1000>LIMITS['clip_mm']:issues.append(('clip','body into '+obj.name,round(deep,3)))
+                continue
+            # his body inside a prop box
             mw=obj.matrix_world;inv=mw.inverted()
             lo=Vector([min(v.co[j] for v in obj.data.vertices) for j in range(3)])
             hi=Vector([max(v.co[j] for v in obj.data.vertices) for j in range(3)])

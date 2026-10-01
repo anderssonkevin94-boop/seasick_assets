@@ -51,12 +51,12 @@ def main():
             import crew_v15_mill as MILL
             env,stand,_=MILL.load_env(c['env']);rig.location=stand
             extra+=list(env.values());ground.hide_render=False
-            view=Vector((-2.6,-4.2,3.0)) if c['env']=='mill' else Vector((-3.6,.9,1.7)) if c['env']=='cannon' else Vector((-3.2,1.2,2.2))
+            view=Vector((-2.6,-4.2,3.0)) if c['env']=='mill' else Vector((2.6,2.8,1.9)) if c['env']=='cannon' else Vector((-3.2,1.2,2.2))
             if c['env']=='cannon':cd.ortho_scale=3.0
             if c['env']=='tree':
                 for o in env.values():
                     if 'Canopy' in o.name:o.hide_render=True     # the canopy would hide him from a game camera; left out of the preview
-            aim=Vector((.3,.45,.5)) if c['env']=='cannon' else Vector((0,-.3,.5))
+            aim=Vector((-.4,-.3,.5)) if c['env']=='cannon' else Vector((0,-.3,.5))
             cam.location=stand+view;cam.rotation_euler=(stand+aim-cam.location).to_track_quat('-Z','Y').to_euler()
         elif c.get('throw'):                        # wide: him, the flight and the target
             rig.location=(0,0,0);e2=Vector((-3.6,.2,2.0));t2=Vector((0,-1.5,.5));cd.ortho_scale=3.6

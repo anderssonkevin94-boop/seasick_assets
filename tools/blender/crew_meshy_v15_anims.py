@@ -774,79 +774,95 @@ clip('ThrowLine',1.4,[
     (1,K_(spine=(6,6,0),head=(2,4,0))),
     ],loop=False,rtool='coil',what='throwing the rescue line over the rail (one-shot; then HaulLine)')
 
-# Manning the cannon (Astra's naval deck cannon, crew_v15_mill.load_cannon):
-# one gunner, standing beside the muzzle with the gun on his left, clear of
-# its recoil. GunRam (loop): the gun is run in after firing, its muzzle behind
-# him; he has turned to it and rams the charge home with the rammer level in
-# his right fist, two lunges of the whole body, the rammer's head 5 to 22 cm
-# into the bore. GunFire (one-shot): from the ram stance he turns back to the
-# station as the gun runs out, takes the firing lanyard in his left hand,
-# leans clear and yanks it; the gun fires and recoils past him; he flinches,
-# lets the lanyard go, looks out after the shot and turns back to the ram
-# stance. The barrel is laid at GUN_ELEV (6 degrees) so its bore is at the
-# height he can ram. Poses found by search against crew_v15_anatomy with the
-# gun's solid parts as props (nothing of him inside them) and the rammer
-# held on the bore's line.
+# Manning the cannon (Astra's naval deck cannon, crew_v15_mill.load_cannon),
+# set up for the ship's deck, where the muzzle sits out over the rail: one
+# gunner, his station beside the back of the gun (the gun on his right, ahead
+# of him), outside the rear wheel and clear of the recoil. GunRam (the reload
+# loop, 3.2 s, Cannon.reloadTime): he steps behind the gun, crouches to sight
+# along the barrel, works the elevation wedge's handle to lay it, sights again
+# and steps back to the station (loading the ball is implied: from the back
+# he cannot reach the muzzle, and his arms cannot reach up to the vent).
+# GunFire (one-shot): from the station he leans in with the linstock, touches
+# the match to the vent, the gun fires and recoils past his right side, he
+# flinches away, watches the shot and settles back as it runs out again.
+# Both start and end on the same station pose. Poses found by search against
+# crew_v15_anatomy with the gun's parts as props, tested on their real surfaces.
 from crew_v15_mill import GUN_AT as _GUN_AT, GUN_RECOIL
 GUN_AT=V(*_GUN_AT)
-GUN_MUZZLE_IN=GUN_AT+V(0,-.560,.837)                # the muzzle, the gun run in (measured on the model, barrel at 6 degrees)
-GUN_BORE=nrm((0,.995,-.105))                        # down the bore, muzzle to breech
-GUN_VENT=V(0,.350,.915)                             # the vent on top of the breech, from the gun's origin (run out)
-RAMMER_HEAD=1.05*TOOL_SCALE                         # grip to the rammer's far end
-RAM_YAW=150                                         # turned to the muzzle, which is behind him and to his left
+GUN_VENT=V(0,.343,.927)                             # the vent on top of the breech, from the gun's origin
+GUN_HANDLE=V(0,.665,.43)                            # the end of the elevation wedge's handle, from the gun's origin
+LINSTOCK_MATCH=.85*TOOL_SCALE                       # grip to the slow match
+GUN_STAND=hand((-.32,-.24,.62),(0,-1,0),(0,0,1),(-.6,.7,0))   # his right hand at his side (in GunFire it holds the linstock upright)
+GUN_LEFT=hand((.30,-.12,.52),(.2,-.3,-1),(0,-1,0),(.6,.7,0))
 
 
-def ram_pose(depth,spine=(10,0,4)):
-    """The ram stance with the rammer's head `depth` into the bore: his whole
-    body placed so his right fist (on his right, 6 cm forward, at bore height)
-    holds the rammer on the bore's line; the feet planted midway through the
-    stroke so the body lunges over them."""
-    G=Matrix.Rotation(math.radians(RAM_YAW),3,'Z');Gi=G.inverted()
-    def body_at(d):
-        hw=GUN_MUZZLE_IN+GUN_BORE*d-GUN_BORE*RAMMER_HEAD;bp=hw-G@V(-.36,-.06,hw.z);bp.z=0;return hw,bp
-    hw,bp=body_at(depth);mid=(body_at(.05)[1]+body_at(.22)[1])/2;fm=Gi@mid;bl=Gi@bp
-    up0=nrm(V(0,0,1)-GUN_BORE*GUN_BORE.z);side=GUN_BORE.cross(up0);a=math.radians(-20)
-    face=nrm(up0*math.cos(a)+side*math.sin(a))
-    return K_(yaw=RAM_YAW,root=V(bl.x,bl.y,-.05),rf=(fm.x-.05,fm.y+.08,0,0),lf=(fm.x+.05,fm.y-.10,0,0),spine=spine,head=(-8,0,0),
-              rh=hand(tuple(Gi@hw),Gi@face,Gi@GUN_BORE,(-.9,.3,-.3)),lh=hand((bl.x+.30,bl.y-.20,.56),(.3,-.8,-.3),(0,0,1),(.9,.3,-.2)))
+def gun_station():
+    return K_(root=V(0,0,-.03),rf=(-.04,.02,0,0),lf=(.06,0,0,0),spine=(2,0,0),head=(0,-10,0),rh=GUN_STAND,lh=GUN_LEFT)
 
 
-clip('GunRam',1.6,[(0,ram_pose(.05)),(.30,ram_pose(.22)),(.50,ram_pose(.05)),(.80,ram_pose(.22))],
-     rtool='rammer',what='gunner: the gun run in, ramming the charge home with two lunges')
-CLIPS['GunRam']['env']='cannon';CLIPS['GunRam']['gun']=[(0,GUN_RECOIL),(1,GUN_RECOIL)]
+def _rel(h,root):
+    """A hand target carried along with his root's step."""
+    return hand(tuple(h['grip']+V(root[0],root[1],0)),h['face'],h['haft'],h['elbow'])
+
+
+def _behind(st,rz,sp,hd,rh,lh):
+    return K_(root=V(st[0],st[1],rz),rf=(st[0]-.05,st[1]+.03,0,0),lf=(st[0]+.05,st[1]-.03,0,0),spine=sp,head=hd,rh=rh,lh=lh)
+
+
+def _knee(st,s,g):
+    return hand((st[0]+s*g[0],st[1]+g[1],g[2]),(s*.2,-.6,-.8),(0,-1,0),(s*.6,.6,-.4))
+
+
+def gunram_keys():
+    st=gun_station()
+    S=(-.75,.14);sight=_behind(S,-.14,(16,0,0),(-20,0,0),_knee(S,-1,(.26,-.24,.32)),_knee(S,1,(.26,-.24,.32)))   # crouched behind the breech, eye along the barrel
+    look=dict(sight);look['head']=(-20,-5,0)
+    Q=(-.58,.20);h=GUN_AT+GUN_HANDLE
+    def quoin(dy):return _behind(Q,-.10,(16,14,0),(20,0,0),hand(tuple(h+V(-.05,.05+dy,0)),(.3,-.8,-.5),(0,0,1),(-.6,.6,-.5)),_knee(Q,1,(.26,-.24,.44)))   # the fist beside the handle's end, thumb up
+    P=(-.38,.12);step=_behind(P,-.06,(8,0,0),(4,0,0),_rel(hand((-.40,-.10,.52),(-.2,-.3,-1),(0,-1,0),(-.6,.7,0)),P),_rel(GUN_LEFT,P))   # right fist dropped to his side, clear of the breech
+    def swing(a,b):                                    # half way, his right fist swung out wide past the sash knot and the handle
+        q=mix(a,b,.5);q['rh']=hand(tuple(q['rh']['grip']+V(-.12,0,-.04)),(-.2,-.3,-1),(.055,-.959,.277),(-.6,.7,0));return q
+    return [(0,st),(.12,step),(.26,sight),(.40,look),(.46,swing(look,quoin(0))),(.52,quoin(0)),(.60,quoin(-.025)),(.68,quoin(0)),(.76,quoin(-.025)),
+            (.79,swing(quoin(-.025),sight)),(.86,sight),(.94,step)]
+
+
+clip('GunRam',3.2,gunram_keys(),what='gunner: behind the gun, sighting along the barrel and laying it with the elevation wedge, from his station beside it')
+CLIPS['GunRam']['env']='cannon';CLIPS['GunRam']['gun']=[(0,0.),(1,0.)]
+
+
+def hand_turn(a,b,u):
+    """A hand target part way from a to b: its position lerped, its frame
+    (knuckles, thumb) turned by a true rotation, so a blend through it
+    cannot flip the forearm."""
+    def frame(h):
+        f=nrm(h['face']);t=nrm(h['haft']-f*h['haft'].dot(f));return Matrix((f,t,f.cross(t))).transposed().to_quaternion()
+    q=frame(a).slerp(frame(b),u).to_matrix()
+    return hand(tuple(a['grip'].lerp(b['grip'],u)),q.col[0],q.col[1],a['elbow'].lerp(b['elbow'],u))
+
+
+def linstock_hand(tip_off,d=(-.6,-.75,-.2),roll=10):
+    tip=GUN_AT+GUN_VENT+V(*tip_off);d=nrm(d);g=tip-d*LINSTOCK_MATCH
+    up0=nrm(V(0,0,1)-d*d.z);side=d.cross(up0);a=math.radians(roll)
+    return hand(tuple(g),nrm(up0*math.cos(a)+side*math.sin(a)),d,(-.6,.6,-.5))
 
 
 def gunfire_keys():
-    D=2.4;T=lambda sec:sec/D
-    STAFF=hand((-.34,-.12,.56),(0,-1,0),(0,0,1),(-.6,.7,0))          # the rammer stood upright at his right side
-    LEFT_REST=hand((.28,-.06,.50),(.2,-.3,-1),(0,-1,0),(.6,.7,0))
-    feet=lambda rx:dict(rf=(rx-.03,.02,0,0),lf=(rx+.06,-.02,0,0))
-    stand=K_(root=V(0,0,-.03),rf=(-.03,0,0,0),lf=(.03,0,0,0),spine=(2,0,0),head=(-2,0,0),rh=STAFF,lh=LEFT_REST)
-    sett=K_(root=V(-.03,0,-.06),**feet(-.03),spine=(2,-4,-6),head=(-4,-6,0),rh=STAFF,
-            lh=hand((.28,.02,.48),(.41,.3,-.86),(0,1,0),(.8,.2,-.5)))      # leaning clear, the lanyard taut at his hip, eyes out to sea
-    yank=K_(root=V(-.07,.01,-.08),**feet(-.07),spine=(6,-12,-8),head=(6,-30,-6),rh=STAFF,
-            lh=hand((.20,.08,.46),(.1,.7,-.7),(0,1,0),(.7,.5,-.4)))         # the yank: hand back and down, turning away
-    flinch=dict(yank);flinch['head']=(10,-34,-6)                          # the flinch: head jerked away from the blast
-    let_go=K_(root=V(-.04,0,-.05),**feet(-.04),spine=(4,-6,-4),head=(0,-12,0),rh=STAFF,lh=hand((.32,-.04,.50),(.2,-.3,-1),(0,-1,0),(.6,.7,0)))
-    look=K_(root=V(-.02,0,-.03),**feet(-.02),spine=(2,0,0),head=(-6,4,0),rh=STAFF,lh=LEFT_REST)
-    # at the ram stance, still facing the gun: the rammer drawn out and stood upright first, then he turns
-    ram=ram_pose(.05);up=dict(ram);r=ram['root']
-    up['rh']=hand(tuple(STAFF['grip']+V(r.x,r.y,0)),STAFF['face'],STAFF['haft'],STAFF['elbow'])
-    up['lh']=hand(tuple(LEFT_REST['grip']+V(r.x,r.y,0)),LEFT_REST['face'],LEFT_REST['haft'],LEFT_REST['elbow'])
-    up['spine']=stand['spine'];up['head']=stand['head']                      # upright already: only the turn is left
-    swing=mix(ram,up,.5);swing['rh']=hand(tuple(V(-.34,-.26,.74)+V(r.x,r.y,0)),(0,-1,0),(0,-.7,.7),(-.8,.3,-.4))   # the rammer half way up
-    for q in (sett,yank,flinch,let_go,look):                                  # the rammer hand goes with him as he steps and leans
-        q['rh']=hand(tuple(STAFF['grip']+V(q['root'].x,q['root'].y,0)),STAFF['face'],STAFF['haft'],STAFF['elbow'])
-    out=mix(stand,sett,.5);out['lh']=hand((.38,-.06,.56),(.4,.1,-.91),(0,-1,0),(1,0,-.2))   # the lanyard hand out round his hip
-    return [(0,ram),(T(.07),swing),(T(.14),up),(T(.38),stand),(T(.59),out),(T(.80),sett),(T(1.00),yank),(T(1.22),flinch),(T(1.55),let_go),
-            (T(1.90),look),(T(2.20),up),(T(2.30),swing),(1,ram)]
+    D=2.0;T=lambda sec:sec/D
+    st=gun_station()
+    touch=K_(root=V(0,0,-.03),rf=(-.04,.02,0,0),lf=(.06,0,0,0),spine=(10,-10,-4),head=(4,-19,0),rh=linstock_hand((0,0,.02),roll=-10),lh=GUN_LEFT)
+    pull=touch['rh'];back=hand(tuple(pull['grip']-pull['haft']*.06),pull['face'],pull['haft'],pull['elbow'])
+    flinch=dict(touch);flinch['rh']=back;flinch['head']=(8,10,2);flinch['spine']=(6,-4,0)   # the match drawn straight back, head turned from the blast
+    watch=K_(root=V(.02,0,-.03),rf=(-.04,.02,0,0),lf=(.06,0,0,0),spine=(2,-2,0),head=(-4,-12,0),rh=_rel(GUN_STAND,(.02,0)),lh=_rel(GUN_LEFT,(.02,0)))
+    def via(qa,qb,u):                                  # part way, the linstock turned by a true rotation
+        q=mix(qa,qb,u*u*(3-2*u));q['rh']=hand_turn(qa['rh'],qb['rh'],u);return q
+    return [(0,st),(T(.25),via(st,touch,1/3)),(T(.50),dict(via(st,touch,2/3),head=(-8,-19,0))),(T(.75),touch),(T(.82),touch),(T(1.00),flinch),
+            (T(1.25),via(flinch,watch,1/3)),(T(1.40),via(flinch,watch,2/3)),(T(1.55),watch),(1,st)]
 
 
-clip('GunFire',2.4,gunfire_keys(),loop=False,rtool='rammer',ltool='lanyard',
-     what='gunner: back to the station as the gun runs out, yanks the firing lanyard, flinches as it recoils past him, back to ramming (one-shot)')
+clip('GunFire',2.0,gunfire_keys(),loop=False,rtool='linstock',
+     what='gunner: from his station beside the back of the gun, touches the linstock to the vent; the gun fires and recoils past him; he flinches away and watches the shot (one-shot)')
 CLIPS['GunFire']['env']='cannon'
-CLIPS['GunFire']['gun']=[(0,GUN_RECOIL),(.36/2.4,GUN_RECOIL),(.66/2.4,0),(1.00/2.4,0),(1.10/2.4,GUN_RECOIL),(1,GUN_RECOIL)]   # run out once he is clear, fire, recoil
-CLIPS['GunFire']['lanyard']={'take':.45/2.4,'release':1.55/2.4}
+CLIPS['GunFire']['gun']=[(0,0.),(.80/2.0,0.),(.86/2.0,GUN_RECOIL),(1.10/2.0,GUN_RECOIL),(1.80/2.0,0.),(1,0.)]   # fires, recoils, runs out again
 
 BOAT=[('hull',(0,-.10,.04),(.76,1.2,.08),'wood',0),('thwart',(0,.12,.15),(.70,.14,.04),'wood_light',0),
       ('gunwale',(-.38,-.10,.20),(.05,1.2,.28),'wood',0),('gunwale',(.38,-.10,.20),(.05,1.2,.28),'wood',0)]
@@ -972,7 +988,7 @@ def animate_load(o,rig,name):
 # ---------------------------------------------------------------- props
 COLOURS={'wood':'#8A5A36','wood_light':'#C09060','wood_bark':'#6B4A30','iron':'#5E6166','stone':'#9C968C',
          'stone_light':'#B8B2A6','leaf':'#4F8A3A','berry':'#B03A48','soil':'#6A4A30','hot':'#F07A28',
-         'stew':'#B8763A','fish':'#9FB4C0','sick':'#9DB04A','water':'#4E86A8','rope':'#C8B080','steel':'#B8BEC6','string':'#EDE6D4','goat':'#C9B79A'}
+         'stew':'#B8763A','fish':'#9FB4C0','sick':'#9DB04A','water':'#4E86A8','rope':'#C8B080','steel':'#B8BEC6','string':'#EDE6D4','goat':'#C9B79A','horn':'#D9C9A0'}
 
 
 def box_mesh(name,parts):
@@ -1019,7 +1035,8 @@ def tool_parts(kind):
        # the game's placeholder hunting spear (HunterProps): 1.8 m, grip at the origin, butt 0.65 m
        # below it, the head 1.15 m above; +Y to the tip
        'spear':[((.035,1.80,.035),(0,.25,0),'wood'),((.045,.07,.045),(0,1.12,0),'rope'),((.07,.20,.018),(0,1.25,0),'steel')],
-       'lanyard':[((.012,1.0,.012),(0,.5,0),'rope')],     # a unit line along +Y, stretched hand to vent (lanyard_track)
+       'lanyard':[((.012,1.0,.012),(0,.5,0),'rope')],
+       'horn':[((.055,.17,.055),(0,.07,0),'horn'),((.03,.07,.03),(0,.18,0),'horn'),((.016,.04,.016),(0,.235,0),'wood_light')],   # a powder horn, its spout along +Y     # a unit line along +Y, stretched hand to vent (lanyard_track)
        'crate':[((.50,.26,.18),(0,0,.09),'wood'),((.51,.265,.03),(0,0,.04),'wood_bark'),((.51,.265,.03),(0,0,.14),'wood_bark')],
        'sack':[((.30,.26,.30),(.18,0,.03),'rope')],
        'bucket':[((.26,.26,.28),(0,0,.24),'wood'),((.27,.27,.03),(0,0,.12),'iron')],
@@ -1224,9 +1241,9 @@ def bake(rig,solver):
             info[name]['spear_throw']={'release_frame':rel,'hits_frame':hit,
                 'point_lands_game_m':{'x':round(tp.x,3),'up':round(tp.z,3),'forward':round(-tp.y,3)}}
         if c.get('gun'):
-            ks=c['gun'];info[name]['cannon']={'run_in_m_game':round(GUN_RECOIL*1.7/C.HEIGHT,3),'elevation_deg':6,
+            ks=c['gun'];info[name]['cannon']={'run_in_m_game':round(GUN_RECOIL*1.7/C.HEIGHT,3),'elevation_deg':__import__('crew_v15_mill').GUN_ELEV,
                 'keys_frame_runin_game_m':[[round(t*n),round(o*1.7/C.HEIGHT,3)] for t,o in ks]}
-            if c.get('lanyard'):info[name]['cannon']['fires_frame']=round(1.00/2.4*n)
+            if name=='GunFire':info[name]['cannon']['fires_frame']=round(.80/2.0*n)
         if c.get('pickup'):
             at=Vector(c['pickup']['at'])*(1.7/C.HEIGHT)
             info[name]['load_pickup']={'grab_frame':round(c['pickup']['grab']*n),'load_bottom_centre_game_m':{'x':round(at.x,3),'up':round(at.z,3),'forward':round(-at.y,3)},

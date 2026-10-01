@@ -36,20 +36,20 @@ if c.get('env')=='tree':      # the canopy hides him from above: side and low an
     cd.ortho_scale=1.9
     for o in env.values():
         if 'Canopy' in o.name:o.hide_render=True
-if c.get('env')=='cannon':    # the gun on his left: from his right, behind, and the game's angle
-    views=[('game view, his right',(-3.0,-1.6,2.6)),('side, his right',(-3,0,.8)),('behind him',(-.4,3.2,1.4)),('3/4 his left, high',(3.2,-1.8,2.4)),('above',(-.4,-.6,4.2))]
+if c.get('env')=='cannon':    # the gun on his right, ahead of him: from behind and his left, clear of the gun
+    views=[('behind, high',(-.4,3.4,2.2)),('3/4 behind his left',(2.8,2.6,1.6)),('side, his left',(3.2,-.3,.9)),('3/4 behind his right',(-3.0,2.6,1.8)),('above',(-.4,-.4,4.2))]
     cd.ortho_scale=2.6
 if c.get('env')=='rock':      # the rock stands in front of him: side and back angles
     views=[('game view, his right',(-3.4,1.6,2.4)),('side, his right',(-3,.2,.8)),('behind him',(-.8,3,1.2)),('3/4 his left, low',(2.6,-.3,.9)),('side, his left',(3,.2,.8))]
     cd.ortho_scale=1.9
-TGT=Vector((.3,.3,.55)) if c.get('env')=='cannon' else Vector((0,-.2,.55))
+TGT=Vector((-.4,-.3,.55)) if c.get('env')=='cannon' else Vector((0,-.2,.55))
 if c.get('throw'):            # the target stands 3 m off: wide side angles taking in him, the flight and the goat
     views=[('side, his right',(-4.2,-1.5,1.0)),('game view, his right',(-3.4,1.4,3.0)),('behind him',(-.5,3.2,1.4)),('3/4 his left',(3.2,.4,1.6)),('above',(-1.0,-1.5,4.8))]
     cd.ortho_scale=3.9;TGT=Vector((0,-1.5,.55))
 n=int(act.frame_end);keys=[round(n*k/4) for k in range(4)] if c['loop'] else [round(n*k/4) for k in range(5)]
 if name=='Hunt':keys=[0,round(n*.33),round(n*.45),round(n*.52),round(n*.62)]   # stalking, sighting, the release, in flight, the hit
 if name=='PickUp':keys=[0,26,37,45,51,60]   # walking in, the grip, the heave, seated on his belly, fists under, carrying
-if name=='GunFire':keys=[0,11,24,30,34,57]   # ramming, at the station, lanyard taut, the yank, the recoil, looking out
+if name=='GunFire':keys=[0,12,23,26,30,46]   # at the station, raising the linstock, the match on the vent, the recoil, the flinch, watching the shot
 if name=='SetDown':keys=[0,9,16,40,50,72]   # letting go, landed, mid-wipe, the flick, into the walk
 if name=='Mine':keys=[0,round(n*.26),round(n*.34),round(n*.40)]   # raised, head trailing, tipping over, the strike
 if name=='Chop':keys=[0,round(n*.28),round(n*.33),round(n*.40)]   # cocked, hands dropped, sweeping level, the bite

@@ -116,15 +116,16 @@ def load_rock():
 
 
 CANNON_FBX=ROOT/'crew-meshy-v15/anims/env/cannon.fbx'   # Astra's naval deck cannon (art-staging/cannon-astra-v1)
-GUN_AT=(.65,.985,0.)           # the gun's origin at his 1.30 m scale: on his left, its muzzle (run out) level with him
-GUN_ELEV=6                     # barrel elevation, degrees (the model's default is 4): the bore at the height he can ram
+GUN_AT=(-.75,-.80,0.)          # the gun's origin at his 1.30 m scale: on his right and ahead, he beside its back end (inboard), clear of the wheels and the recoil
+GUN_ELEV=4                     # barrel elevation, degrees (the model's default)
 GUN_RECOIL=.55*SCALE           # Cannon.recoilDistance (0.55 m game): run in, the muzzle is this far further back
 
 
 def load_cannon():
     """Astra's cannon at his scale, muzzle toward -Y (his forward), its origin
-    at GUN_AT: he stands beside the muzzle with the gun on his left, the
-    barrel laid at GUN_ELEV degrees.
+    at GUN_AT: he stands beside its back end with the gun on his right (where
+    he can stand on a ship's deck, the muzzle out over the rail), the barrel
+    laid at GUN_ELEV degrees.
     Returns ({name: object}, [parts his body must stay out of])."""
     before=set(bpy.data.objects);sc=bpy.context.scene;fps=(sc.render.fps,sc.render.fps_base)
     bpy.ops.import_scene.fbx(filepath=str(CANNON_FBX))
@@ -138,7 +139,8 @@ def load_cannon():
             if col:me.color_attributes.active_color=col;me.color_attributes.render_color_index=0
             for p in me.polygons:p.use_smooth=False
     bpy.context.view_layer.update()
-    solid=[o for n,o in objs.items() if o.type=='MESH' and n.split('.')[0] in('Barrel','Carriage_Cheek_-1','Carriage_Cheek_1','Truck_Wheel','Trunnion','Bearing_Cap_-1','Bearing_Cap_1')]
+    solid=[o for n,o in objs.items() if o.type=='MESH' and n.split('.')[0] in('Barrel','Carriage_Cheek_-1','Carriage_Cheek_1','Truck_Wheel','Trunnion','Bearing_Cap_-1','Bearing_Cap_1','Quoin_Handle','Elevation_Quoin','Carriage_Bed')]
+    for o in solid:o['exact']=True                 # checked against their real surfaces (the anatomy checker)
     return objs,solid
 
 
