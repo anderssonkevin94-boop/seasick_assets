@@ -52,11 +52,11 @@ def main():
     write_page()
 
 
-GROUPS=[('Building jobs',['Saw','Farm','Smith','Cook','Mill','Lookout','Quarry','Fletcher','Fisher']),
+GROUPS=[('Building jobs',['Saw','Crank','Farm','Smith','Cook','Mill','Lookout','Quarry','Fletcher','Fisher']),
         ('Camp tasks',['Idle','Walk','Chop','Mine','Forage','Build','Carry','PickUp','SetDown','Hunt']),
         ('Aboard ship',['DeckBrace','RailGrip','Gangway','Bail','ThrowLine','HaulLine','GunRam','GunFire','Row','Soaked']),
         ('Seasickness',['SickSway','SickWalk','SickClutch','SickRail','SickCollapse','SickKneel'])]
-WHERE={'Saw':'Sawmill · sawyer','Farm':'Farm plot · farmhand','Smith':'Forge · smith','Cook':'Kitchen · cook',
+WHERE={'Saw':'Sawmill · sawyer','Crank':'Sawmill level 2 (concept) · sawyer','Farm':'Farm plot · farmhand','Smith':'Forge · smith','Cook':'Kitchen · cook',
        'Mill':'Mill · miller','Lookout':'Watchtower · lookout','Quarry':'Quarry · quarryman',
        'Fletcher':"Fletcher's · fletcher",'Fisher':'Fishing hut · fisher',
        'Idle':'Standing about','Walk':'Walking (in place)','Chop':'Gathering timber, clearing ground',

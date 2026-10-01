@@ -80,6 +80,15 @@
     "tool_right_hand": "saw",
     "held_left_hand": null
   },
+  "Crank": {
+    "take": "Crew_Crank",
+    "seconds": 1.2,
+    "frames": 37,
+    "loop": true,
+    "what": "level 2 sawmill (concept): winding the saw wheel's crank with both hands",
+    "tool_right_hand": null,
+    "held_left_hand": null
+  },
   "Farm": {
     "take": "Crew_Farm",
     "seconds": 1.25,

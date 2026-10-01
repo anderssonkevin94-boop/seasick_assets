@@ -90,10 +90,39 @@ def load_tree():
     return objs
 
 
+# ---------------------------------------------------------------- the level 2 concept
+L2_FBX=ROOT/'sawmill-l2-concept/sawmill-l2-concept.fbx'   # sawmill_l2_concept.py; carries the wheels' 'Mill2_Crank' take
+
+
+SHED2=('Mill2_BoardRoof','Mill2_BackWall','Mill2_ToolRail','Mill2_Frame','Mill2_Piers','Mill2_OutputCanvas',
+       'Mill2_SignPost','Mill2_LevelPlate','Mill_Trade')   # left out of close work previews
+
+
+def load_l2():
+    """The level 2 sawmill concept at his scale, the crank and saw wheels
+    animated in step with the Crank clip. Returns {name: object}."""
+    before=set(bpy.data.objects);sc=bpy.context.scene;fps=(sc.render.fps,sc.render.fps_base)
+    bpy.ops.import_scene.fbx(filepath=str(L2_FBX))
+    sc.render.fps,sc.render.fps_base=fps
+    objs={o.name.split('.')[0]:o for o in bpy.data.objects if o not in before}
+    for o in objs.values():                       # the FBX keys every object; only the wheels move
+        if o.animation_data and o.name.split('.')[0] not in('Mill2_CrankWheel','Saw2_Wheel'):o.animation_data_clear()
+    objs['LumberMill_C_Level_2'].scale=(SCALE,)*3
+    for o in objs.values():
+        if o.type=='MESH':
+            me=o.data;col=me.color_attributes.get('Col')
+            if col:me.color_attributes.active_color=col;me.color_attributes.render_color_index=0
+            for p in me.polygons:p.use_smooth=False
+    bpy.context.view_layer.update()
+    return objs
+
+
 def load_env(kind):
     """(objects, where he stands, props his body must stay out of)."""
     if kind=='mill':
         objs=load('cutting');return objs,marker(objs,'Worker_Stand'),[objs['Bench_Cutting']]
+    if kind=='mill2':
+        objs=load_l2();return objs,marker(objs,'Worker_Stand'),[objs['Mill2_SawTable'],objs['Bench2_Cutting']]
     if kind=='tree':
         from mathutils import Vector
         objs=load_tree();return objs,Vector((0,0,0)),[]

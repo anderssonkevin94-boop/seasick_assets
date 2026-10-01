@@ -28,6 +28,11 @@ views=[('3/4 his right',(-2.2,-2.4,1.3)),('side, his right',(-3,0,.7)),('front',
 if c.get('env')=='mill':      # game-camera angles from the front of the building, clear of its pillars
     views=[('game view, front 3/4',(-2.6,-4.2,3.0)),('front, eye level',(0,-3,.9)),('3/4 his right, low',(-2.4,-2.0,1.1)),('3/4 his left',(2.2,-2.4,1.4)),('above',(-.8,-1.6,3.2))]
     cd.ortho_scale=1.75
+if c.get('env')=='mill2':     # he faces +X along the saw table; the roof left out
+    views=[('game view, front',(.1,-3.6,2.2)),('front, eye level',(.3,-3,.8)),('behind him',(-3,.6,1.1)),('his left, 3/4',(-1.6,2.6,1.4)),('above',(.6,-.8,3.2))]
+    cd.ortho_scale=1.9
+    for o in env.values():
+        if o.name.startswith(MILL.SHED2):o.hide_render=True
 if c.get('env')=='tree':      # the canopy hides him from above: side and low angles, the canopy left out of these
     views=[('game view, his right',(-3.4,1.6,2.4)),('side, his right',(-3,.2,.8)),('behind him',(-.8,3,1.2)),('3/4 his left, low',(2.6,-.3,.9)),('game view, his left',(3.2,1.8,2.4))]
     cd.ortho_scale=1.9
@@ -39,7 +44,7 @@ rows=[]
 for f in keys:
     sc.frame_set(f);row=[]
     for vn,eye in views:
-        tgt=stand+Vector((0,-.2,.55));eye=stand+Vector(eye);cam.location=eye;cam.rotation_euler=(tgt-Vector(eye)).to_track_quat('-Z','Y').to_euler()
+        tgt=stand+(Vector((.3,0,.55)) if c.get('env')=='mill2' else Vector((0,-.2,.55)));eye=stand+Vector(eye);cam.location=eye;cam.rotation_euler=(tgt-Vector(eye)).to_track_quat('-Z','Y').to_euler()
         sc.render.filepath=out+'/_v.png';bpy.ops.render.render(write_still=True);row.append(Image.open(out+'/_v.png').convert('RGB'))
     rows.append((f,row))
 W=380;sheet=Image.new('RGB',(W*len(views),W*len(rows)+24),'white');d=ImageDraw.Draw(sheet)

@@ -50,12 +50,18 @@ def main():
             import crew_v15_mill as MILL
             env,stand,_=MILL.load_env(c['env']);rig.location=stand
             extra+=list(env.values());ground.hide_render=False
-            view=Vector((-2.6,-4.2,3.0)) if c['env']=='mill' else Vector((-3.2,1.2,2.2))
+            view={'mill':Vector((-2.6,-4.2,3.0)),'mill2':Vector((.1,-3.6,2.2))}.get(c['env'],Vector((-3.2,1.2,2.2)))
+            look=Vector((.35,-.3,.62)) if c['env']=='mill2' else Vector((0,-.3,.5))
+            if c['env']=='mill2':
+                cd.ortho_scale=2.3
+                for o in env.values():                    # the shed would hide him: its frame, walls, roof and dressing left out
+                    if o.name.startswith(MILL.SHED2):o.hide_render=True
             if c['env']=='tree':
                 for o in env.values():
                     if 'Canopy' in o.name:o.hide_render=True     # the canopy would hide him from a game camera; left out of the preview
-            cam.location=stand+view;cam.rotation_euler=(stand+Vector((0,-.3,.5))-cam.location).to_track_quat('-Z','Y').to_euler()
+            cam.location=stand+view;cam.rotation_euler=(stand+look-cam.location).to_track_quat('-Z','Y').to_euler()
         else:
+            cd.ortho_scale=1.75
             rig.location=(0,0,0);cam.location=eye;cam.rotation_euler=(tgt-eye).to_track_quat('-Z','Y').to_euler()
         bpy.context.view_layer.update()
         for pname,centre,size,colour,_ in c['props']:

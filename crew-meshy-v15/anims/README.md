@@ -34,6 +34,7 @@ embedded, so the one file opens on its own. Rebuild it with
 | `Crew_Carry` | hauling | 0.9 s | carrylog | - | walking with a log on his right shoulder (the game adds 1-3) |
 | `Crew_PickUp` | lifting a load | 1.3 s, one-shot | sack | - | stoop, lift a load to his chest (one-shot) |
 | `Crew_Saw` | Sawmill (sawyer) | 0.9 s | saw | - | sawmill: sawing a plank on a trestle |
+| `Crew_Crank` | Sawmill level 2, concept (sawyer) | 1.2 s | - | - | winding the saw wheel's crank with both hands |
 | `Crew_Farm` | Farm plot (farmhand) | 1.25 s | hoe | - | farm plot: hoeing the rows |
 | `Crew_Smith` | Forge (smith) | 0.8 s | hammer | - | forge: hammering hot iron on the anvil |
 | `Crew_Cook` | Kitchen (cook) | 1.6 s | paddle | - | kitchen: stirring the pot |
@@ -112,6 +113,10 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   `MillL1Import`; `env/bench-height.png`). He stands 10 cm behind `Worker_Stand` (baked into the
   root) so his belly clears the log. The saw's blade runs out of the fist along the forearm
   (tool frame +Z), so the game's saw mesh (blade up +Y) needs turning +90 degrees about X (blade +Y to +Z, teeth to -Y).
+- **Crank is the level 2 sawmill concept's clip** (`CLIPS['Crank']['env']='mill2'`,
+  `../../sawmill-l2-concept/`). He winds a crank across in front of him with both hands, turned
+  90° (the clip's own root yaw) to face along the saw table. The building's `Mill2_CrankWheel` and
+  `Saw2_Wheel` carry a matching 1.2 s take; play both together from frame 0. No tool in hand.
 - **Chop is set at a tree** (`CLIPS['Chop']['env']='tree'`: Astra's `Tree_B1` at its smallest game
   size, 9 m, the trunk 1.1 m (game) in front of him as `CampWorker.Stand` places a chopper). It is
   **one-handed**, from his right side, the whole upper body winding 45 degrees right and unwinding

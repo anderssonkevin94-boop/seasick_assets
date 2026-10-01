@@ -17,5 +17,6 @@ for name in sys.argv[sys.argv.index('--')+1:]:
     rig.animation_data.action=bpy.data.actions['Crew_'+name];bpy.context.scene.frame_set(0)
     if c['rtool']:tools.append(A.attach_tool(rig,sv,c['rtool'],A.RIGHT))
     if c['ltool']:tools.append(A.attach_tool(rig,sv,c['ltool'],A.LEFT))
+    if c.get('env'):tools+=[env[n] for n in c.get('env_tools',())]     # moving parts of the building he works
     r=N.check_clip(ck,rig,bpy.data.actions['Crew_'+name],None,tools=tools,props=props,step=1)
     print('CHECK',name,{f'{k[0]}:{k[1]}':v for k,v in sorted(r.items())} or 'clean: no clipping, joints in range, every frame')

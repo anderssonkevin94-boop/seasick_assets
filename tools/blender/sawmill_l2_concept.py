@@ -45,7 +45,7 @@ SKIN=(217,146,89)                  # the README's skin #D99259
 
 PLOT=(7.56,5.85);RIDGE_LIMIT=3.84
 PLATFORM=.16                       # Worker_Stand height, as at level 1
-STAND=Vector((-.55,.8,PLATFORM))   # Worker_Stand: moved behind the crank (level 1: -0.04, 0.66)
+STAND=Vector((-.95,.62,PLATFORM))  # Worker_Stand: at the crank, looking along the table at the saw (level 1: -0.04, 0.66)
 
 # Palette (sRGB), sampled from the level 1 mill's preview colours where they exist.
 C=dict(
@@ -153,11 +153,24 @@ POST_X=1.22;POST_YF=-1.45;POST_YB=1.75
 PLATE_Z=2.45;RIDGE_Z=3.68         # ridge runs front to back: the open gable faces the camera
 EAVE=.38;GABLE=.4
 TABLE_Y=-.35;TABLE_Z=.78           # saw table: centre line of the cut, top (his hip, as the lowered level 1 bench)
-BLADE=Vector((.05,TABLE_Y,.8));BLADE_R=.52    # the saw wheel: axle along Y at the table top, half of it above the log
-FLY=Vector((-.55,.12,.85));FLY_R=.4           # the crank wheel in front of him, axle along Y
-CRANK_R=.2                                    # crank throw: the handle circles 0.65-1.05 m, belly to shoulder
-PULLEY_R=.07                                  # on the saw's arbor: the big wheel turns it ~6x
-LOG_R=.17;LOG_Z=TABLE_Z+LOG_R
+BLADE=Vector((.15,TABLE_Y,.69));BLADE_R=.52    # the saw wheel: axle along Y just under the table top, clear of the floor, standing well above the log
+BLADE_T=.02                                    # blade thickness
+# The crank, from the Crank clip (crew_meshy_v15_anims.py), which found it by
+# searching poses against the anatomy check. At his 1.30 m source scale, in his
+# own frame (-Y forward): the handle circles CRANK['r'] about a point CRANK['ahead']
+# in front of him and CRANK['up'] above his feet, both fists on it CRANK['grip']
+# either side of his midline. He faces +X in the mill (the clip turns him 90
+# degrees): the crank axle runs along Y, across him.
+SRC=1.30/1.7
+CRANK=dict(ahead=.44,up=.62,r=.07,grip=.22)
+CRANK_C=STAND+Vector((CRANK['ahead'],0,CRANK['up']))/SRC     # the crank axle's centre in front of him
+CRANK_R=CRANK['r']/SRC                                        # crank throw
+HANDLE_HALF=(CRANK['grip']+.06)/SRC                           # half the handle: room for each fist
+BEARING=HANDLE_HALF+.1                                        # bearing posts either side of him
+FLY=Vector((CRANK_C.x,STAND.y+BEARING+.12,CRANK_C.z));FLY_R=.4   # the flywheel, on the crank axle on his left: behind him from the game camera
+RATIO=5;PULLEY_R=FLY_R/RATIO                  # on the saw's arbor: one turn of the crank turns the saw 5 times
+CLIP_SECONDS=1.2;FPS=30                       # one turn of the crank: the Crank clip's length
+LOG_R=.15;LOG_Z=TABLE_Z+LOG_R
 LOG_X0=-1.08                                  # the log's tail; it is fed +X into the wheel
 SIGN_POST=(-1.98,.9)               # the level 1 sign's bracket hung off a canvas pillar; it gets its own post
 
@@ -285,21 +298,16 @@ def build_station(objs):
     x0,x1=-1.15,1.15;w=.62
     for side in(-1,1):                                       # top boards either side of the blade slot
         t.box((0,TABLE_Y+side*(w/4+.015),TABLE_Z-.03),(x1-x0,w/2-.03,.06),'wood_l')
-    t.box((0,TABLE_Y,TABLE_Z-.075),(x1-x0,w,.03),'wood_d')
-    for x in(x0+.12,-.5,.6,x1-.12):
+    for side in(-1,1):t.box((0,TABLE_Y+side*(w/2-.05),TABLE_Z-.09),(x1-x0,.08,.06),'wood_d')   # side rails; open under the blade
+    for x in(x0+.12,-.6,.8,x1-.12):                         # legs clear of the saw wheel
         for side in(-1,1):t.box((x,TABLE_Y+side*(w/2-.06),(PLATFORM+TABLE_Z-.09)/2),(.09,.09,TABLE_Z-.09-PLATFORM),'wood')
         t.box((x,TABLE_Y,.34),(.06,w-.1,.06),'wood_d')
     t.box((0,TABLE_Y-w/2+.06,.34),(x1-x0-.2,.06,.06),'wood_d')
     for x in(-.95,-.62):t.cyl((x,TABLE_Y-.2,TABLE_Z+.015),(x,TABLE_Y+.2,TABLE_Z+.015),.03,'wood_d',n=6)   # feed rollers
     t.box((0,TABLE_Y-.29,TABLE_Z+.05),(x1-x0-.1,.04,.1),'wood_d')                   # fence along the far edge
     # the saw's arbor: two bearing blocks under the table, the shaft back to the drive pulley
-    for y in(TABLE_Y-.24,-.02):t.box((BLADE.x,y,BLADE.z),(.16,.1,.16),'iron')
-    t.cyl((BLADE.x,TABLE_Y-.3,BLADE.z),(BLADE.x,FLY.y+.03,BLADE.z),.025,'iron',n=6)
-    for y in(TABLE_Y-.24,-.02):t.box((BLADE.x,y,(PLATFORM+BLADE.z-.08)/2),(.1,.08,BLADE.z-.08-PLATFORM),'wood_d')
-    # the guard: a bent iron hood over the top of the wheel
-    gr=BLADE_R+.07;arc=[BLADE+Vector((math.cos(a),0,math.sin(a)))*gr for a in [math.radians(20+14*i) for i in range(11)]]
-    for a,b2 in zip(arc,arc[1:]):t.beam(a,b2,.12,.02,'iron',up=(0,1,0))
-    t.beam(arc[0],Vector((arc[0].x,TABLE_Y-.29,TABLE_Z+.1)),.03,.03,'iron')            # its stay to the fence
+    for y in(TABLE_Y-.24,-.02):t.box((BLADE.x,y,BLADE.z),(.14,.1,.14),'iron')
+    for y in(TABLE_Y-.24,-.02):t.box((BLADE.x,y,(PLATFORM+BLADE.z-.07)/2),(.1,.08,BLADE.z-.07-PLATFORM),'wood_d')
     # gravity feed: a rope from the push block over a sheave at the table end to a hanging stone
     t.box((LOG_X0-.06,TABLE_Y,LOG_Z),(.08,.3,.24),'wood_d')
     t.beam((LOG_X0-.06,TABLE_Y+.2,LOG_Z),(x1,TABLE_Y+.24,LOG_Z),.012,.012,'hemp')
@@ -310,22 +318,33 @@ def build_station(objs):
     t.box((x1+.08,TABLE_Y+.24,.42),(.18,.18,.2),'stone')
     t.build(objs)
 
-    # the crank wheel stand: one heavy upright on the far side, the shaft cantilevered toward him
+    # the saw's long arbor shaft back to the flywheel's plane, and its far bearing
+    r=Part('Mill2_SawArbor','Bench_Anchor')
+    r.cyl((BLADE.x,TABLE_Y-.3,BLADE.z),(BLADE.x,FLY.y+.05,BLADE.z),.025,'iron',n=6)
+    r.box((BLADE.x,FLY.y-.12,BLADE.z),(.14,.1,.14),'iron')
+    r.box((BLADE.x,FLY.y-.12,(PLATFORM+BLADE.z-.07)/2),(.1,.08,BLADE.z-.07-PLATFORM),'wood_d')
+    r.build(objs)
+
+    # the crank stand: two bearing posts either side of him, braced along the axle's line of pull
     f=Part('Mill2_CrankStand','Bench_Anchor')
-    fy=FLY.y-.12
-    f.box((FLY.x,fy,(PLATFORM+FLY.z)/2+.04),(.14,.12,FLY.z-PLATFORM+.08),'wood')
-    for sx in(-1,1):f.beam((FLY.x,fy,.6),(FLY.x+sx*.38,fy,PLATFORM),.08,.08,'wood_d',up=(0,1,0))
-    f.box((FLY.x,fy,PLATFORM+.03),(.9,.2,.06),'wood_d')
-    f.box((FLY.x,fy,FLY.z),(.18,.14,.16),'iron')
+    for y in(STAND.y-BEARING,STAND.y+BEARING):
+        f.box((CRANK_C.x,y,(PLATFORM+CRANK_C.z)/2+.02),(.12,.12,CRANK_C.z-PLATFORM+.04),'wood')
+        for sx in(-1,1):f.beam((CRANK_C.x,y,CRANK_C.z-.35),(CRANK_C.x+sx*.3,y,PLATFORM),.07,.07,'wood_d',up=(0,1,0))
+        f.box((CRANK_C.x,y,PLATFORM+.03),(.7,.16,.06),'wood_d')
+        f.box((CRANK_C.x,y,CRANK_C.z),(.16,.14,.14),'iron')                         # bearing
     f.build(objs)
 
-    # the crank wheel: it spins about its axle (object origin), crank arm and handle included
-    k=Part('Mill2_CrankWheel','Bench_Anchor',pivot=FLY)
+    # the crank: a bent iron axle (the U between the bearings is the handle's throw)
+    # and the flywheel on its end; all of it turns about the axle (object origin).
+    # Built with the handle at the top of its turn.
+    k=Part('Mill2_CrankWheel','Bench_Anchor',pivot=CRANK_C)
+    x,z=CRANK_C.x,CRANK_C.z;y0,y1=STAND.y-HANDLE_HALF,STAND.y+HANDLE_HALF
+    k.cyl((x,STAND.y-BEARING-.08,z),(x,y0,z),.03,'iron',n=6)
+    k.cyl((x,y1,z),(x,FLY.y+.05,z),.03,'iron',n=6)
+    for y in(y0,y1):k.box((x,y,z+CRANK_R/2),(.07,.035,CRANK_R+.07),'iron')        # the crank's cheeks
+    k.cyl((x,y0,z+CRANK_R),(x,y1,z+CRANK_R),.022,'iron',n=6)
+    k.cyl((x,y0+.03,z+CRANK_R),(x,y1-.03,z+CRANK_R),.032,'wood_d',n=8)              # wooden grip sleeve
     wheel(k,FLY,FLY_R,.07,'fine')
-    k.cyl((FLY.x,FLY.y-.1,FLY.z),(FLY.x,FLY.y+.08,FLY.z),.03,'iron',n=6)
-    hy=FLY.y+.09;hz=FLY.z+CRANK_R
-    k.box((FLY.x,hy,FLY.z+CRANK_R/2),(.06,.03,CRANK_R+.06),'iron')                    # crank arm, at the top of its turn
-    k.cyl((FLY.x,hy,hz),(FLY.x,hy+.16,hz),.022,'wood_d',n=6)                           # the handle: a long grip for both fists
     k.build(objs)
 
     # the saw wheel: iron disc with teeth, the small drive pulley on the same arbor (object origin)
@@ -334,8 +353,8 @@ def build_station(objs):
     ring=[BLADE+Vector((math.cos(2*math.pi*i/n),0,math.sin(2*math.pi*i/n)))*(BLADE_R-.03) for i in range(n)]
     teeth=[BLADE+Vector((math.cos(2*math.pi*(i+.15)/n),0,math.sin(2*math.pi*(i+.15)/n)))*BLADE_R for i in range(n)]
     pts=[];[pts.extend((ring[i],teeth[i])) for i in range(n)]
-    b.tri_board([tuple(v) for v in pts],.008,'steel')
-    b.cyl((BLADE.x,BLADE.y-.03,BLADE.z),(BLADE.x,BLADE.y+.03,BLADE.z),.07,'iron',n=8)
+    b.tri_board([tuple(v) for v in pts],BLADE_T,'steel')
+    b.cyl((BLADE.x,BLADE.y-.04,BLADE.z),(BLADE.x,BLADE.y+.04,BLADE.z),.08,'iron',n=8)   # hub and its collars
     py=FLY.y
     b.cyl((BLADE.x,py-.035,BLADE.z),(BLADE.x,py+.035,BLADE.z),PULLEY_R,'wood_d',n=10,cap='iron')
     b.build(objs)
@@ -359,7 +378,7 @@ def build_station(objs):
 
     # the grindstone: the saw blade wears and is ground true here
     g=Part('Mill2_Grindstone','LumberMill_C_Level_2')
-    gx,gy=-.98,1.42
+    gx,gy=-1.08,1.42
     for sx in(-1,1):
         g.box((gx+sx*.17,gy,.45),(.06,.5,.06),'wood')
         for sy in(-1,1):g.beam((gx+sx*.17,gy+sy*.08,.48),(gx+sx*.2,gy+sy*.22,PLATFORM),.06,.06,'wood_d')
@@ -430,6 +449,29 @@ def build(objs_l1):
     return objs
 
 
+def crank_angle(t):
+    """The crank's turn about its axle (+Y, radians) at clip phase t, matched
+    to the Crank clip's fists: at t=0 the handle is nearest him, halfway up,
+    and he winds it down, away, up and back. The saw turns the same way
+    (open belt) RATIO times as fast, so its top teeth run toward the log."""
+    return -2*math.pi*t-math.pi/2
+
+
+def animate_wheels(objs):
+    """One loop of the work: the crank wheel turns once, the saw RATIO times.
+    Object animation, take 'Mill2_Crank', CLIP_SECONDS long at FPS."""
+    sc=bpy.context.scene;sc.render.fps=FPS;sc.render.fps_base=1
+    n=round(CLIP_SECONDS*FPS);sc.frame_start,sc.frame_end=0,n
+    for name,mult in(('Mill2_CrankWheel',1),('Saw2_Wheel',RATIO)):
+        o=objs[name];o.rotation_mode='XYZ'
+        o.animation_data_create();act=bpy.data.actions.new('Mill2_Crank_'+name);o.animation_data.action=act
+        for f in(0,n):
+            o.rotation_euler=(0,mult*crank_angle(f/n),0);o.keyframe_insert('rotation_euler',index=1,frame=f)
+        for fc in(act.fcurves if hasattr(act,'fcurves') else [c for l in act.layers for st in l.strips for cb in st.channelbags for c in cb.fcurves]):
+            for kp in fc.keyframe_points:kp.interpolation='LINEAR'
+    sc.frame_set(0)
+
+
 # ------------------------------------------------------------- the deckhand, for scale
 def load_deckhand():
     before=set(bpy.data.objects);sc=bpy.context.scene;fps=(sc.render.fps,sc.render.fps_base)
@@ -437,7 +479,7 @@ def load_deckhand():
     sc.render.fps,sc.render.fps_base=fps
     new=[o for o in bpy.data.objects if o not in before]
     arm=next(o for o in new if o.type=='ARMATURE')
-    act=next((a for a in bpy.data.actions if 'Idle' in a.name),None)
+    act=next((a for a in bpy.data.actions if a.name.endswith('Crew_Crank')),None) or next((a for a in bpy.data.actions if 'Idle' in a.name),None)
     if act:
         arm.animation_data_create();arm.animation_data.action=act
         if hasattr(arm.animation_data,'action_slot') and act.slots:arm.animation_data.action_slot=act.slots[0]
@@ -491,10 +533,13 @@ def main():
     assert -PLOT[0]/2<=lo.x and hi.x<=PLOT[0]/2 and -PLOT[1]/2<=lo.y and hi.y<=PLOT[1]/2,(lo,hi)
     tris=sum(sum(len(p.vertices)-2 for p in o.data.polygons) for o in objs.values() if o.type=='MESH')
     print('triangles',tris)
+    animate_wheels(objs)
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.export_scene.fbx(filepath=str(OUT/'sawmill-l2-concept.fbx'),use_selection=False,object_types={'EMPTY','MESH'},
         axis_forward='-Z',axis_up='Y',use_triangles=False,mesh_smooth_type='FACE',colors_type='SRGB',
-        add_leaf_bones=False,bake_anim=False)
+        add_leaf_bones=False,bake_anim=True,bake_anim_use_all_actions=False,bake_anim_use_nla_strips=False,
+        bake_anim_force_startend_keying=True,bake_anim_simplify_factor=0.)
+    STILL=9                                        # the frame the stills show: handle at the bottom of its turn
     cam=setup_render()
     views=[('hero',-35,30,9.2),('front',0,22,9.2),('right',55,28,9.2),('rear',200,30,9.2),('top',0,89.9,8.6)]
     for n,az,el,s in views:shoot(cam,OUT/f'l2-{n}.png',az,el,s)
@@ -505,10 +550,11 @@ def main():
         if o.name.startswith('Mill2_BoardRoof'):o.hide_render=False
     # with the deckhand at the worker stand, for scale and the work line
     holder,_=load_deckhand()
+    bpy.context.scene.frame_set(STILL)
     shoot(cam,OUT/'l2-hero-crew.png',-35,30,9.2)
     roof=[o for o in objs.values() if o.name.startswith('Mill2_BoardRoof')]
     for o in roof:o.hide_render=True
-    shoot(cam,OUT/'l2-work-closeup.png',-28,24,3.3,target=(-.2,-.1,.85),res=(1200,1000))
+    shoot(cam,OUT/'l2-work-closeup.png',-18,20,3.3,target=(-.4,.15,.8),res=(1200,1000))
     for o in roof:o.hide_render=False
     # the mechanism alone with him, the shed hidden: his side of the crank wheel
     shed=('Mill2_BoardRoof','Mill2_BackWall','Mill2_ToolRail','Mill2_Grindstone','Mill2_Frame','Mill2_Piers',
@@ -516,8 +562,8 @@ def main():
           'Input_Log','Output_Plank')
     for o in bpy.data.objects:
         if o.name.startswith(shed):o.hide_render=True
-    shoot(cam,OUT/'l2-work-rear.png',150,30,3.0,target=(-.25,-.1,.75),res=(1200,1000))
-    shoot(cam,OUT/'l2-mechanism.png',-25,25,3.0,target=(-.25,-.1,.75),res=(1200,1000))
+    shoot(cam,OUT/'l2-work-rear.png',235,26,3.0,target=(-.4,.4,.75),res=(1200,1000))
+    shoot(cam,OUT/'l2-mechanism.png',-35,25,3.0,target=(-.35,.1,.75),res=(1200,1000))
     # level 1 (bench lowered for him, as the animations use it) from the same camera
     bpy.ops.wm.read_factory_settings(use_empty=True)
     l1=M.load('cutting',logs=6,planks=12)

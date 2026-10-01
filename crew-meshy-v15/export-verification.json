@@ -38,6 +38,7 @@
       "Crew_Carry",
       "Crew_Chop",
       "Crew_Cook",
+      "Crew_Crank",
       "Crew_DeckBrace",
       "Crew_Farm",
       "Crew_Fisher",
@@ -69,7 +70,7 @@
       "Crew_ThrowLine",
       "Crew_Walk"
     ],
-    "takes_that_move": 35,
+    "takes_that_move": 36,
     "fps": 30.0,
     "take_lengths_match": true
   }

@@ -395,6 +395,41 @@ def saw_pose(t):
 clip('Saw',1.0,saw_pose,rtool='saw',props=TRESTLE,what='level 1 lumber mill: sawing the log on the bench, the left hand holding it down')
 CLIPS['Saw']['env']='mill'
 
+# Crank, at the level 2 sawmill concept (sawmill_l2_concept.py; Kevin
+# 2026-10-01: "the cutting mechanism should be a saw wheel cutting the logs
+# and he has a cranking lever to operate it"). He winds a crank whose axle
+# runs across in front of him, both fists on its handle a little wider than
+# his shoulders, so the forearms pass outside his belly. The clip turns him
+# 90 degrees (yaw) to face along the saw table at the blade: Worker_Stand has
+# no facing, and the crank's axle runs along the building's Y.
+# Found by searching (ahead, up, throw, grip, lean, sway, elbow) against the
+# anatomy check on every phase: clean for throws up to 0.07 m at his source
+# scale (0.09 m in game); the building is built from these numbers (L2.CRANK).
+import sawmill_l2_concept as L2
+CRANK_SH={RIGHT:V(-.218,0,.763),LEFT:V(.218,0,.763)}   # shoulder joints, standing
+
+
+def crank_hand(side,grip,lean):
+    """A fist round the crank's handle: thumb along the handle toward his
+    midline, knuckles in line with the arm (from the shoulder, leaned)."""
+    s=SIDE_SIGN[side];haft=V(-s,0,0)
+    sh=CRANK_SH[side].copy();sh.y-=.45*math.sin(math.radians(lean));sh.z-=.45*(1-math.cos(math.radians(lean)))
+    f=grip-sh;f=f-haft*f.dot(haft)
+    return hand(tuple(grip),f,haft,(s*.6,.6,-.6))
+
+
+def crank_pose(t):
+    a=-2*math.pi*t                                  # the building's wheels turn with L2.crank_angle(t)
+    c=V(0,-L2.CRANK['ahead']+L2.CRANK['r']*math.cos(a),L2.CRANK['up']+L2.CRANK['r']*math.sin(a))
+    ln=24-6*math.cos(a)                             # leans into the far side of the turn, eases back on the near
+    g=L2.CRANK['grip']
+    return K_(yaw=90.,root=V(0,-.01*math.cos(a),-.03),spine=(ln,0,0),head=(10-ln*.4,0,0),
+              rh=crank_hand(RIGHT,c+V(-g,0,0),ln),lh=crank_hand(LEFT,c+V(g,0,0),ln))
+
+
+clip('Crank',L2.CLIP_SECONDS,crank_pose,what="level 2 sawmill (concept): winding the saw wheel's crank with both hands")
+CLIPS['Crank']['env']='mill2';CLIPS['Crank']['env_tools']=['Mill2_CrankWheel']
+
 FIELD=[('soil',(0,-.60,.015),(.6,.5,.03),'soil',0),('sprout',(.12,-.70,.06),(.05,.05,.08),'leaf',0),('sprout',(-.14,-.74,.06),(.05,.05,.08),'leaf',0)]
 clip('Farm',1.25,[
     (0,K_(root=V(0,0,-.02),spine=(4,0,0),head=(8,0,0),rh=swing_hand((-.05,-.02,.76),-.25,.97,(-.6,.5,-.3)),lh={'on_tool':.22,'elbow':V(.6,.2,-.3)})),
