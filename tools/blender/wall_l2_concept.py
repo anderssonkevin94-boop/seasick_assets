@@ -137,11 +137,11 @@ def run(name,variant):
     return p
 
 
-def post(name):
-    """Stone pillar: six chunky courses, the corner stones alternating which
-    face runs long, a wider capstone and a pointed cap. Root at the start
-    edge, centre at x=POST_W/2."""
-    p=Part(name);c=POST_W/2;h=POST_H-.45;n=6;ch=h/n;W=POST_W;t=.17
+def post(name,height=POST_H,n=6,cap=True):
+    """Stone pillar: n chunky courses, the corner stones alternating which
+    face runs long, a wider capstone and (cap) a pointed cap. Root at the
+    start edge, centre at x=POST_W/2."""
+    p=Part(name);c=POST_W/2;h=height-.45;ch=h/n;W=POST_W;t=.17
     p.box((c,0,h/2),(W-.06,W-.06,h),'mortar_d')
     tones=('st1','st2','st3')
     for k in range(n):
@@ -153,7 +153,8 @@ def post(name):
             for j,sx in enumerate((-1,1)):stone(p,(c+sx*(W/2-t/2),0,z),(t,W,hh),tn(j),0)
             for j,sy in enumerate((-1,1)):stone(p,(c,sy*(W/2-t/2),z),(W-2*t-JOINT,t,hh),tn(j+2),1)
     stone(p,(c,0,h+.08),(W+.12,W+.12,.16),'st3',1)                    # capstone
-    a=W/2-.02;top=POST_H
+    if not cap:return p
+    a=W/2-.02;top=height
     p._add([Vector((c-a,-a,h+.2)),Vector((c+a,-a,h+.2)),Vector((c+a,a,h+.2)),Vector((c-a,a,h+.2)),Vector((c,0,top))],
            [(0,1,4),(1,2,4),(2,3,4),(3,0,4),(3,2,1,0)],'st2')
     return p

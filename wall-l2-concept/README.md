@@ -48,6 +48,49 @@ it too:
 first version put a pillar at the end of one leg and another at the start of the next, crossed at 40°.
 The renders' `wall_line` now walks the whole polyline once. The game's wall adapter needs the same rule.
 
+## The gate
+
+![gate closed](gate-l2-closed.png)
+
+Built by `tools/blender/gate_l2_concept.py`. It uses the level 2 wall's stone and oak, built to the
+level 1 gate's contract (`Gate_L1`):
+
+- **A 3 m module**, origin at its start end on the ground. `Gate2__Snap_Start` (0,0,0), `__Snap_End` (3,0,0),
+  `__Passage` (1.5,0,0).
+- **The gate brings its own two pillars:** the wall's crude stone pillars, taller (3.6 m, seven courses),
+  with centres at 0.28 and 2.72 (`__Post_Center_Left` / `_Right`). The wall code must not place its own
+  pillar on the gate's two nodes.
+- **Lintel:** an oak beam bedded into both pillars at 2.95 m, with iron straps where it leaves the stone and
+  a crest of short pointed timbers like the wall's.
+- **Leaves:** four pointed oak planks each. On the front, two long iron strap hinges with studs and a ring pull
+  at the meeting edge. On the back, three ledges and a Z-brace, with the braces climbing from the hinge side
+  as they should.
+- **Hinges:** `Gate2_Leaf_Left` sits under `Gate2_Hinge` and `Gate2_Leaf_Right` under `Gate2_Hinge_Right`.
+  Closed is 0°, open is −100° (left) / +100° (right) about local Z, both swinging out to −Y, as level 1.
+- **Swing check:** the script sweeps both leaves through 0–100° in 5° steps against the pillars' actual
+  stones. The closest any part comes is **2.6 cm** (the hinge knuckles on their pintles excluded); the
+  build fails if anything touches. The first layout cut 4 cm into the stone at full open, so the hinges
+  now sit 4 cm off the pillar face, near its front.
+- **Breached** (`Gate2_Breached`): the pillars stand, the leaves and lintel are gone, there is rubble on
+  the ground, and two splintered planks remain on the left hinge.
+
+**Clear opening: 1.88 m**, narrower than level 1's 2.22 m, because the stone pillars are wider and stay
+inside the 3 m module. That's fine for a 1.7 m crew member on foot. If carts or several hands at once
+need more width, the gate module would have to grow past 3 m.
+
+| Piece | Triangles |
+|---|---|
+| Intact gate (pillars, lintel, two leaves) | 3,646 |
+| Breached gate | 2,844 |
+
+| File | What |
+|---|---|
+| `gate-l2-kit.fbx` | `Gate2` (intact, closed) and `Gate2_Breached`, with markers and hinge empties |
+| `gate-l2-closed.png`, `gate-l2-open.png`, `gate-l2-breached.png` | In the wall, the deckhand for scale |
+| `gate-l2-front.png`, `gate-l2-rear.png`, `gate-l2-closeup.png` | Front hardware, rear ledges and braces |
+| `gate-l2-open-top.png` | Open, from above |
+| `gate-l1-vs-l2.png` | The level 1 gate (left) and level 2, same camera |
+
 ## Files
 
 | File | What |
@@ -58,5 +101,5 @@ The renders' `wall_line` now walks the whole polyline once. The game's wall adap
 | `wall-l1-vs-l2.png` | The level 1 palisade (left) and level 2 on one line, same camera |
 | `wall-l2-kit.png` | The modules on their own |
 
-Not done yet: fillers (0.5 and 0.25 m), the breached run, a level 2 gate, trimming at arbitrary
+Not done yet: fillers (0.5 and 0.25 m), the breached run, trimming at arbitrary
 lengths and angles (the same adapter work as level 1), and a game importer.
