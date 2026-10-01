@@ -42,7 +42,30 @@ it too:
 | Piece | Triangles |
 |---|---|
 | `Wall2_Run_1m_A` / `B` / `C` | 714 each |
+| `Wall2_Filler_050m` | 402 |
+| `Wall2_Filler_025m` | 296 |
+| `Wall2_Breached_1m` | 610 |
 | `Wall2_Post` | 1,118 |
+
+### Fillers and the breached run
+
+![a stretch with both fillers and a breach](wall-l2-pieces.png)
+
+- **Fillers, `Wall2_Filler_050m` and `Wall2_Filler_025m`:** built by the same code as the 1 m runs, with two
+  timbers and one timber, start-end roots and `__Snap_Start` / `__Snap_End`. The 0.5 m filler's middle course
+  has two flush quarter-metre end stones, so it pairs with its neighbours like a full run. The 0.25 m filler's
+  stones run flush end to end. Any mix of runs and fillers tiles with no seam, as the 4.75 m stretch above
+  shows (runs 1, 1, 1, then fillers 0.5 and 0.25, then a run).
+- **Breached, `Wall2_Breached_1m`:** the same 1 m span and snaps as a run, smashed in the middle.
+  - **Ends still meet:** the footing course is whole and the middle course keeps its end stones, so both
+    ends meet whole runs cleanly.
+  - **Stone:** the stones above are knocked out, apart from stubs at the ends. They lie on the ground in
+    front and behind, with one capstone slumped into the gap.
+  - **Timbers:** the outer two are snapped high with jagged, splintered tops. Of the inner two, one is snapped
+    low and one is knocked over forward.
+  - **Bands and rails:** the iron bands and rear rails are torn off at the gap, with one band end bent out.
+  - **Use:** like level 1's breached piece, it goes over the damaged middle third of a segment. Decoration
+    only: no colliders.
 
 **At a bend:** one pillar per node, never two, turned halfway between the two legs that meet there. The
 first version put a pillar at the end of one leg and another at the start of the next, crossed at 40°.
@@ -60,8 +83,8 @@ level 1 gate's contract (`Gate_L1`):
 - **The gate brings its own two pillars:** the wall's crude stone pillars, taller (3.6 m, seven courses),
   with centres at 0.28 and 2.72 (`__Post_Center_Left` / `_Right`). The wall code must not place its own
   pillar on the gate's two nodes.
-- **Lintel:** an oak beam bedded into both pillars at 2.95 m, with iron straps where it leaves the stone and
-  a crest of short pointed timbers like the wall's.
+- **No lintel:** the opening is open to the sky between the two pillars (Kevin: *"remove the top beam"*).
+  The hinge pins are their own small piece, `Gate2_Pintles`.
 - **Leaves:** four pointed oak planks each. On the front, two long iron strap hinges with studs and a ring pull
   at the meeting edge. On the back, three ledges and a Z-brace, with the braces climbing from the hinge side
   as they should.
@@ -71,7 +94,7 @@ level 1 gate's contract (`Gate_L1`):
   stones. The closest any part comes is **2.6 cm** (the hinge knuckles on their pintles excluded); the
   build fails if anything touches. The first layout cut 4 cm into the stone at full open, so the hinges
   now sit 4 cm off the pillar face, near its front.
-- **Breached** (`Gate2_Breached`): the pillars stand, the leaves and lintel are gone, there is rubble on
+- **Breached** (`Gate2_Breached`): the pillars stand, the leaves are gone, there is rubble on
   the ground, and two splintered planks remain on the left hinge.
 
 **Clear opening: 1.88 m**, narrower than level 1's 2.22 m, because the stone pillars are wider and stay
@@ -80,7 +103,7 @@ need more width, the gate module would have to grow past 3 m.
 
 | Piece | Triangles |
 |---|---|
-| Intact gate (pillars, lintel, two leaves) | 3,646 |
+| Intact gate (pillars, pintles, two leaves) | 3,484 |
 | Breached gate | 2,844 |
 
 | File | What |
@@ -95,11 +118,12 @@ need more width, the gate module would have to grow past 3 m.
 
 | File | What |
 |---|---|
-| `wall-l2-kit.fbx` | The three runs and the pillar, with their snap and centre markers |
+| `wall-l2-kit.fbx` | The three runs, both fillers, the breached run and the pillar, with their snap and centre markers |
+| `wall-l2-pieces.png`, `wall-l2-breach.png`, `wall-l2-breach-rear.png` | Runs, fillers and the breach in one stretch; the breach close up |
 | `wall-l2-hero.png`, `wall-l2-rear.png`, `wall-l2-front.png`, `wall-l2-closeup.png` | A 9 m stretch with a 40° bend, and the deckhand for scale |
 | `wall-l2-bend.png`, `wall-l2-bend-rear.png`, `wall-l2-bend-top.png` | The 40° bend close up: one pillar, turned to the bisector |
 | `wall-l1-vs-l2.png` | The level 1 palisade (left) and level 2 on one line, same camera |
 | `wall-l2-kit.png` | The modules on their own |
 
-Not done yet: fillers (0.5 and 0.25 m), the breached run, trimming at arbitrary
+Not done yet: trimming at arbitrary
 lengths and angles (the same adapter work as level 1), and a game importer.

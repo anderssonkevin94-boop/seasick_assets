@@ -12,12 +12,12 @@ empties and swing outward to -Y: left -100 degrees, right +100 about local Z.
 
   - Pillars: the wall's crude stone pillars, taller (3.6 m, seven courses),
     inside the module: centres 0.28 and 2.72.
-  - Lintel: an oak beam bedded into both pillars at 2.95 m, iron straps at
-    its ends, a crest of short pointed timbers like the wall's.
+  - No lintel (Kevin, 2026-10-01: "remove the top beam"): the opening is
+    open to the sky between the two pillars.
   - Leaves: four vertical oak planks each, pointed like the wall's timbers;
     two long iron strap hinges and studs on the front, three ledges and a
     Z-brace on the back, a ring pull at the meeting edge.
-  - Breached: the pillars stand, the leaves and lintel are gone, rubble and
+  - Breached: the pillars stand, the leaves are gone, rubble and
     one broken leaf stump on the left hinge.
 
 Writes wall-l2-concept/gate-l2-kit.fbx and gate renders.
@@ -44,7 +44,6 @@ LEAF_GAP=.012
 LEAF_W=(OPEN_X1-OPEN_X0)/2-HINGE_INSET-LEAF_GAP*1.5
 LEAF_T=.09
 LEAF_Z0,LEAF_TOP=.06,2.55
-LINTEL_Z=2.95;LINTEL=(.26,.24)                # depth, height
 OPEN_DEG=100
 
 
@@ -89,20 +88,10 @@ def pillar(name):
     return W.post(name,PILLAR_H,n=7)
 
 
-def lintel(name):
-    p=Part(name);x0,x1=OPEN_X0-.18,OPEN_X1+.18;d,h=LINTEL
-    p.box(((x0+x1)/2,0,LINTEL_Z+h/2),(x1-x0,d,h),'oak_d')
-    for x in(OPEN_X0+.06,OPEN_X1-.06):                               # iron straps where it leaves the stone
-        p.box((x,0,LINTEL_Z+h/2),(.07,d+.016,h+.016),'iron')
-    # crest: short pointed timbers on the beam, like the wall's
-    n=7;w=(OPEN_X1-OPEN_X0)/n
-    for i in range(n):
-        xc=OPEN_X0+w*(i+.5);top=LINTEL_Z+h+.16+.04*((i*2)%3)
-        p.box((xc,0,(LINTEL_Z+h+top)/2),(w-.02,.15,top-LINTEL_Z-h),('oak','oak_l')[i%2])
-        hw=(w-.02)/2
-        p._add([Vector((xc-hw,-.075,top)),Vector((xc+hw,-.075,top)),Vector((xc+hw,.075,top)),Vector((xc-hw,.075,top)),Vector((xc,0,top+.16))],
-               [(0,1,4),(1,2,4),(2,3,4),(3,0,4),(3,2,1,0)],'oak_tip')
-    # pintles on the pillars' inner faces, at the hinge heights
+def pintles(name):
+    """The iron pins the leaves hang on, set into the pillars' inner faces at
+    the two hinge heights."""
+    p=Part(name)
     for x in(OPEN_X0,OPEN_X1):
         for z in(.45,2.05):p.box((x+(.025 if x<1.5 else -.025),HINGE_Y,z),(.05,.04,.04),'iron')
     return p
@@ -132,7 +121,7 @@ def build_gate(objs,prefix='Gate2',opened=0.):
     root=bpy.data.objects.new(prefix,None);bpy.context.scene.collection.objects.link(root)
     for side,x in(('Left',0.),('Right',SPAN-PW)):
         o=pillar(f'{prefix}_Pillar_{side}').build(objs);o.parent=root;o.location=(x,0,0)
-    lintel(f'{prefix}_Lintel').build(objs).parent=root
+    pintles(f'{prefix}_Pintles').build(objs).parent=root
     hl=empty(f'{prefix}_Hinge',root,(OPEN_X0+HINGE_INSET,HINGE_Y,0));hr=empty(f'{prefix}_Hinge_Right',root,(OPEN_X1-HINGE_INSET,HINGE_Y,0))
     ll=leaf(f'{prefix}_Leaf_Left','L').build(objs);ll.parent=hl
     lr=leaf(f'{prefix}_Leaf_Right','R').build(objs);lr.parent=hr

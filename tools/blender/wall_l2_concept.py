@@ -101,39 +101,111 @@ def stone_course(p,x0,x1,z0,h,joints,seed,y0=-BASE_T/2,y1=BASE_T/2,flush=False):
         stone(p,((a2+b2)/2,(y0+y1)/2,z0+h/2),(b2-a2,y1-y0+.02,h-JOINT),tone,1,fl)
 
 
-def run(name,variant):
-    """A 1 m run: stone base, sill, four timbers, bands, rear rails."""
-    p=Part(name)
-    p.box((.5,0,BASE_H/2),(1,BASE_T-.03,BASE_H),'mortar_d')           # core
-    # Courses alternate: joints AT the module ends (one inner joint, by variant),
-    # then joints a quarter metre in, whose 0.25 m end stones pair with the
-    # neighbour's into one half-metre stone. The capstones join at the ends.
-    inner={'A':[(.45,),(.25,.75),(.55,),(.5,)],'B':[(.6,),(.25,.75),(.4,),(.45,)],'C':[(.5,),(.25,.75),(.35,),(.6,)]}[variant]
-    for k in range(3):stone_course(p,0,1,k*COURSE,COURSE,inner[k],k+ord(variant) if k!=1 else 1,flush=k==1)
+# Course joints per run length. Course 0 and 2 and the capstones joint AT the
+# module ends; course 1's end stones run flush to the ends and pair with the
+# neighbour's into one stone (a quarter metre in from each end).
+JOINTS={1.:{'A':[(.45,),(.25,.75),(.55,),(.5,)],'B':[(.6,),(.25,.75),(.4,),(.45,)],'C':[(.5,),(.25,.75),(.35,),(.6,)]},
+        .5:{'A':[(),(.25,),(),()]},
+        .25:{'A':[(),(),(),()]}}
+TOPS={'A':(2.58,2.5,2.64,2.53),'B':(2.5,2.62,2.55,2.47),'C':(2.6,2.52,2.48,2.63)}
+
+
+def base(p,L,inner,variant,keep=None):
+    """The stone base of a run of length L. keep(k, a, b) -> False drops a
+    stone (course k, from a to b): the breached run's knocked-out stones."""
+    p.box((L/2,0,BASE_H/2 if keep is None else COURSE),(L,BASE_T-.03,BASE_H if keep is None else 2*COURSE),'mortar_d')
+    for k in range(3):
+        z=k*COURSE;edges=[0.]+list(inner[k])+[L]
+        if keep is None:
+            stone_course(p,0,L,z,COURSE,inner[k],k+ord(variant) if k!=1 else 1,flush=k==1);continue
+        tones=('st1','st2','st3');last=len(edges)-2
+        for i,(a,b) in enumerate(zip(edges,edges[1:])):
+            if not keep(k,a,b):continue
+            fl=k==1;a2=a if (fl and i==0) else a+JOINT/2;b2=b if (fl and i==last) else b-JOINT/2
+            f=tuple(n for n,on in(('-x',fl and i==0),('+x',fl and i==last)) if on)
+            stone(p,((a2+b2)/2,0,z+COURSE/2),(b2-a2,BASE_T+.02,COURSE-JOINT),tones[(k+i*2)%3] if not fl or i not in(0,last) else tones[1],1,f)
     zc=3*COURSE
-    for i,(a,b) in enumerate(zip((0,)+inner[3],inner[3]+(1,))):
-        stone(p,((a+b)/2,0,zc+CAP/2),(b-a-JOINT,BASE_T+.1,CAP-.03),('st3','st1')[i%2],2)
-    # oak sill
-    zs=BASE_H;p.box((.5,0,zs+SILL[1]/2),(1,SILL[0],SILL[1]),'oak_d')
-    # timbers: squared, chamfered corners suggested by a darker face strip, adzed points
-    tops={'A':(2.58,2.5,2.64,2.53),'B':(2.5,2.62,2.55,2.47),'C':(2.6,2.52,2.48,2.63)}[variant]
+    for i,(a,b) in enumerate(zip((0.,)+tuple(inner[3]),tuple(inner[3])+(L,))):
+        if keep is None or keep(3,a,b):
+            stone(p,((a+b)/2,0,zc+CAP/2),(b-a-JOINT,BASE_T+.1,CAP-.03),('st3','st1')[i%2],2)
+
+
+def pointed(p,x,z0,top,tone,tip=.22):
+    w,d=TIMBER;hw,hd=w/2,d/2
+    p.box((x,0,(z0+top)/2),(w,d,top-z0),tone)
+    p._add([Vector((x-hw,-hd,top)),Vector((x+hw,-hd,top)),Vector((x+hw,hd,top)),Vector((x-hw,hd,top)),Vector((x,0,top+tip))],
+           [(0,1,4),(1,2,4),(2,3,4),(3,0,4),(3,2,1,0)],'oak_tip')
+
+
+def run(name,variant='A',length=1.):
+    """A run of length 1, 0.5 or 0.25 m: stone base, sill, timbers on the
+    0.25 m pitch, iron bands at the front, rails and pegs at the rear."""
+    p=Part(name);L=length;n=round(L/PITCH)
+    base(p,L,JOINTS[L][variant],variant)
+    zs=BASE_H;p.box((L/2,0,zs+SILL[1]/2),(L,SILL[0],SILL[1]),'oak_d')
     z0=zs+SILL[1]
-    for i in range(4):
-        x=.125+i*PITCH;top=tops[i];w,d=TIMBER
-        tone=('oak','oak_l','oak','oak_l')[(i+ord(variant))%4]
-        p.box((x,0,(z0+top)/2),(w,d,top-z0),tone)
-        tip=top+.22                                           # four-sided point
-        hw,hd=w/2,d/2
-        p._add([Vector((x-hw,-hd,top)),Vector((x+hw,-hd,top)),Vector((x+hw,hd,top)),Vector((x-hw,hd,top)),Vector((x,0,tip))],
-               [(0,1,4),(1,2,4),(2,3,4),(3,0,4),(3,2,1,0)],'oak_tip')
-    # iron bands across the front, riveted to every timber
-    for zb in(1.62,2.22):
-        p.box((.5,-TIMBER[1]/2-.008,zb),(1,.016,.07),'iron')
-        for i in range(4):p.box((.125+i*PITCH,-TIMBER[1]/2-.02,zb),(.035,.012,.035),'iron')
-    # rear rails and pegs
-    for zr in(1.5,2.25):
-        p.box((.5,TIMBER[1]/2+.05,zr),(1,.1,.12),'oak_d')
-        for i in range(4):p.box((.125+i*PITCH,TIMBER[1]/2+.105,zr),(.04,.02,.04),'oak_l')
+    for i in range(n):
+        pointed(p,.125+i*PITCH,z0,TOPS[variant][i],('oak','oak_l','oak','oak_l')[(i+ord(variant))%4])
+    for zb in(1.62,2.22):                                        # iron bands, riveted to every timber
+        p.box((L/2,-TIMBER[1]/2-.008,zb),(L,.016,.07),'iron')
+        for i in range(n):p.box((.125+i*PITCH,-TIMBER[1]/2-.02,zb),(.035,.012,.035),'iron')
+    for zr in(1.5,2.25):                                         # rear rails and pegs
+        p.box((L/2,TIMBER[1]/2+.05,zr),(L,.1,.12),'oak_d')
+        for i in range(n):p.box((.125+i*PITCH,TIMBER[1]/2+.105,zr),(.04,.02,.04),'oak_l')
+    return p
+
+
+def splintered(p,x,z0,top,tone,seed,lean=0.):
+    """A timber snapped at `top`: jagged corners and a torn, off-centre spike.
+    lean: degrees it has been knocked over toward -Y (front), about its foot."""
+    rnd=random.Random(f'splinter{seed}');w,d=TIMBER;hw,hd=w/2,d/2
+    R=Matrix.Rotation(math.radians(-lean),3,'X');foot=Vector((x,0,z0))
+    P=lambda q:foot+R@(Vector(q)-foot)
+    corners=[(x-hw,-hd),(x+hw,-hd),(x+hw,hd),(x-hw,hd)]
+    hs=[top-rnd.uniform(0,.16) for _ in corners]
+    vs=[P((cx,cy,z0)) for cx,cy in corners]+[P((cx,cy,h)) for (cx,cy),h in zip(corners,hs)]
+    spike=P((x+rnd.uniform(-.06,.06),rnd.uniform(-.04,.04),top+rnd.uniform(.08,.2)))
+    p._add(vs+[spike],[(3,2,1,0),(0,1,5,4),(1,2,6,5),(2,3,7,6),(3,0,4,7),(4,5,8),(5,6,8),(6,7,8),(7,4,8)],tone)
+    # the splintered face, lighter: a few raw slivers
+    for k in range(3):
+        cx=x+rnd.uniform(-hw*.6,hw*.6);h=max(hs)+rnd.uniform(.02,.12)
+        a,b,c=P((cx-.025,-hd*.5,min(hs)-.02)),P((cx+.025,hd*.5,min(hs)-.02)),P((cx+rnd.uniform(-.02,.02),0,h))
+        p._add([a,b,c],[(0,1,2)],'oak_tip')
+
+
+def breached_run(name):
+    """1 m, the middle smashed: the ends still meet whole runs (bottom course
+    whole, end stones in place, timber stumps at the ends tallest), the
+    middle stones knocked out and lying in front, timbers snapped short or
+    leaning, bands and rails torn off. Same start-end root and snaps."""
+    p=Part(name);inner=JOINTS[1.]['A']
+    def keep(k,a,b):
+        mid=(a+b)/2
+        if k==0:return True                                  # the footing course stands
+        if k==1:return a<.01 or b>.99                        # only its end stones (they pair with the neighbours)
+        if k==2:return b<.3 or a>.7                          # stubs at the ends
+        return b<.3 or a>.7                                  # capstones only over the stubs
+    base(p,1.,inner,'A',keep)
+    # what was the second and top course: a ragged step over the gap
+    zs=BASE_H;z0=zs+SILL[1]
+    for x0,x1 in((0,.24),(.76,1)):p.box(((x0+x1)/2,0,zs+SILL[1]/2),(x1-x0,SILL[0],SILL[1]),'oak_d')   # sill ends
+    # timbers: the outer two snapped high, the inner two low; one knocked over
+    splintered(p,.125,z0,1.95,'oak',1)
+    zb=2*COURSE                                              # the top of what stands of the stone
+    splintered(p,.375,zb+.02,zb+1.25,'oak_l',2,lean=34)                   # knocked over forward, still on its foot
+    splintered(p,.625,zb,zb+.55,'oak',3)                                  # snapped low
+    splintered(p,.875,z0,1.75,'oak_l',4)
+    # torn band ends and rail ends, bent
+    for zb,(x0,x1) in((1.62,(0,.2)),(1.62,(.8,1)),(2.22,(0,.17))):
+        p.box(((x0+x1)/2,-TIMBER[1]/2-.008,zb),(x1-x0,.016,.07),'iron')
+    p.beam((.2,-TIMBER[1]/2-.008,1.62),(.3,-.2,1.5),.016,.07,'iron')         # a band end bent out
+    for zr,(x0,x1) in((1.5,(0,.22)),(1.5,(.82,1)),(2.25,(0,.12))):
+        p.box(((x0+x1)/2,TIMBER[1]/2+.05,zr),(x1-x0,.1,.12),'oak_d')
+    # the knocked-out stones on the ground, front and back
+    for i,(x,y,sx,sy,sz,t) in enumerate(((.45,-.42,.42,.3,.22,'st1'),(.7,-.55,.3,.26,.18,'st3'),(.25,-.62,.24,.2,.15,'st2'),
+                                         (.55,.38,.36,.28,.2,'st2'),(.9,-.4,.22,.2,.14,'st1'))):
+        stone(p,(x,y,sz/2-.01),(sx,sy,sz),t,2)
+    stone(p,(.5,-.1,2*COURSE+.08),(.36,.3,.16),'st3',2)                     # one cap stone slumped into the gap
     return p
 
 
@@ -216,15 +288,18 @@ def main():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     objs={}
     roots=[module(objs,run(f'Wall2_Run_1m_{v}',v),length=1) for v in 'ABC']
+    roots+=[module(objs,run('Wall2_Filler_050m','A',.5),length=.5),module(objs,run('Wall2_Filler_025m','A',.25),length=.25),
+            module(objs,breached_run('Wall2_Breached_1m'),length=1)]
     roots.append(module(objs,post('Wall2_Post'),center=(POST_W/2,0,0)))
-    for i,r in enumerate(roots):r.location=(i*1.6,0,0)
+    x=0.
+    for r,L in zip(roots,(1,1,1,.5,.25,1,POST_W)):r.location=(x,0,0);x+=L+.6
     tris={o.name:sum(len(p.vertices)-2 for p in o.data.polygons) for o in objs.values()}
     print('triangles',tris)
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.export_scene.fbx(filepath=str(OUT/'wall-l2-kit.fbx'),use_selection=False,object_types={'EMPTY','MESH'},
         axis_forward='-Z',axis_up='Y',use_triangles=False,mesh_smooth_type='FACE',colors_type='SRGB',add_leaf_bones=False,bake_anim=False)
     cam=S.setup_render();sc=bpy.context.scene
-    S.shoot(cam,OUT/'wall-l2-kit.png',-30,22,6.6,target=(2.7,0,1.4),res=(1500,1000))
+    S.shoot(cam,OUT/'wall-l2-kit.png',-30,22,9.0,target=(4.1,0,1.4),res=(1700,1000))
 
     # A stretch of wall with a bend, and level 1 beside it from the same camera
     bpy.ops.wm.read_factory_settings(use_empty=True);sc=bpy.context.scene
@@ -261,6 +336,27 @@ def main():
         for r in import_l1('Palisade_Post.fbx'):r.location=off+Vector((x-.2,0,0))
     holder.location=(-.6,-1.0,0)
     S.shoot(cam,OUT/'wall-l1-vs-l2.png',-18,16,10.4,target=(-.1,0,1.4),res=(1800,900))
+
+    # the pieces in use: a 4.75 m stretch tiled from runs and both fillers, breached once
+    bpy.ops.wm.read_factory_settings(use_empty=True);sc=bpy.context.scene;objs={}
+    parts={'A':run('_A','A').build(objs),'B':run('_B','B').build(objs),'C':run('_C','C').build(objs),
+           'F5':run('_F5','A',.5).build(objs),'F25':run('_F25','A',.25).build(objs),'X':breached_run('_X').build(objs)}
+    pk=post('_P').build(objs)
+    for o in list(parts.values())+[pk]:o.hide_render=True
+    x=0.
+    for k,L in(('A',1),('X',1),('B',1),('F5',.5),('F25',.25),('C',1)):
+        o=bpy.data.objects.new(k,parts[k].data);sc.collection.objects.link(o);o.location=(x,0,0);x+=L
+    for px in(0.,x):
+        o=bpy.data.objects.new('post',pk.data);sc.collection.objects.link(o);o.location=(px-POST_W/2,0,0)
+    ground=Part('ground');ground.box((2.4,0,-.03),(12,8,.06),'mortar_d');g=ground.build(objs)
+    g.data.color_attributes['Col'].data.foreach_set('color',[v for _ in range(len(g.data.loops)) for v in (*[S.lin(c) for c in (104,128,78)],1)])
+    holder,_=S.load_deckhand();holder.location=(2.6,-1.2,0)
+    act=next((a for a in bpy.data.actions if a.name.endswith('Crew_Idle')),None)
+    arm=next(o for o in bpy.data.objects if o.type=='ARMATURE');arm.animation_data.action=act;sc.frame_set(0)
+    cam=S.setup_render()
+    S.shoot(cam,OUT/'wall-l2-pieces.png',-22,20,6.4,target=(2.4,0,1.3),res=(1700,1000))
+    S.shoot(cam,OUT/'wall-l2-breach.png',-30,22,2.8,target=(1.5,-.2,1.0),res=(1100,1000))
+    S.shoot(cam,OUT/'wall-l2-breach-rear.png',150,24,2.8,target=(1.5,.1,1.0),res=(1100,1000))
     print('done')
 
 
