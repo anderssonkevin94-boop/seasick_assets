@@ -13,9 +13,70 @@
     "seconds": 0.9,
     "frames": 28,
     "loop": true,
-    "what": "in place: the game moves him; stride about 0.44 m a cycle",
+    "what": "everyday walk, in place: the game moves him (README: stride and speed)",
     "tool_right_hand": null,
-    "held_left_hand": null
+    "held_left_hand": null,
+    "gait": {
+      "ground_m_per_cycle_game": 0.523,
+      "speed_m_s_at_1x_game": 0.58,
+      "feet_off_ground": false
+    }
+  },
+  "WalkBrisk": {
+    "take": "Crew_WalkBrisk",
+    "seconds": 0.75,
+    "frames": 23,
+    "loop": true,
+    "what": "brisk errand walk: leaning in, bigger steps and arm swing (in place)",
+    "tool_right_hand": null,
+    "held_left_hand": null,
+    "gait": {
+      "ground_m_per_cycle_game": 0.631,
+      "speed_m_s_at_1x_game": 0.84,
+      "feet_off_ground": false
+    }
+  },
+  "WalkTired": {
+    "take": "Crew_WalkTired",
+    "seconds": 1.3,
+    "frames": 40,
+    "loop": true,
+    "what": "tired walk: slumped, head down, short shuffling steps, arms dangling (in place)",
+    "tool_right_hand": null,
+    "held_left_hand": null,
+    "gait": {
+      "ground_m_per_cycle_game": 0.297,
+      "speed_m_s_at_1x_game": 0.23,
+      "feet_off_ground": false
+    }
+  },
+  "WalkDeck": {
+    "take": "Crew_WalkDeck",
+    "seconds": 1.1,
+    "frames": 34,
+    "loop": true,
+    "what": "sea legs on a moving deck: wide stance, rolling side to side, arms out for balance (in place)",
+    "tool_right_hand": null,
+    "held_left_hand": null,
+    "gait": {
+      "ground_m_per_cycle_game": 0.368,
+      "speed_m_s_at_1x_game": 0.33,
+      "feet_off_ground": false
+    }
+  },
+  "Run": {
+    "take": "Crew_Run",
+    "seconds": 0.6,
+    "frames": 19,
+    "loop": true,
+    "what": "running: leaning in, arms pumping, both feet off the ground between steps (in place)",
+    "tool_right_hand": null,
+    "held_left_hand": null,
+    "gait": {
+      "ground_m_per_cycle_game": 1.235,
+      "speed_m_s_at_1x_game": 2.06,
+      "feet_off_ground": true
+    }
   },
   "Chop": {
     "take": "Crew_Chop",

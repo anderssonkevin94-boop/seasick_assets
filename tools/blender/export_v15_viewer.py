@@ -65,13 +65,14 @@ def main():
 
 
 GROUPS=[('Building jobs',['Saw','Farm','Smith','Cook','Mill','Lookout','Quarry','Fletcher','Fisher']),
-        ('Camp tasks',['Idle','Walk','Chop','Mine','Forage','Build','Carry','PickUp','SetDown','HuntWalk','Hunt']),
-        ('Aboard ship',['DeckBrace','RailGrip','Gangway','Bail','ThrowLine','HaulLine','GunTend','GunRam','GunFire','Row','Soaked']),
+        ('Getting about',['Walk','WalkBrisk','WalkTired','Run']),
+        ('Camp tasks',['Idle','Chop','Mine','Forage','Build','Carry','PickUp','SetDown','HuntWalk','Hunt']),
+        ('Aboard ship',['DeckBrace','WalkDeck','RailGrip','Gangway','Bail','ThrowLine','HaulLine','GunTend','GunRam','GunFire','Row','Soaked']),
         ('Seasickness',['SickSway','SickWalk','SickClutch','SickRail','SickCollapse','SickKneel'])]
 WHERE={'Saw':'Sawmill · sawyer','Farm':'Farm plot · farmhand','Smith':'Forge · smith','Cook':'Kitchen · cook',
        'Mill':'Mill · miller','Lookout':'Watchtower · lookout','Quarry':'Quarry · quarryman',
        'Fletcher':"Fletcher's · fletcher",'Fisher':'Fishing hut · fisher',
-       'Idle':'Standing about','Walk':'Walking (in place)','Chop':'Gathering timber, clearing ground',
+       'Idle':'Standing about','Walk':'Walking (in place)','WalkBrisk':'Off on an errand (in place)','WalkTired':'Tired or hungry (in place)','Run':'Running (in place)','WalkDeck':'Walking a rolling deck (in place)','Chop':'Gathering timber, clearing ground',
        'Mine':'Gathering stone and ore','Forage':'Gathering spice and food','Build':'Raising a building',
        'Carry':'Hauling a load (in place)','PickUp':'Lifting a load off a pile','SetDown':'Setting a load down',
        'Hunt':'Hunting: the throw','HuntWalk':'Hunting: stalking (in place)','DeckBrace':'Aboard, at his post','RailGrip':'Aboard, gripping the rail through a warning',
@@ -80,7 +81,7 @@ WHERE={'Saw':'Sawmill · sawyer','Farm':'Farm plot · farmhand','Smith':'Forge �
        'GunTend':'Gunner: standing by','GunRam':'Gunner: reloading','GunFire':'Gunner: firing','Row':'Jolly boat','Soaked':'Resting after a rescue',
        'SickSway':'Seasick, standing','SickWalk':'Seasick, walking (in place)','SickClutch':'Badly seasick',
        'SickRail':'Seasick at the rail','SickCollapse':'Worst seasickness: going down','SickKneel':'Worst seasickness: on his knees'}
-LABEL={'HuntWalk':'Hunt: stalk','Hunt':'Hunt: throw','PickUp':'Pick up','SetDown':'Set down','DeckBrace':'Deck brace','RailGrip':'Rail grip','ThrowLine':'Throw line',
+LABEL={'WalkBrisk':'Walk: brisk','WalkTired':'Walk: tired','WalkDeck':'Walk: deck','HuntWalk':'Hunt: stalk','Hunt':'Hunt: throw','PickUp':'Pick up','SetDown':'Set down','DeckBrace':'Deck brace','RailGrip':'Rail grip','ThrowLine':'Throw line',
        'HaulLine':'Haul line','GunTend':'Gun: tend','GunRam':'Gun: ram','GunFire':'Gun: fire','SickSway':'Sick: sway','SickWalk':'Sick: walk',
        'SickClutch':'Sick: clutch','SickRail':'Sick: at the rail','SickCollapse':'Sick: collapse','SickKneel':'Sick: kneel'}
 TOOLS={'carrylog':'log','sack':'sack','peg':'quern peg','shaft':'arrow shaft','coil':'coiled line','pick':'pickaxe','crate':'any load (crate shown)','spear':'spear'}

@@ -293,7 +293,66 @@ def walk_pose(t,arms=True,carry=None):
     return q
 
 
-clip('Walk',.9,walk_pose,what='in place: the game moves him; stride about 0.44 m a cycle')
+# Walking and running: one gait generator, a parameter set per style. Each
+# foot is planted for `duty` of the cycle and slides straight back at a
+# steady rate (so it doesn't skate when the game moves him at the matching
+# speed), then swings forward lifted; the right foot lands at t=0. Arms
+# swing against the legs. Run has duty < .5: both feet off the ground
+# between steps. Stride and cycle give the ground speed each plays at (README).
+GAITS={
+    'walk':  dict(cycle=.9, stride=.12,lift=.05,duty=.60,drop=.014,bounce=.012,lean=4, head=4, twist=6, sway=.012,
+                  arm=(.34,-.06,.46),swing=.10,armup=.02,face=(-.15,-.1,-1),elbow=(-.6,.7,0)),
+    'brisk': dict(cycle=.75,stride=.14,lift=.06,duty=.58,drop=.018,bounce=.016,lean=9, head=2, twist=8, sway=.010,
+                  arm=(.32,-.10,.44),swing=.14,armup=.06,face=(-.1,-.5,-.8),elbow=(-.6,.7,0)),
+    'tired': dict(cycle=1.3,stride=.075,lift=.022,duty=.66,drop=.03,bounce=.008,lean=14,head=20,twist=3, sway=.02,
+                  arm=(.39,-.04,.44),swing=.035,armup=0,face=(-.4,-.2,-.9),elbow=(-.6,.7,0),lag=.12),
+    'deck':  dict(cycle=1.1,stride=.09,lift=.04,duty=.64,drop=.035,bounce=.010,lean=6, head=0, twist=3, sway=.035,
+                  arm=(.48,-.06,.60),swing=.03,armup=.02,face=(-.5,-.5,-.6),elbow=(-.7,.2,.6),wide=.045,roll=7),
+    'run':   dict(cycle=.6, stride=.17,lift=.15,duty=.36,drop=.04,bounce=.035,lean=13,head=-4,twist=10,sway=.008,
+                  arm=(.36,-.12,.52),swing=.11,armup=.07,face=(-.05,-.7,-.7),elbow=(-.7,.6,-.2),run=True),
+}
+
+
+def gait(t,g):
+    """In-place gait at phase t (0..1) for style g (a GAITS entry)."""
+    S,D=g['stride'],g['duty']
+    def foot(ph):                                   # (forward offset -Y.., lift, toe pitch) for a foot at its own phase
+        ph%=1
+        if ph<D:                                    # planted: lands S ahead, slides straight back to S behind
+            u=ph/D;return (-S+2*S*u,0.,-8+28*u*u)
+        u=(ph-D)/(1-D);w=u*u*(3-2*u)                # swing: comes forward, lifted
+        if g.get('run'):                            # the heel kicks up behind first, then the knee drives the foot through
+            return (S-2*S*w,g['lift']*math.sin(math.pi*u**.65),40-48*w)
+        return (S-2*S*w,g['lift']*math.sin(math.pi*u),20-28*w)
+    yr,zr,pr=foot(t);yl,zl,pl=foot(t+.5)
+    wide=g.get('wide',0)
+    q=K_(rf=(-wide,yr,zr,pr),lf=(wide,yl,zl,pl))
+    a=2*math.pi*t;c=math.cos(a)
+    if g.get('run'):                                # lowest mid-stance, highest in the flight
+        z=-g['drop']-g['bounce']*math.cos(4*math.pi*(t-D/4))
+    else:                                           # lowest as the foot lands, highest passing over it
+        z=-g['drop']-g['bounce']*math.cos(4*math.pi*t)
+    sway=-g['sway']*math.sin(a)                     # weight over the planted foot (right foot -X, planted from t=0)
+    q['root']=V(sway,0,z)
+    roll=g.get('roll',0)
+    q['pelvis']=(0,g['twist']*c,-roll*math.sin(a))
+    q['spine']=(g['lean'],-g['twist']*.8*c,roll*.6*math.sin(a))
+    q['head']=(g['head'],g['twist']*.3*c,-roll*.4*math.sin(a))
+    ax,ay,az=g['arm'];A=g['swing'];lag=g.get('lag',0)
+    cr=math.cos(a-lag*2*math.pi)
+    fx,fy,fz=g['face'];ex,ey,ez=g['elbow']
+    q['rh']=hand((-ax,ay+A*cr,az+g['armup']*max(0,-cr)),(fx,fy+.2*cr,fz),(0,-1,0) if fz<-.6 else (0,0,1),(ex,ey,ez))
+    q['lh']=hand((ax,ay-A*cr,az+g['armup']*max(0,cr)),(-fx,fy-.2*cr,fz),(0,-1,0) if fz<-.6 else (0,0,1),(-ex,ey,ez))
+    return q
+
+
+clip('Walk',GAITS['walk']['cycle'],lambda t:gait(t,GAITS['walk']),what='everyday walk, in place: the game moves him (README: stride and speed)')
+clip('WalkBrisk',GAITS['brisk']['cycle'],lambda t:gait(t,GAITS['brisk']),what='brisk errand walk: leaning in, bigger steps and arm swing (in place)')
+clip('WalkTired',GAITS['tired']['cycle'],lambda t:gait(t,GAITS['tired']),what='tired walk: slumped, head down, short shuffling steps, arms dangling (in place)')
+clip('WalkDeck',GAITS['deck']['cycle'],lambda t:gait(t,GAITS['deck']),what='sea legs on a moving deck: wide stance, rolling side to side, arms out for balance (in place)')
+clip('Run',GAITS['run']['cycle'],lambda t:gait(t,GAITS['run']),what='running: leaning in, arms pumping, both feet off the ground between steps (in place)')
+for _n,_g in (('Walk','walk'),('WalkBrisk','brisk'),('WalkTired','tired'),('WalkDeck','deck'),('Run','run')):CLIPS[_n]['gait']=GAITS[_g]
+WALK0=gait(0,GAITS['walk'])                         # the walk's first frame, where PickUp, SetDown and Hunt join it
 
 # --- camp tasks
 # Chop: felling a standing tree (Astra's Tree_B1 at its smallest game size),
@@ -519,7 +578,7 @@ def pickup_keys():
         q=dict(end);r=hand(fist,face,haft,el);q['rh']=r;q['lh']=mirror_hand(r);return q
     seat=on_spine((-.36,-.36,.68),face=(0,-1,0),el=(-.8,.3,-.5))                 # load at carry height, its back on his belly
     under=on_spine((-.39,-.36,.51),face=(0,-1,0),el=(-.8,.3,-.5))                # fists down past its bottom edge
-    return [(0,walk_pose(0)),(T(.30),look),(T(.70),grab),(T(.85),brace),(T(1.25),heave),(T(1.50),seat),
+    return [(0,WALK0),(T(.30),look),(T(.70),grab),(T(.85),brace),(T(1.25),heave),(T(1.50),seat),
             (T(1.68),under),(1,end)]
 
 
@@ -738,7 +797,7 @@ def hunt_keys():
     turn=mix(release,follow,.7);turn['rh']=hand((-.16,-.46,.56),(0,-.8,-.6),(.7,0,.7),(-.9,.2,-.3))   # coming down, the hand turning over
     back=mix(follow,watch,.5);back['rh']=hand((-.24,-.34,.40),(-.2,-.3,-.94),(0,-1,0),(-.6,.7,0))     # the right hand back to his side, clear of the sash
     return [(0,walk0),(T(.20),rise),(T(.40),sight),(T(.85),aim),(T(.95),pull),(T(1.05),cock),(T(1.115),over),(T(1.18),release),
-            (T(1.26),whip),(T(1.35),turn),(T(1.42),follow),(T(1.70),follow),(T(1.93),back),(T(2.15),watch),(1,walk_pose(0))]
+            (T(1.26),whip),(T(1.35),turn),(T(1.42),follow),(T(1.70),follow),(T(1.93),back),(T(2.15),watch),(1,WALK0)]
 
 
 clip('Hunt',2.6,hunt_keys(),loop=False,rtool='spear',props=GOAT,
@@ -1066,7 +1125,7 @@ def setdown_keys():
     lower=K_(root=V(0,0,-.015),spine=(3,0,1),head=(3,-2,-3),lh=RELAX_L,rh=hand((-.46,-.20,.70),(-.3,-.7,.6),(0,-1,0),(-.8,.3,-.5)))     # and goes down clear of it
     return [(0,hold),(T(.10),let_go),(T(.30),fling),(T(.55),slump),(T(.85),sigh),(T(.98),raise_),
             (T(1.10),wipe(-.14,-.337)),(T(1.32),wipe(-.07,-.338)),(T(1.50),wipe(0,-.326)),
-            (T(1.66),flick),(T(1.82),lower),(T(2.02),down),(1,walk_pose(0))]
+            (T(1.66),flick),(T(1.82),lower),(T(2.02),down),(1,WALK0)]
 
 
 clip('SetDown',2.4,setdown_keys(),loop=False,rtool='crate',
@@ -1362,6 +1421,9 @@ def bake(rig,solver):
         act.use_cyclic=c['loop']
         info[name]={'take':'Crew_'+name,'seconds':c['seconds'],'frames':n+1,'loop':c['loop'],'what':c['what'],
                     'tool_right_hand':c['rtool'],'held_left_hand':c['ltool']}
+        if c.get('gait'):                           # the planted foot slides 2*stride while down (duty of the cycle): the body's ground speed
+            g=c['gait'];k=1.7/C.HEIGHT;per=2*g['stride']/g['duty']*k
+            info[name]['gait']={'ground_m_per_cycle_game':round(per,3),'speed_m_s_at_1x_game':round(per/c['seconds'],2),'feet_off_ground':bool(g.get('run'))}
         if c.get('throw'):
             _,rel,hit=throw_track(rig,name);k=1.7/C.HEIGHT;tp=Vector(c['throw']['tip_at'])*k
             info[name]['spear_throw']={'release_frame':rel,'hits_frame':hit,

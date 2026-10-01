@@ -26,7 +26,11 @@ embedded, so the one file opens on its own. Rebuild it with
 | Take | Building / task | Length | Right hand | Left hand | What he does |
 |---|---|---|---|---|---|
 | `Crew_Idle` | standing | 2.4 s | - | - | breathing, weight settling, a glance round |
-| `Crew_Walk` | walking | 0.9 s | - | - | in place: the game moves him; stride about 0.44 m a cycle |
+| `Crew_Walk` | walking about | 0.9 s | - | - | everyday walk: arm swing, a little bounce (in place; 0.58 m/s at 1x) |
+| `Crew_WalkBrisk` | off on an errand | 0.75 s | - | - | leaning in, bigger steps and arm swing (in place; 0.84 m/s at 1x) |
+| `Crew_WalkTired` | tired or hungry | 1.3 s | - | - | slumped, head down, short shuffling steps, arms dangling (in place; 0.23 m/s at 1x) |
+| `Crew_WalkDeck` | walking a rolling deck | 1.1 s | - | - | sea legs: wide stance, rolling side to side, arms out for balance (in place; 0.33 m/s at 1x) |
+| `Crew_Run` | running | 0.6 s | - | - | leaning in, arms pumping, heel kick, both feet off the ground between steps (in place; 2.06 m/s at 1x) |
 | `Crew_Chop` | timber, clearing | 1.3 s | axe | - | one-handed flat swing like a bat, from his right into the trunk's side |
 | `Crew_Mine` | stone, ore | 1.1 s | pick | - | one-handed vertical pickaxe swing, overhand like a bat, into the rock |
 | `Crew_Forage` | spice, food | 1.7 s | - | basket | crouch, pick from a bush, drop it in the basket (spice, food) |
@@ -209,6 +213,15 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   **For the game:** `CannonBattery` stands the gunner 0.72 m *inboard* of the gun today, which is
   inside this gun's breech and in its recoil path; with this kit he belongs at the station above,
   1.05 m inboard and 0.98 m to the side. The linstock is a new tool the game doesn't have yet.
+- **Walks and the run** come from one gait generator (`gait()`, a `GAITS` entry per style). Each
+  foot is planted for part of the cycle and slides straight back at a steady rate, so at the
+  right playback speed the feet don't skate: **play each clip at (move speed / its 1x speed)**,
+  from `clips.json` (`gait.speed_m_s_at_1x_game`, `gait.ground_m_per_cycle_game`). Walk 0.58 m/s,
+  WalkBrisk 0.84, WalkTired 0.23, WalkDeck 0.33, Run 2.06 m/s (feet off the ground between
+  steps). `CampWorker.Speed` is 2.6 m/s today: that is Run at about 1.26x, or Walk at 4.5x
+  (too fast to read as walking), so the game probably wants a slower walking speed and Run for
+  hurrying. The right foot lands on frame 0 in every style. PickUp starts on Walk's first frame
+  and SetDown and Hunt end on it.
 - **Build hammers a timber frame.** The game draws a building under construction only as a
   translucent blueprint, so the preview stands in a waist-high beam on two posts (0.58 m game ahead
   of him, its top 0.58 m up). One-handed, as `VillagerActing.Hammer` swings it: from the cocked
@@ -244,7 +257,7 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   `art-staging/worker-tools-v1`), placed by the game's tool frame.
 - New tools the game doesn't have yet: pickaxe, mallet and chisel, quern peg, knife, arrow
   shaft, bow, basket, bucket, coiled line, rammer, linstock, oars (the clips work without them; they only show in the previews).
-- Walk, Carry and SickWalk need their playback speed matched to the move speed (Carry's stride is shorter: about 0.3 m a cycle against Walk's 0.44 m).
+- Carry and SickWalk need their playback speed matched to the move speed too (Carry's stride is about 0.3 m a cycle).
 - Aboard: `CrewAgent`'s states map straight onto the ship clips (Station -> DeckBrace,
   RailHold -> RailGrip, Bailing -> Bail, AtRail -> SickRail, HaulGoing/Hauling -> ThrowLine then
   HaulLine, JollyBoatDuty -> Row, the post-rescue rest -> Soaked); gunners play GunTend while
