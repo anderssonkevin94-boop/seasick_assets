@@ -813,6 +813,11 @@ def belly(side,lift=0.,push=0.):
 
 
 LOOSE_L=hand((.36,-.02,.42),(.3,-.1,-1),(0,-1,0),(.6,.7,0))
+SICK_BELLY=hand((-.19,-.27,.49),(.7,-.2,-.7),(0,-1,0),(-1,-.1,.3))   # his right fist against the side of his belly (searched: touching, not sunk in)
+SICK_BELLY_L=hand((.19,-.27,.49),(-.7,-.2,-.7),(0,-1,0),(1,-.1,.3))  # the left, mirrored
+SWAY_BELLY=hand((-.19,-.25,.49),(.7,-.2,-.7),(0,-1,0),(-1,-.1,.3))   # standing and swaying: a touch further forward
+CLUTCH_R=hand((-.23,-.30,.47),(.7,-.2,-.7),(0,-1,0),(-1,-.1,.3))     # hunched hard over both fists: round to the sides of his belly
+CLUTCH_L=hand((.23,-.30,.47),(-.7,-.2,-.7),(0,-1,0),(1,-.1,.3))
 
 
 def sick_sway(t):
@@ -820,8 +825,8 @@ def sick_sway(t):
     return K_(root=V(.022*math.sin(a),0,-.02-.006*math.cos(2*a)),yaw=3*math.sin(a),
               pelvis=(0,0,-3*math.sin(a)),spine=(14+3*math.cos(2*a),0,6*math.sin(a)),
               head=(12+4*math.cos(2*b),-6*math.sin(b),14*math.sin(b)),
-              rh=belly(RIGHT,.01*math.sin(2*a)),
-              lh=hand((.36+.03*math.sin(a),-.02,.42),(.3,-.1,-1),(0,-1,0),(.6,.7,0)))
+              rh=SWAY_BELLY,
+              lh=hand((.39+.03*math.sin(a),-.04,.44),(.4,-.2,-.9),(0,-1,0),(.6,.7,0)))
 
 
 # SickWalk: the gait generator at a queasy shuffle (short uneven steps, a
@@ -831,7 +836,6 @@ def sick_sway(t):
 # and going out to catch his balance on the lurch to that side.
 SICK_GAIT=dict(cycle=1.3,stride=.07,lift=.03,duty=.66,drop=.04,bounce=.01,lean=16,head=14,twist=3,sway=.035,
                arm=(.39,-.04,.44),swing=.05,armup=0,face=(-.4,-.2,-.9),elbow=(-.6,.7,0),roll=6)
-SICK_BELLY=hand((-.19,-.27,.49),(.7,-.2,-.7),(0,-1,0),(-1,-.1,.3))   # the fist against the side of his belly
 SICK_LURCH=.6                                       # how much bigger the second lurch is
 
 
@@ -850,30 +854,34 @@ def sick_walk(t):
 def sick_clutch(t):
     a=t*2*math.pi;h=max(0,math.sin(a))**3                    # a cramp once a cycle
     return K_(root=V(0,.015*h,-.05-.04*h),spine=(28+10*h,0,0),head=(18+10*h,0,0),
-              rh=belly(RIGHT,-.02*h,.01),lh=belly(LEFT,-.02*h,.01))
+              rh=CLUTCH_R,lh=CLUTCH_L)
 
 
 RAIL_SICK=[('rail',(0,-.36,.58),(.9,.06,.05),'wood',0),('rail_post',(-.40,-.36,.29),(.05,.05,.58),'wood',0),
            ('rail_post',(.40,-.36,.29),(.05,.05,.58),'wood',0)]
-ON_RAIL=lambda side:hand((SIDE_SIGN[side]*.17,-.35,.64),(0,-.4,-1),(0,-1,0),(SIDE_SIGN[side]*.9,.3,0))
+SR=dict(x=.30,y=-.38,z=.685,face=(0,-.8,-.6),elbow=(.9,.5,-.2),root=.10,spine=30,dspine=8,head=18,dhead=16)   # SickRail's grip and lean (searched)
+ON_RAIL=lambda side:hand((SIDE_SIGN[side]*SR['x'],SR['y'],SR['z']),(SIDE_SIGN[side]*SR['face'][0],SR['face'][1],SR['face'][2]),(0,-1,0),
+                         (SIDE_SIGN[side]*SR['elbow'][0],SR['elbow'][1],SR['elbow'][2]))
 
 
 def sick_rail(t):
     # two heaves a cycle, then a sag
     h=0.
     for c0 in (.18,.42):h=max(h,math.exp(-((t-c0)/.07)**2))
-    return K_(root=V(0,.07+.02*h,-.03-.01*h),spine=(36+10*h,0,0),head=(18+16*h,0,0),rh=ON_RAIL(RIGHT),lh=ON_RAIL(LEFT))
+    return K_(root=V(0,SR['root']+.02*h,-.03-.01*h),spine=(SR['spine']+SR['dspine']*h,0,0),head=(SR['head']+SR['dhead']*h,0,0),rh=ON_RAIL(RIGHT),lh=ON_RAIL(LEFT))
 
 
 KNEEL=dict(root=V(0,.02,-.23),rf=(0,.17,-.03,150),lf=(0,.17,-.03,150))
 PUDDLE=[('puddle',(0,-.40,.004),(.26,.20,.008),'sick',0)]
+SK=dict(x=.20,y=-.30,z=.06,face=(0,-.2,-1),elbow=(.9,.4,-.1),spine=56,dspine=12,head=20,dhead=18)   # SickKneel's fists on the deck and lean (searched)
+ON_DECK=lambda side:hand((SIDE_SIGN[side]*SK['x'],SK['y'],SK['z']),(SIDE_SIGN[side]*SK['face'][0],SK['face'][1],SK['face'][2]),(0,-1,0),
+                         (SIDE_SIGN[side]*SK['elbow'][0],SK['elbow'][1],SK['elbow'][2]))
 
 
 def sick_kneel(t):
     h=0.
     for c0 in (.25,.45):h=max(h,math.exp(-((t-c0)/.08)**2))
-    return K_(**KNEEL,spine=(48+16*h,0,0),head=(24+20*h,0,0),
-              rh=hand((-.15,-.33,.07),(0,-.2,-1),(0,-1,0),(-.8,.2,.2)),lh=hand((.15,-.33,.07),(0,-.2,-1),(0,-1,0),(.8,.2,.2)))
+    return K_(**KNEEL,spine=(SK['spine']+SK['dspine']*h,0,0),head=(SK['head']+SK['dhead']*h,0,0),rh=ON_DECK(RIGHT),lh=ON_DECK(LEFT))
 
 
 clip('SickSway',3.0,sick_sway,what='queasy: swaying, a fist on his stomach, head lolling')
@@ -881,13 +889,18 @@ clip('SickWalk',2.6,sick_walk,what='seasick walk: hunched, short lurching steps,
 CLIPS['SickWalk']['gait']=SICK_GAIT;CLIPS['SickWalk']['gait_cycles']=2
 clip('SickClutch',1.6,sick_clutch,what='hunched over, both fists on his stomach, a cramp each cycle')
 clip('SickRail',1.5,sick_rail,props=RAIL_SICK,what='leaning over the rail, heaving twice')
-clip('SickCollapse',1.8,[
-    (0,sick_sway(0)),
-    (.25,K_(root=V(.04,0,-.03),spine=(16,0,10),head=(14,0,16),rh=belly(RIGHT),lh=hand((.44,-.10,.52),(.8,-.2,-.6),(0,-1,0),(.8,.3,-.2)))),
-    (.55,K_(root=V(.02,.01,-.13),rf=(0,.06,0,20),lf=(0,.08,0,30),spine=(30,0,4),head=(20,0,8),rh=belly(RIGHT),lh=hand((.30,-.18,.30),(.3,-.4,-1),(0,-1,0),(.8,.3,0)))),
-    (.80,K_(**KNEEL,spine=(40,0,0),head=(20,0,0),rh=hand((-.15,-.32,.08),(0,-.2,-1),(0,-1,0),(-.8,.2,.2)),lh=hand((.15,-.32,.08),(0,-.2,-1),(0,-1,0),(.8,.2,.2)))),
-    (1,sick_kneel(0)),
-    ],loop=False,what='staggers, knees buckle, down on hands and knees (one-shot; then SickKneel)')
+def sick_collapse_keys():
+    deck=lambda side,dz:hand(tuple(ON_DECK(side)['grip']+V(0,0,dz)),ON_DECK(side)['face'],ON_DECK(side)['haft'],ON_DECK(side)['elbow'])
+    return [(0,sick_sway(0)),
+            (.25,K_(root=V(.04,0,-.03),spine=(16,0,10),head=(14,0,16),rh=SWAY_BELLY,lh=SC['out'])),                       # staggers, the loose arm out
+            (.55,K_(root=V(.02,.01,-.13),rf=(0,.06,0,20),lf=(0,.08,0,30),spine=(30,0,4),head=(20,0,8),rh=SC['belly'],lh=SC['reach'])),   # knees going, a hand reaching for the deck
+            (.80,K_(**KNEEL,spine=(SK['spine']-8,0,0),head=(SK['head'],0,0),rh=deck(RIGHT,.03),lh=deck(LEFT,.02))),           # down, hands catching him
+            (1,sick_kneel(0))]
+
+
+SC=dict(belly=hand((-.21,-.28,.44),(.7,-.2,-.7),(0,-1,0),(-1,-.1,.3)),out=hand((.40,-.12,.48),(.5,-.3,-.8),(0,-1,0),(.8,.3,-.2)),
+        reach=hand((.30,-.22,.25),(.3,-.4,-1),(0,-1,0),(.8,.3,0)))   # SickCollapse's hands (searched)
+clip('SickCollapse',1.8,sick_collapse_keys(),loop=False,what='staggers, knees buckle, down on hands and knees (one-shot; then SickKneel)')
 clip('SickKneel',2.0,sick_kneel,props=PUDDLE,what='on hands and knees, heaving')
 
 

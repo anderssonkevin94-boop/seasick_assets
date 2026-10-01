@@ -213,6 +213,12 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   **For the game:** `CannonBattery` stands the gunner 0.72 m *inboard* of the gun today, which is
   inside this gun's breech and in its recoil path; with this kit he belongs at the station above,
   1.05 m inboard and 0.98 m to the side. The linstock is a new tool the game doesn't have yet.
+- **Seasickness** (reworked, clean on every frame): SickSway, SickWalk and SickClutch press a fist
+  (both, in SickClutch) to the side of his belly, placed by search so it touches without sinking
+  in. SickRail grips the stand-in rail (0.76 m game, its top) wide apart with his head down
+  between his arms, standing a little back so his belly stays off the rail. SickCollapse starts on
+  SickSway's first frame and ends on SickKneel's (staggers with an arm out, knees go, a hand
+  reaches for the deck, down on both fists), so sway → collapse → kneel chains.
 - **Walks and the run** come from one gait generator (`gait()`, a `GAITS` entry per style). Each
   foot is planted for part of the cycle and slides straight back at a steady rate, so at the
   right playback speed the feet don't skate: **play each clip at (move speed / its 1x speed)**,
