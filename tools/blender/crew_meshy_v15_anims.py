@@ -497,14 +497,51 @@ def saw_pose(t):
 clip('Saw',1.0,saw_pose,rtool='saw',props=TRESTLE,what='level 1 lumber mill: sawing the log on the bench, the left hand holding it down')
 CLIPS['Saw']['env']='mill'
 
-FIELD=[('soil',(0,-.60,.015),(.6,.5,.03),'soil',0),('sprout',(.12,-.70,.06),(.05,.05,.08),'leaf',0),('sprout',(-.14,-.74,.06),(.05,.05,.08),'leaf',0)]
-clip('Farm',1.25,[
-    (0,K_(root=V(0,0,-.02),spine=(4,0,0),head=(8,0,0),rh=swing_hand((-.05,-.02,.76),-.25,.97,(-.6,.5,-.3)),lh={'on_tool':.22,'elbow':V(.6,.2,-.3)})),
-    (.32,K_(root=V(0,0,-.02),spine=(2,0,0),head=(8,0,0),rh=swing_hand((-.05,-.02,.78),-.2,.98,(-.6,.5,-.3)),lh={'on_tool':.22,'elbow':V(.6,.2,-.3)})),
-    (.48,K_(root=V(0,0,-.07),spine=(24,0,0),head=(18,0,0),rh=swing_hand((-.05,-.12,.56),-.72,-.69,(-.6,.5,-.1)),lh={'on_tool':.22,'elbow':V(.6,.3,0)})),
-    (.62,K_(root=V(0,0,-.07),spine=(22,0,0),head=(18,0,0),rh=swing_hand((-.05,-.09,.59),-.66,-.74,(-.6,.5,-.1)),lh={'on_tool':.22,'elbow':V(.6,.3,0)})),
-    (.82,K_(root=V(0,0,-.04),spine=(14,0,0),head=(12,0,0),rh=swing_hand((-.05,-.02,.62),-.55,.5,(-.6,.5,-.2)),lh={'on_tool':.22,'elbow':V(.6,.2,-.2)})),
-    ],rtool='hoe',props=FIELD,what='farm plot: hoeing the rows')
+# Farm: hoeing a raised bed at Astra's level 1 farm (crew_v15_mill.load_farm),
+# both hands on the haft. A chibi's short arms can't hold a haft square in
+# front of his belly without the forearms sinking into it, so he stands as a
+# hoer does, turned to his right with the haft across him: the right fist at
+# his hip, the left hand far down the haft (it slides as he works). From the
+# raised hoe he chops the blade into the soil, drags it back towards him and
+# lifts it again; 1.5 s, VillagerActing.Hoe_Period. Poses found by search
+# against crew_v15_anatomy, the beds tested on their real surfaces.
+HOE_EDGE=V(0,.79,.107)                              # the hoe's blade edge in its tool frame (Astra's Hoe)
+HOE_YAW=55                                          # the haft across him, degrees to his left of straight ahead
+FARM_YAW=-35                                        # his body turned right, so the haft runs 20 degrees left of the bed's line
+
+
+def hoe_hand(p,grip=None,edge=None,elbow=(-1,0,.2)):
+    """His right fist on the hoe: the haft at HOE_YAW, pitched p degrees
+    (+ blade down), at grip, or placed so the blade edge is at edge."""
+    y=math.radians(HOE_YAW);pr=math.radians(p)
+    h=V(math.sin(y)*math.cos(pr),-math.cos(y)*math.cos(pr),-math.sin(pr));f=V(0,0,-1);f=(f-h*f.dot(h)).normalized()
+    g=V(*grip) if grip else V(*edge)-h*HOE_EDGE.y-f*HOE_EDGE.z
+    return hand(tuple(g),f,h,elbow)
+
+
+def hoe_left(rh,along,elbow):
+    """His left hand on the haft, along metres from the right fist."""
+    h=rh['haft'];f=V(-.4,-.4,-.8);f=(f-h*f.dot(h)).normalized()
+    return {'tool_pt':(0,along,0),'face':f,'haft':h,'elbow':V(*elbow)}
+
+
+def farm_keys():
+    strike=hoe_hand(12.85,grip=(-.34,-.20,.40))                      # the blade edge bites 2 cm into the soil
+    bite=strike['grip']+strike['haft']*HOE_EDGE.y+strike['face']*HOE_EDGE.z
+    pull=V(math.sin(math.radians(HOE_YAW)),-math.cos(math.radians(HOE_YAW)),0)
+    drag=hoe_hand(10,edge=tuple(V(bite.x,bite.y,.13)-pull*.10))     # dragged 10 cm back through it
+    raised=hoe_hand(-10,grip=(-.36,-.06,.60))                       # the blade up at his chest
+    feet=dict(rf=(0,.06,0,0),lf=(0,-.08,0,0),yaw=FARM_YAW)
+    R=K_(root=V(0,0,-.02),pelvis=(2,-6,0),spine=(10,0,0),head=(8,0,0),rh=raised,lh=hoe_left(raised,.58,(.8,.2,.3)),**feet)
+    S=K_(root=V(0,0,-.08),pelvis=(6,-8,0),spine=(40,4,-6),head=(14,0,0),rh=strike,lh=hoe_left(strike,.46,(.5,.6,.2)),**feet)
+    D=K_(root=V(0,.02,-.08),pelvis=(4,-16,0),spine=(44,0,-10),head=(12,0,0),rh=drag,lh=hoe_left(drag,.52,(.5,.6,.2)),**feet)
+    W=mix(R,S,.648);W['spine']=(20,0,0)                          # on the way down the right fist passes back over his hip, clear of the sash knot
+    W['rh']=dict(W['rh'],grip=W['rh']['grip']+V(0,.06,.04))
+    return [(0,R),(.20,W),(.30,S),(.40,S),(.70,D)]
+
+
+clip('Farm',1.5,farm_keys(),rtool='hoe',what='farm: hoeing a raised bed, chopping the blade into the soil and dragging it back')
+CLIPS['Farm']['env']='farm'
 
 ANVIL=[('anvil',(0,-.40,.17),(.16,.30,.34),'iron',0),('anvil_top',(0,-.41,.36),(.18,.40,.06),'iron',0),('bar',(.03,-.40,.405),(.03,.18,.025),'hot',0)]
 clip('Smith',.8,[

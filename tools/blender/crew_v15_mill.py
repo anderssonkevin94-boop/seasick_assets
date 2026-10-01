@@ -144,6 +144,33 @@ def load_cannon():
     return objs,solid
 
 
+FARM_FBX=ROOT/'crew-meshy-v15/anims/env/farm.fbx'   # Astra's level 1 farm (art-staging/farm-astra-lvl1-v1, farm-state-kit)
+FARM_EDGE=.42                  # the front edge of the bed he works (Bed_02, front row centre) this far ahead of him, at his scale
+
+
+def load_farm():
+    """Astra's level 1 farm at his scale, turned so the front row's centre
+    bed (Bed_02) lies ahead of him (-Y), its front edge FARM_EDGE away. The
+    bed he works is bare (just turned soil); the other beds show sprouts.
+    Returns ({name: object}, [parts his body must stay out of])."""
+    before=set(bpy.data.objects);sc=bpy.context.scene;fps=(sc.render.fps,sc.render.fps_base)
+    bpy.ops.import_scene.fbx(filepath=str(FARM_FBX))
+    sc.render.fps,sc.render.fps_base=fps
+    objs={o.name:o for o in bpy.data.objects if o not in before}
+    for o in objs.values():
+        n=o.name.split('.')[0]
+        if o.parent is None:o.scale=(SCALE,)*3;o.rotation_euler=(0,0,math.pi);o.location=(0,-FARM_EDGE-1.72*SCALE,0)
+        if ('_Growing' in n or '_Ripe' in n or 'Harvest_Sheaf' in n or n=='Bed_02_Sprout'):o.hide_render=o.hide_viewport=True;o['hidden_env']=True
+        if o.type=='MESH':
+            me=o.data;col=me.color_attributes.get('Col')
+            if col:me.color_attributes.active_color=col;me.color_attributes.render_color_index=0
+            for p in me.polygons:p.use_smooth=False
+    bpy.context.view_layer.update()
+    solid=[o for n,o in objs.items() if o.type=='MESH' and n.split('.')[0] in('Bed_01_Soil','Bed_02_Soil','Bed_03_Soil')]
+    for o in solid:o['exact']=True
+    return objs,solid
+
+
 def load_env(kind):
     """(objects, where he stands, props his body must stay out of)."""
     if kind=='mill':
@@ -157,4 +184,7 @@ def load_env(kind):
     if kind=='rock':
         from mathutils import Vector
         objs=load_rock();return objs,Vector((0,0,0)),[]
+    if kind=='farm':
+        from mathutils import Vector
+        objs,solid=load_farm();return objs,Vector((0,0,0)),solid
     raise ValueError(kind)

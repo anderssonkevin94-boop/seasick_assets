@@ -54,7 +54,7 @@ Tools go in his **right hand, the bone named `hand.L` (Blender -X)**, as the gam
 | `check_v15_clip.py -- Clip ...` | Runs the check on every frame, with tools, props and environment |
 | `render_v15_clip_views.py -- Clip` (env `OUT=dir`) | Five-angle review sheet at key frames |
 | `render_v15_anims.py -- Clip ...` | GIF and filmstrip per clip in `crew-meshy-v15/anims/` |
-| `crew_v15_mill.py` | Environments: `load_env('mill')` (lowered level 1 lumber mill), `load_env('tree')` (Astra's tree), `load_env('rock')` (Astra's Stone_Field), `load_env('cannon')` (Astra's deck cannon) |
+| `crew_v15_mill.py` | Environments: `load_env('mill')` (lowered level 1 lumber mill), `load_env('tree')` (Astra's tree), `load_env('rock')` (Astra's Stone_Field), `load_env('cannon')` (Astra's deck cannon), `load_env('farm')` (Astra's level 1 farm) |
 | `mill_l1_lowbench.py` | Makes the lowered-bench mill FBX from the game's kit |
 | `export_v15_viewer.py` | GLB + the self-contained viewer page `crew-meshy-v15/viewer/index.html` |
 | `verify_crew_meshy_v15.py` | FBX re-import check (names, weights, white skin, every take moves, lengths) |
@@ -87,8 +87,8 @@ https://claude.ai/artifact/GcDxNt3L667f99DjPvV5Kt). After a rig change, rerun
 
 | Status | Clips |
 |---|---|
-| **Reworked and clean on every frame** | `Saw` (level 1 lumber mill, lowered bench, sawing the log), `Chop` (Astra's tree, one-handed flat bat swing into the trunk's right flank), `Mine` (Astra's Stone_Field, one-handed vertical overhand swing into its upper front), `Carry` (any load held out on both arms at a spine socket, leaning back, heavy walk), `SetDown` (drops the load, wipes his brow; chains Carry → SetDown → Walk), `PickUp` (squat, side grip, heave; chains Walk → PickUp → Carry), `HuntWalk` (spear-ready stalk), `Hunt` (sights and throws the spear 4 m; chains HuntWalk → Hunt → Walk), `GunRam` / `GunFire` (Astra's cannon, ship layout: station beside the back of the gun; GunRam sights and lays it with the wedge, GunFire touches the linstock to the vent; chain ram → fire → ram) |
-| Made before the anatomy rules; **need rework the same way** | Idle, Walk, Forage, Build, Farm, Smith, Cook, Mill, Lookout, Quarry, Fletcher, Fisher, SickSway, SickWalk, SickClutch, SickRail, SickCollapse, SickKneel, Bail, ThrowLine, HaulLine, Row, Gangway, Soaked, DeckBrace, RailGrip |
+| **Reworked and clean on every frame** | `Saw` (level 1 lumber mill, lowered bench, sawing the log), `Farm` (Astra's level 1 farm: two-handed hoe into a raised bed, turned stance, chop and drag), `Chop` (Astra's tree, one-handed flat bat swing into the trunk's right flank), `Mine` (Astra's Stone_Field, one-handed vertical overhand swing into its upper front), `Carry` (any load held out on both arms at a spine socket, leaning back, heavy walk), `SetDown` (drops the load, wipes his brow; chains Carry → SetDown → Walk), `PickUp` (squat, side grip, heave; chains Walk → PickUp → Carry), `HuntWalk` (spear-ready stalk), `Hunt` (sights and throws the spear 4 m; chains HuntWalk → Hunt → Walk), `GunRam` / `GunFire` (Astra's cannon, ship layout: station beside the back of the gun; GunRam sights and lays it with the wedge, GunFire touches the linstock to the vent; chain ram → fire → ram) |
+| Made before the anatomy rules; **need rework the same way** | Idle, Walk, Forage, Build, Smith, Cook, Mill, Lookout, Quarry, Fletcher, Fisher, SickSway, SickWalk, SickClutch, SickRail, SickCollapse, SickKneel, Bail, ThrowLine, HaulLine, Row, Gangway, Soaked, DeckBrace, RailGrip |
 
 Kevin goes down the list one clip at a time. Ask which is next.
 

@@ -34,7 +34,7 @@ embedded, so the one file opens on its own. Rebuild it with
 | `Crew_Carry` | hauling | 1.2 s | any load on the spine socket (crate shown) | same load | a heavy load held out on both arms, leaning back against it, walking slow and short (in place) |
 | `Crew_PickUp` | lifting a load | 2.0 s, one-shot | any load (picked up) | - | squats, takes the load by its sides, heaves it up onto his arms; from Walk, into Carry |
 | `Crew_Saw` | Sawmill (sawyer) | 0.9 s | saw | - | sawmill: sawing a plank on a trestle |
-| `Crew_Farm` | Farm plot (farmhand) | 1.25 s | hoe | - | farm plot: hoeing the rows |
+| `Crew_Farm` | Farm plot (farmhand) | 1.5 s | hoe | - | hoeing a raised bed of Astra's farm: chops the blade into the soil and drags it back (both hands) |
 | `Crew_Smith` | Forge (smith) | 0.8 s | hammer | - | forge: hammering hot iron on the anvil |
 | `Crew_Cook` | Kitchen (cook) | 1.6 s | paddle | - | kitchen: stirring the pot |
 | `Crew_Mill` | Mill (miller) | 1.5 s | peg | - | mill: turning the quern stone by its peg |
@@ -202,6 +202,18 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   **For the game:** `CannonBattery` stands the gunner 0.72 m *inboard* of the gun today, which is
   inside this gun's breech and in its recoil path; with this kit he belongs at the station above,
   1.05 m inboard and 0.98 m to the side. The linstock is a new tool the game doesn't have yet.
+- **Farm is set at Astra's level 1 farm** (`CLIPS['Farm']['env']='farm'`: `art-staging/farm-astra-lvl1-v1`,
+  `farm-state-kit`, copied to `env/farm.fbx`). He works the front row's centre bed (`Bed_02`), shown
+  bare (turned soil); the others show sprouts, the growing and ripe crops and the harvest sheaves
+  are hidden. The bed's front edge is 0.55 m (game) ahead of him. Two-handed hoe, 1.5 s loop
+  (`VillagerActing.Hoe_Period`): his short arms can't hold a haft square in front of his belly
+  without the forearms sinking into it, so he stands as a hoer does, **turned 35 degrees to his
+  right with the haft across him**, the right fist at his hip and the left hand far down the haft
+  (it slides a little as he works). From the raised hoe (blade at chest height) he chops the blade
+  into the soil (frame 14, 2 cm deep, 0.88 m ahead of him in game metres), holds, drags it 13 cm back
+  towards him through the soil (to frame 32) and lifts it again. The blade stays inside the bed's
+  edging. The game plays the hoe for both planting and harvesting a plot (`PlantSeconds` /
+  `HarvestSeconds`, 4 s each), so the loop runs a little under three strokes per plot.
 - **Mine is set at a rock** (`CLIPS['Mine']['env']='rock'`: Astra's `Stone_Field`, the commonest
   deposit, from `art-staging/stone-resources-astra-v2`, copied to `env/Stone_Field.fbx`). He stands
   where `StoneDeposit.StandOff` puts a miner: its footprint radius plus 0.7 m, 1.80 m (game) from

@@ -91,10 +91,10 @@
   },
   "Farm": {
     "take": "Crew_Farm",
-    "seconds": 1.25,
-    "frames": 39,
+    "seconds": 1.5,
+    "frames": 46,
     "loop": true,
-    "what": "farm plot: hoeing the rows",
+    "what": "farm: hoeing a raised bed, chopping the blade into the soil and dragging it back",
     "tool_right_hand": "hoe",
     "held_left_hand": null
   },
