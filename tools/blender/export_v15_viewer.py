@@ -31,8 +31,8 @@ def main():
         for kind,side,tag in((c['rtool'],A.RIGHT,'R'),(c['ltool'],A.LEFT,'L')):
             if kind:
                 o=A.attach_tool(rig,solver,kind,side);o.name=f'tool__{name}__{tag}';count+=1
-        if c.get('drop'):                          # a dropped load: the page moves it along this track (glTF axes: x, z, -y)
-            track,_,_=A.load_track(rig,name)
+        if A.flies(c):                             # a dropped load, a thrown spear: the page moves it along this track (glTF axes: x, z, -y)
+            track,_,_=A.prop_track(rig,name)
             TRACKS[name]=[[round(v,4) for v in (M.translation.x,M.translation.z,-M.translation.y)]+
                           [round(v,4) for v in (lambda q:(q.x,q.z,-q.y,q.w))(M.to_quaternion())] for M in track]
     rig.animation_data.action=None;solver.reset()
@@ -61,7 +61,7 @@ def main():
 
 
 GROUPS=[('Building jobs',['Saw','Farm','Smith','Cook','Mill','Lookout','Quarry','Fletcher','Fisher']),
-        ('Camp tasks',['Idle','Walk','Chop','Mine','Forage','Build','Carry','PickUp','SetDown','Hunt']),
+        ('Camp tasks',['Idle','Walk','Chop','Mine','Forage','Build','Carry','PickUp','SetDown','HuntWalk','Hunt']),
         ('Aboard ship',['DeckBrace','RailGrip','Gangway','Bail','ThrowLine','HaulLine','GunRam','GunFire','Row','Soaked']),
         ('Seasickness',['SickSway','SickWalk','SickClutch','SickRail','SickCollapse','SickKneel'])]
 WHERE={'Saw':'Sawmill · sawyer','Farm':'Farm plot · farmhand','Smith':'Forge · smith','Cook':'Kitchen · cook',
@@ -70,16 +70,16 @@ WHERE={'Saw':'Sawmill · sawyer','Farm':'Farm plot · farmhand','Smith':'Forge �
        'Idle':'Standing about','Walk':'Walking (in place)','Chop':'Gathering timber, clearing ground',
        'Mine':'Gathering stone and ore','Forage':'Gathering spice and food','Build':'Raising a building',
        'Carry':'Hauling a load (in place)','PickUp':'Lifting a load off a pile','SetDown':'Setting a load down',
-       'Hunt':'Hunting','DeckBrace':'Aboard, at his post','RailGrip':'Aboard, gripping the rail through a warning',
+       'Hunt':'Hunting: the throw','HuntWalk':'Hunting: stalking (in place)','DeckBrace':'Aboard, at his post','RailGrip':'Aboard, gripping the rail through a warning',
        'Gangway':'Boarding over the gangway (in place)','Bail':'Aboard, sent to the buckets',
        'ThrowLine':'Man overboard: throwing the line','HaulLine':'Man overboard: hauling the swimmer in',
        'GunRam':'Gunner: reloading','GunFire':'Gunner: firing','Row':'Jolly boat','Soaked':'Resting after a rescue',
        'SickSway':'Seasick, standing','SickWalk':'Seasick, walking (in place)','SickClutch':'Badly seasick',
        'SickRail':'Seasick at the rail','SickCollapse':'Worst seasickness: going down','SickKneel':'Worst seasickness: on his knees'}
-LABEL={'PickUp':'Pick up','SetDown':'Set down','DeckBrace':'Deck brace','RailGrip':'Rail grip','ThrowLine':'Throw line',
+LABEL={'HuntWalk':'Hunt: stalk','Hunt':'Hunt: throw','PickUp':'Pick up','SetDown':'Set down','DeckBrace':'Deck brace','RailGrip':'Rail grip','ThrowLine':'Throw line',
        'HaulLine':'Haul line','GunRam':'Gun: ram','GunFire':'Gun: fire','SickSway':'Sick: sway','SickWalk':'Sick: walk',
        'SickClutch':'Sick: clutch','SickRail':'Sick: at the rail','SickCollapse':'Sick: collapse','SickKneel':'Sick: kneel'}
-TOOLS={'carrylog':'log','sack':'sack','peg':'quern peg','shaft':'arrow shaft','coil':'coiled line','pick':'pickaxe','crate':'any load (crate shown)'}
+TOOLS={'carrylog':'log','sack':'sack','peg':'quern peg','shaft':'arrow shaft','coil':'coiled line','pick':'pickaxe','crate':'any load (crate shown)','spear':'spear'}
 
 
 def write_page():
@@ -87,7 +87,7 @@ def write_page():
     info=json.loads((A.OUT/'clips.json').read_text())
     clips={k:{'label':LABEL.get(k,k),'where':WHERE.get(k,''),'what':v['what'][:1].upper()+v['what'][1:]+'.',
               'seconds':v['seconds'],'frames':v['frames'],'loop':v['loop'],
-              'rtool':TOOLS.get(v['tool_right_hand'],v['tool_right_hand']),'ltool':TOOLS.get(v['held_left_hand'],v['held_left_hand']),'env':A.CLIPS[k].get('env'),'load':TRACKS.get(k)}
+              'rtool':TOOLS.get(v['tool_right_hand'],v['tool_right_hand']),'ltool':TOOLS.get(v['held_left_hand'],v['held_left_hand']),'env':A.CLIPS[k].get('env'),'load':TRACKS.get(k),'wide':bool(A.CLIPS[k].get('throw'))}
            for k,v in info.items()}
     groups=[{'name':n,'clips':[c for c in cs if c in clips]} for n,cs in GROUPS]
     missing=set(clips)-{c for g in groups for c in g['clips']}

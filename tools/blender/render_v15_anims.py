@@ -34,7 +34,7 @@ def main():
     sc.display.shadow_focus=.6
     if sc.world is None:sc.world=bpy.data.worlds.new('W')
     sc.world.color=(.37,.55,.68)
-    ground=A.box_mesh('ground',[((4,4,.02),(0,0,-.011),'soil')])
+    ground=A.box_mesh('ground',[((8,8,.02),(0,-1.5,-.011),'soil')])
     ground.data.color_attributes['Col'].data.foreach_set('color',[v for _ in range(len(ground.data.loops)) for v in (*A.C.srgb('#7E9E62'),1)])
     cd=bpy.data.cameras.new('cam');cam=bpy.data.objects.new('cam',cd);sc.collection.objects.link(cam);sc.camera=cam
     cd.type='ORTHO';cd.ortho_scale=1.75
@@ -45,6 +45,7 @@ def main():
     for name,c in A.CLIPS.items():
         if ONLY and name not in ONLY:continue
         act=bpy.data.actions['Crew_'+name];rig.animation_data.action=act
+        cd.ortho_scale=1.75
         extra=[];stand=Vector((0,0,0))
         if c.get('env'):
             import crew_v15_mill as MILL
@@ -55,6 +56,9 @@ def main():
                 for o in env.values():
                     if 'Canopy' in o.name:o.hide_render=True     # the canopy would hide him from a game camera; left out of the preview
             cam.location=stand+view;cam.rotation_euler=(stand+Vector((0,-.3,.5))-cam.location).to_track_quat('-Z','Y').to_euler()
+        elif c.get('throw'):                        # wide: him, the flight and the target
+            rig.location=(0,0,0);e2=Vector((-3.6,.2,2.0));t2=Vector((0,-1.5,.5));cd.ortho_scale=3.6
+            cam.location=e2;cam.rotation_euler=(t2-e2).to_track_quat('-Z','Y').to_euler()
         else:
             rig.location=(0,0,0);cam.location=eye;cam.rotation_euler=(tgt-eye).to_track_quat('-Z','Y').to_euler()
         bpy.context.view_layer.update()
@@ -63,7 +67,7 @@ def main():
         sc.frame_set(0)
         if c['rtool']:
             extra.append(A.attach_tool(rig,solver,c['rtool'],A.RIGHT))
-            if c.get('drop'):A.animate_load(extra[-1],rig,name)   # the load leaves his arms and falls
+            if A.flies(c):A.animate_load(extra[-1],rig,name)   # the tool leaves him (dropped, thrown)
         if c['ltool']:extra.append(A.attach_tool(rig,solver,c['ltool'],A.LEFT))
         n=int(act.frame_end);frames=[];step=2
         for f in range(0,n+(0 if c['loop'] else 1),step):

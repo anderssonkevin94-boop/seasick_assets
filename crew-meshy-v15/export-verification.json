@@ -48,6 +48,7 @@
       "Crew_GunRam",
       "Crew_HaulLine",
       "Crew_Hunt",
+      "Crew_HuntWalk",
       "Crew_Idle",
       "Crew_Lookout",
       "Crew_Mill",
@@ -69,7 +70,7 @@
       "Crew_ThrowLine",
       "Crew_Walk"
     ],
-    "takes_that_move": 35,
+    "takes_that_move": 36,
     "fps": 30.0,
     "take_lengths_match": true
   }

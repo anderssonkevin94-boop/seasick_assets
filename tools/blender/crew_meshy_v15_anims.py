@@ -537,14 +537,79 @@ clip('Fisher',1.2,[
     (.62,K_(root=V(0,0,-.05),spine=(36,0,0),head=(22,0,0),rh=hand((-.12,-.40,.48),(-.2,-.5,-1),(0,-1,.2),(-.6,.5,0)),lh=hand((.15,-.36,.46),(0,-.3,-1),(0,-1,0),(.6,.4,0)))),
     ],rtool='knife',props=BENCH,what='fishing hut: gutting the catch on the prep bench')
 
-clip('Hunt',2.2,[
-    (0,K_(yaw=0,spine=(0,-12,0),head=(0,10,0),lh=hand((.20,-.34,.80),(.25,-1,.1),(0,0,1),(.6,.3,-.2)),rh=hand((.05,-.30,.80),(1,-.3,0),(0,0,1),(-.7,.3,-.3)))),
-    (.15,K_(spine=(0,-12,0),head=(0,10,0),lh=hand((.20,-.34,.80),(.25,-1,.1),(0,0,1),(.6,.3,-.2)),rh=hand((.05,-.30,.80),(1,-.3,0),(0,0,1),(-.7,.3,-.3)))),
-    (.50,K_(spine=(0,-16,0),head=(0,14,0),lh=hand((.20,-.36,.80),(.25,-1,.1),(0,0,1),(.6,.3,-.2)),rh=hand((-.08,-.06,.86),(1,-.3,0),(0,0,1),(-.8,.5,.2)))),
-    (.62,K_(spine=(0,-16,0),head=(0,14,0),lh=hand((.20,-.36,.80),(.25,-1,.1),(0,0,1),(.6,.3,-.2)),rh=hand((-.08,-.06,.86),(1,-.3,0),(0,0,1),(-.8,.5,.2)))),
-    (.68,K_(spine=(0,-16,0),head=(0,14,0),lh=hand((.20,-.37,.80),(.25,-1,.1),(0,0,1),(.6,.3,-.2)),rh=hand((-.16,.02,.86),(1,-.1,.3),(0,0,1),(-.8,.5,.3)))),
-    (.85,K_(spine=(0,-10,0),head=(0,8,0),lh=hand((.20,-.34,.78),(.25,-1,.1),(0,0,1),(.6,.3,-.2)),rh=hand((-.20,.06,.92),(0,0,1),(0,1,0),(-.8,.3,-.3)))),
-    ],ltool='bow',what='hunting: draw, loose, reach back to the quiver for the next arrow')
+# HuntWalk: stalking with the spear (the game's placeholder, HunterProps):
+# crouched, leaning in, short careful steps that lift and place each foot, the
+# spear raised by his right cheek in a javelin grip, level and pointing ahead,
+# ready to throw; the left hand out in front for balance; the head scanning
+# slowly left and right once across the clip's two strides. In place, 2.2 s.
+# Spear grip found by search against crew_v15_anatomy, clean at every head turn,
+# the spear pointing where it is asked to (checked on the posed fist).
+STALK_GRIP=hand((-.33,-.06,.92),(.26,.10,.96),nrm((0,-.995,.105)),(-.9,.3,-.3))   # knuckles square to the spear: it points level ahead, 6 degrees up
+STALK_LEFT=hand((.30,-.24,.58),(.3,-.8,-.3),(0,0,1),(.9,.3,-.2))
+
+
+def stalk_pose(t):
+    """Two strides over t = 0..1 (right foot forward at t=0), the head scanning once."""
+    a=t*4*math.pi;c,sn=math.cos(a),math.sin(a);stride=.085
+    q=K_()
+    q['rf']=(0,-stride*c,.04*max(0,-sn),-10*c);q['lf']=(0,stride*c,.04*max(0,sn),10*c)
+    q['root']=V(-.008*c,0,-.08-.012*abs(c))        # low and smooth: knees bent, little bob
+    q['pelvis']=(0,4*c,0);q['spine']=(12,-3*c,0)
+    q['head']=(-8,18*math.sin(t*2*math.pi),0)       # alert: looking up and ahead, scanning
+    q['rh']=STALK_GRIP;q['lh']=STALK_LEFT
+    return q
+
+
+clip('HuntWalk',2.2,stalk_pose,rtool='spear',what='stalking with the spear raised, crouched and alert, head scanning (in place)')
+
+# Hunt: lining up a goat 4 m off (game; his 1.30 m scale: 3.06 m) and
+# throwing the spear, from HuntWalk's first frame: he stops and turns side-on,
+# the left arm pointing at the goat, the spear drawn back level behind his
+# right shoulder, aimed; holds it; then the hips come round, the elbow leads
+# high, the arm whips through and the spear goes at 14 degrees up, flies on a
+# real arc (gravity at his scale) and sticks in the goat's flank; he follows
+# through onto the front foot, the back heel up, watches it land and ends on
+# Walk's first frame to go and fetch it. One-shot, 2.6 s. Every key pose found
+# by search against crew_v15_anatomy (spear in hand checked against his body).
+HUNT_TARGET=V(0,-3.06,0)                           # the goat's middle, on the ground
+HUNT_FLANK=V(0,-2.99,.30)                          # where the spear's point ends: 3 cm into the near flank
+SPEAR_TIP=1.35*TOOL_SCALE                          # grip to point, the game's placeholder spear
+THROW_AIM=nrm((0,-.99,.14))                        # the spear drawn back, sighting along it
+THROW_REL=nrm((0,-.97,.24))                        # its line as it leaves the hand
+GOAT=[('goat',(0,-3.06,.30),(.44,.19,.19),'goat',0),('goat_head',(.27,-3.06,.42),(.12,.10,.12),'goat',0),
+      ('goat_horn',(.29,-3.06,.50),(.03,.07,.06),'wood_bark',0)]+[
+     ('goat_leg',(x,-3.06+y,.105),(.035,.035,.21),'goat',0) for x in(-.16,.16) for y in(-.06,.06)]
+
+
+def hunt_keys():
+    D=2.6;T=lambda sec:sec/D
+    stance=dict(lf=(0,-.12,0,0),rf=(0,.10,0,0))
+    sight=K_(**stance,root=V(0,.03,-.06),pelvis=(0,-30,0),spine=(-4,-25,0),head=(-4,50,0),
+             rh=hand((-.36,.32,.86),(0,.14,.99),THROW_AIM,(-.5,.5,-.7)),lh=hand((.10,-.48,.86),(0,-1,.15),(0,0,1),(.6,.2,-.6)))
+    aim=dict(sight);aim['root']=V(0,.04,-.07);aim['head']=(-5,51,0)          # settling onto the back foot, eyes on it
+    cock=K_(**stance,root=V(0,0,-.07),pelvis=(0,-10,0),spine=(4,-30,0),head=(0,38,0),
+            rh=hand((-.36,.14,.92),(0,.14,.99),THROW_AIM,(-.8,.2,-.6)),lh=hand((.20,-.40,.66),(.1,-1,0),(0,0,1),(.8,.2,-.5)))
+    release=K_(**stance,root=V(0,-.04,-.07),pelvis=(0,10,0),spine=(14,10,0),head=(-6,-18,0),
+               rh=hand((-.26,-.28,1.02),(.5,.2,.85),THROW_REL,(-.6,.4,-.7)),lh=hand((.38,-.04,.52),(.2,-.3,-1),(0,-1,0),(.6,.7,0)))
+    follow=K_(lf=(0,-.12,0,0),rf=(0,.06,.03,20),root=V(0,-.06,-.09),pelvis=(0,15,0),spine=(26,15,0),head=(-16,-28,0),
+              rh=hand((-.10,-.38,.40),(.3,-.3,-.9),(0,0,1),(-.6,-.3,-.7)),lh=hand((.34,-.12,.44),(.2,-.3,-1),(0,-1,0),(.6,.7,0)))
+    watch=K_(lf=(0,-.08,0,0),rf=(0,.04,0,0),root=V(0,-.02,-.04),spine=(8,4,0),head=(-6,-6,0))
+    # waypoints, each found by search along its blended path:
+    walk0=stalk_pose(0)
+    rise=mix(walk0,sight,.5);rise['lh']=hand((.26,-.34,.66),(.2,-1,0),(0,0,1),(.9,.3,-.2))        # the left arm on its way to pointing
+    pull=mix(aim,cock,.5);pull['lh']=hand((.18,-.40,.70),(.1,-1,0),(0,0,1),(.6,.2,-.6))           # and pulling in
+    over=mix(cock,release,.5);over['rh']=hand((-.34,-.10,.98),(.4,.2,.9),nrm((0,-.98,.19)),(-.9,.4,-.2))   # the arm coming over, clear of his head
+    over['lh']=hand((.24,-.32,.62),(.1,-1,0),(0,0,1),(.8,.2,-.5))
+    whip=mix(release,follow,.35);whip['rh']=hand((-.22,-.40,.88),(.3,-.6,.75),(1,0,0),(-.9,.2,-.3))   # the arm through, knuckles still up
+    turn=mix(release,follow,.7);turn['rh']=hand((-.16,-.46,.56),(0,-.8,-.6),(.7,0,.7),(-.9,.2,-.3))   # coming down, the hand turning over
+    back=mix(follow,watch,.5);back['rh']=hand((-.24,-.34,.40),(-.2,-.3,-.94),(0,-1,0),(-.6,.7,0))     # the right hand back to his side, clear of the sash
+    return [(0,walk0),(T(.20),rise),(T(.40),sight),(T(.85),aim),(T(.95),pull),(T(1.05),cock),(T(1.115),over),(T(1.18),release),
+            (T(1.26),whip),(T(1.35),turn),(T(1.42),follow),(T(1.70),follow),(T(1.93),back),(T(2.15),watch),(1,walk_pose(0))]
+
+
+clip('Hunt',2.6,hunt_keys(),loop=False,rtool='spear',props=GOAT,
+     what='lines up the goat and throws the spear, follows through and watches it strike; from HuntWalk, into Walk (one-shot)')
+CLIPS['Hunt']['throw']={'release':1.18/2.6,'tip_at':HUNT_FLANK,'flight':.42}
 
 
 # --- seasickness (the game's own mechanic: CrewAgent.Sickness01)
@@ -808,7 +873,7 @@ def load_track(rig,name):
 def animate_load(o,rig,name):
     """Key a load object (from attach_tool) along load_track for a drop clip,
     as a child of the rig object rather than of the spine bone."""
-    track,rel,land=load_track(rig,name)
+    track,rel,land=prop_track(rig,name)
     o.parent=rig;o.parent_type='OBJECT';o.parent_bone='';o.matrix_parent_inverse=Matrix.Identity(4)
     o.rotation_mode='QUATERNION';o.animation_data_create()
     o.animation_data.action=bpy.data.actions.new('Load_'+name)
@@ -821,7 +886,7 @@ def animate_load(o,rig,name):
 # ---------------------------------------------------------------- props
 COLOURS={'wood':'#8A5A36','wood_light':'#C09060','wood_bark':'#6B4A30','iron':'#5E6166','stone':'#9C968C',
          'stone_light':'#B8B2A6','leaf':'#4F8A3A','berry':'#B03A48','soil':'#6A4A30','hot':'#F07A28',
-         'stew':'#B8763A','fish':'#9FB4C0','sick':'#9DB04A','water':'#4E86A8','rope':'#C8B080','steel':'#B8BEC6','string':'#EDE6D4'}
+         'stew':'#B8763A','fish':'#9FB4C0','sick':'#9DB04A','water':'#4E86A8','rope':'#C8B080','steel':'#B8BEC6','string':'#EDE6D4','goat':'#C9B79A'}
 
 
 def box_mesh(name,parts):
@@ -865,6 +930,9 @@ def tool_parts(kind):
        'bow':[((.03,.95,.03),(0,0,.0),'wood'),((.004,.93,.004),(0,0,-.12),'string')],
        'basket':[((.26,.26,.20),(0,0,.20),'rope')],
        'carrylog':[((.16,.80,.16),(.14,0,-.02),'wood_bark')],
+       # the game's placeholder hunting spear (HunterProps): 1.8 m, grip at the origin, butt 0.65 m
+       # below it, the head 1.15 m above; +Y to the tip
+       'spear':[((.035,1.80,.035),(0,.25,0),'wood'),((.045,.07,.045),(0,1.12,0),'rope'),((.07,.20,.018),(0,1.25,0),'steel')],
        'crate':[((.54,.26,.18),(0,0,.09),'wood'),((.55,.265,.03),(0,0,.04),'wood_bark'),((.55,.265,.03),(0,0,.14),'wood_bark')],
        'sack':[((.30,.26,.30),(.18,0,.03),'rope')],
        'bucket':[((.26,.26,.28),(0,0,.24),'wood'),((.27,.27,.03),(0,0,.12),'iron')],
@@ -914,13 +982,53 @@ def attach_tool(rig,solver,kind,side):
         o['load']=True;solver.reset();o.parent=rig;o.parent_type='BONE';o.parent_bone='spine'
         bpy.context.view_layer.update();o.matrix_world=rig.matrix_world@Matrix.Translation(CARRY_SOCKET);return o
     s=SIDE_SIGN[side];hb='hand'+side
-    # tool frame in the rest pose: +Y thumb (forward), +Z along the fist, X = Y x Z
-    Y=V(0,-1,0);Z=V(s,0,0);X=Y.cross(Z)
-    m=Matrix((X,Y,Z)).transposed().to_4x4();m.translation=P.P(s*.44,0,.513)
+    m=tool_rest(side)
     solver.reset()
     o.parent=rig;o.parent_type='BONE';o.parent_bone=hb
     bpy.context.view_layer.update();o.matrix_world=rig.matrix_world@m      # the rig may stand anywhere (a building's Worker_Stand)
     return o
+
+
+def tool_rest(side):
+    """A held tool's frame in the rest pose: +Y thumb (forward), +Z along the
+    fist, X = Y x Z, at the fist centre."""
+    s=SIDE_SIGN[side];Y=V(0,-1,0);Z=V(s,0,0);X=Y.cross(Z)
+    m=Matrix((X,Y,Z)).transposed().to_4x4();m.translation=P.P(s*.44,0,.513);return m
+
+
+def throw_track(rig,name):
+    """Per-frame armature-space matrices of a thrown tool (right hand): in the
+    fist until throw['release'], then a ballistic arc (gravity at his scale),
+    the tool turning to fly point first, its point ending at throw['tip_at']
+    after throw['flight'] seconds, and stuck there. (matrices, release, impact)"""
+    c=CLIPS[name];d=c['throw'];act=bpy.data.actions['Crew_'+name];n=int(act.frame_end)
+    sc=bpy.context.scene;keep=(rig.animation_data.action,sc.frame_current);rig.animation_data.action=act
+    rest=tool_rest(RIGHT);inv=rig.data.bones['hand'+RIGHT].matrix_local.inverted()
+    def held(f):
+        sc.frame_set(f);return rig.pose.bones['hand'+RIGHT].matrix@inv@rest
+    rel=round(d['release']*n);M0=held(rel);p0=M0.translation.copy()
+    Tf=d['flight'];g=V(0,0,-G_RIG);tip=Vector(d['tip_at']);dirn=nrm(tip-p0)
+    for _ in range(8):                             # the grip's end point depends on the arrival direction
+        pT=tip-dirn*SPEAR_TIP;v=(pT-p0-.5*g*Tf*Tf)/Tf;dirn=nrm(v+g*Tf)
+    hit=rel+round(Tf*FPS);out=[]
+    R0=M0.to_quaternion();y0=M0.to_3x3()@V(0,1,0)
+    for f in range(n+1):
+        if f<=rel:out.append(held(f));continue
+        tt=min(Tf,(f-rel)/FPS);p=p0+v*tt+.5*g*tt*tt;fly=nrm(v+g*tt)
+        q=y0.rotation_difference(fly)@R0              # point first, its roll kept from the hand
+        if f-rel<3:q=R0.slerp(q,(f-rel)/3)            # leaving the fingers over three frames
+        out.append(Matrix.Translation(p)@q.to_matrix().to_4x4())
+    rig.animation_data.action,f0=keep;sc.frame_set(f0)
+    return out,rel,hit
+
+
+def flies(c):
+    """A clip whose tool leaves him (a dropped load, a thrown spear)."""
+    return bool(c.get('drop') or c.get('throw'))
+
+
+def prop_track(rig,name):
+    return (throw_track if CLIPS[name].get('throw') else load_track)(rig,name)
 
 
 # ---------------------------------------------------------------- bake + export
@@ -944,6 +1052,10 @@ def bake(rig,solver):
         act.use_cyclic=c['loop']
         info[name]={'take':'Crew_'+name,'seconds':c['seconds'],'frames':n+1,'loop':c['loop'],'what':c['what'],
                     'tool_right_hand':c['rtool'],'held_left_hand':c['ltool']}
+        if c.get('throw'):
+            _,rel,hit=throw_track(rig,name);k=1.7/C.HEIGHT;tp=Vector(c['throw']['tip_at'])*k
+            info[name]['spear_throw']={'release_frame':rel,'hits_frame':hit,
+                'point_lands_game_m':{'x':round(tp.x,3),'up':round(tp.z,3),'forward':round(-tp.y,3)}}
         if c.get('drop'):
             _,rel,land=load_track(rig,name)
             at=Vector(c['drop']['at'])*(1.7/C.HEIGHT)

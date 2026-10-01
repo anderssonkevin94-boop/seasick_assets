@@ -22,7 +22,7 @@ the game's 16-bone deckhand skeleton, fists closed, split into parts. The README
 | File | What |
 |---|---|
 | `deckhand-v15-rigged.fbx` | Game drop-in: 16 v5 bones, `CREW_Skin` (white) + `CREW_Cloth`, T rest pose |
-| `anims/deckhand-v15-anims.fbx` | The same, plus all 35 clips as takes `Crew_<Clip>` |
+| `anims/deckhand-v15-anims.fbx` | The same, plus all 36 clips as takes `Crew_<Clip>` |
 | `parts/deckhand-v15-parts.fbx` | 21 named body-part objects on the same rig (for custom versions) |
 | `anims/README.md` | Every clip, the game-state mapping and notes for the Unity agent |
 
@@ -76,17 +76,19 @@ https://claude.ai/artifact/GcDxNt3L667f99DjPvV5Kt). After a rig change, rerun
    a zero-score pose. The scripts under `tmp` in the old session did this; recreate them as needed.
 4. Check **every frame** (`check_v15_clip.py`): in-between frames clip even when the keys don't.
    Route the tool around the head with extra keys (the recovery can retrace the swing's path).
-5. A carried load (`LOADS`, parented to the spine) is checked both ways: the load in him and
+5. Props that leave him (a dropped load, a thrown spear) follow one baked track
+   (`prop_track`: `load_track` / `throw_track`) used by the renders, the checker and the viewer.
+   A carried load (`LOADS`, on the spine) is checked both ways: the load in him and
    any part of him inside the load (a box face can cut in between its corners).
 6. Allowed: up to 3.5 cm of contact within 12 cm of the shoulder (under the sleeve). Anything
    else over 8 mm is a clip.
 
-## Clip status (35 in the FBX)
+## Clip status (36 in the FBX)
 
 | Status | Clips |
 |---|---|
-| **Reworked and clean on every frame** | `Saw` (level 1 lumber mill, lowered bench, sawing the log), `Chop` (Astra's tree, one-handed flat bat swing into the trunk's right flank), `Mine` (Astra's Stone_Field, one-handed vertical overhand swing into its upper front), `Carry` (any load held out on both arms at a spine socket, leaning back, heavy walk), `SetDown` (drops the load, wipes his brow; chains Carry → SetDown → Walk) |
-| Made before the anatomy rules; **need rework the same way** | Idle, Walk, Forage, Build, PickUp, Hunt, Farm, Smith, Cook, Mill, Lookout, Quarry, Fletcher, Fisher, SickSway, SickWalk, SickClutch, SickRail, SickCollapse, SickKneel, Bail, ThrowLine, HaulLine, GunRam, GunFire, Row, Gangway, Soaked, DeckBrace, RailGrip |
+| **Reworked and clean on every frame** | `Saw` (level 1 lumber mill, lowered bench, sawing the log), `Chop` (Astra's tree, one-handed flat bat swing into the trunk's right flank), `Mine` (Astra's Stone_Field, one-handed vertical overhand swing into its upper front), `Carry` (any load held out on both arms at a spine socket, leaning back, heavy walk), `SetDown` (drops the load, wipes his brow; chains Carry → SetDown → Walk), `HuntWalk` (spear-ready stalk), `Hunt` (sights and throws the spear 4 m; chains HuntWalk → Hunt → Walk) |
+| Made before the anatomy rules; **need rework the same way** | Idle, Walk, Forage, Build, PickUp, Farm, Smith, Cook, Mill, Lookout, Quarry, Fletcher, Fisher, SickSway, SickWalk, SickClutch, SickRail, SickCollapse, SickKneel, Bail, ThrowLine, HaulLine, GunRam, GunFire, Row, Gangway, Soaked, DeckBrace, RailGrip |
 
 Kevin goes down the list one clip at a time. Ask which is next.
 

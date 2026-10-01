@@ -152,14 +152,32 @@
     "tool_right_hand": "knife",
     "held_left_hand": null
   },
-  "Hunt": {
-    "take": "Crew_Hunt",
+  "HuntWalk": {
+    "take": "Crew_HuntWalk",
     "seconds": 2.2,
     "frames": 67,
     "loop": true,
-    "what": "hunting: draw, loose, reach back to the quiver for the next arrow",
-    "tool_right_hand": null,
-    "held_left_hand": "bow"
+    "what": "stalking with the spear raised, crouched and alert, head scanning (in place)",
+    "tool_right_hand": "spear",
+    "held_left_hand": null
+  },
+  "Hunt": {
+    "take": "Crew_Hunt",
+    "seconds": 2.6,
+    "frames": 79,
+    "loop": false,
+    "what": "lines up the goat and throws the spear, follows through and watches it strike; from HuntWalk, into Walk (one-shot)",
+    "tool_right_hand": "spear",
+    "held_left_hand": null,
+    "spear_throw": {
+      "release_frame": 35,
+      "hits_frame": 48,
+      "point_lands_game_m": {
+        "x": 0.0,
+        "up": 0.392,
+        "forward": 3.91
+      }
+    }
   },
   "SickSway": {
     "take": "Crew_SickSway",

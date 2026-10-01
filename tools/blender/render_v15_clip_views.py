@@ -13,7 +13,7 @@ sh=sc.display.shading;sh.light='STUDIO';sh.color_type='VERTEX';sh.show_cavity=Tr
 sh.background_type='VIEWPORT';sh.background_color=(.37,.55,.68)
 if sc.world is None:sc.world=bpy.data.worlds.new('W')
 sc.world.color=(.37,.55,.68)
-g=A.box_mesh('ground',[((4,4,.02),(0,0,-.011),'soil')])
+g=A.box_mesh('ground',[((8,8,.02),(0,-1.5,-.011),'soil')])
 g.data.color_attributes['Col'].data.foreach_set('color',[v for _ in range(len(g.data.loops)) for v in (*A.C.srgb('#7E9E62'),1)])
 for p in c['props']:A.box_mesh(p[0],[(p[2],p[1],p[3])])
 if c.get('env'):
@@ -22,7 +22,7 @@ else:stand=Vector((0,0,0))
 act=bpy.data.actions['Crew_'+name];rig.animation_data.action=act;sc.frame_set(0)
 if c['rtool']:
     o=A.attach_tool(rig,sv,c['rtool'],A.RIGHT)
-    if c.get('drop'):A.animate_load(o,rig,name)                # the load leaves his arms and falls
+    if A.flies(c):A.animate_load(o,rig,name)                # the tool leaves him (dropped, thrown)
 if c['ltool']:A.attach_tool(rig,sv,c['ltool'],A.LEFT)
 cd=bpy.data.cameras.new('c');cam=bpy.data.objects.new('c',cd);sc.collection.objects.link(cam);sc.camera=cam;cd.type='ORTHO';cd.ortho_scale=1.45
 sc.render.resolution_x=sc.render.resolution_y=380
@@ -38,7 +38,12 @@ if c.get('env')=='tree':      # the canopy hides him from above: side and low an
 if c.get('env')=='rock':      # the rock stands in front of him: side and back angles
     views=[('game view, his right',(-3.4,1.6,2.4)),('side, his right',(-3,.2,.8)),('behind him',(-.8,3,1.2)),('3/4 his left, low',(2.6,-.3,.9)),('side, his left',(3,.2,.8))]
     cd.ortho_scale=1.9
+TGT=Vector((0,-.2,.55))
+if c.get('throw'):            # the target stands 3 m off: wide side angles taking in him, the flight and the goat
+    views=[('side, his right',(-4.2,-1.5,1.0)),('game view, his right',(-3.4,1.4,3.0)),('behind him',(-.5,3.2,1.4)),('3/4 his left',(3.2,.4,1.6)),('above',(-1.0,-1.5,4.8))]
+    cd.ortho_scale=3.9;TGT=Vector((0,-1.5,.55))
 n=int(act.frame_end);keys=[round(n*k/4) for k in range(4)] if c['loop'] else [round(n*k/4) for k in range(5)]
+if name=='Hunt':keys=[0,round(n*.33),round(n*.45),round(n*.52),round(n*.62)]   # stalking, sighting, the release, in flight, the hit
 if name=='SetDown':keys=[0,9,16,40,50,72]   # letting go, landed, mid-wipe, the flick, into the walk
 if name=='Mine':keys=[0,round(n*.26),round(n*.34),round(n*.40)]   # raised, head trailing, tipping over, the strike
 if name=='Chop':keys=[0,round(n*.28),round(n*.33),round(n*.40)]   # cocked, hands dropped, sweeping level, the bite
@@ -46,7 +51,7 @@ rows=[]
 for f in keys:
     sc.frame_set(f);row=[]
     for vn,eye in views:
-        tgt=stand+Vector((0,-.2,.55));eye=stand+Vector(eye);cam.location=eye;cam.rotation_euler=(tgt-Vector(eye)).to_track_quat('-Z','Y').to_euler()
+        tgt=stand+TGT;eye=stand+Vector(eye);cam.location=eye;cam.rotation_euler=(tgt-Vector(eye)).to_track_quat('-Z','Y').to_euler()
         sc.render.filepath=out+'/_v.png';bpy.ops.render.render(write_still=True);row.append(Image.open(out+'/_v.png').convert('RGB'))
     rows.append((f,row))
 W=380;sheet=Image.new('RGB',(W*len(views),W*len(rows)+24),'white');d=ImageDraw.Draw(sheet)

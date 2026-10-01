@@ -42,7 +42,8 @@ embedded, so the one file opens on its own. Rebuild it with
 | `Crew_Quarry` | Quarry (quarryman) | 0.95 s | mallet | chisel | quarry: mallet and chisel, dressing stone into brick |
 | `Crew_Fletcher` | Fletcher's (fletcher) | 1.5 s | knife | shaft | fletcher: whittling an arrow shaft |
 | `Crew_Fisher` | Fishing hut (fisher) | 1.2 s | knife | - | fishing hut: gutting the catch on the prep bench |
-| `Crew_Hunt` | hunting | 2.2 s | - | bow | hunting: draw, loose, reach back to the quiver for the next arrow |
+| `Crew_HuntWalk` | hunting, stalking | 2.2 s | spear | - | stalking with the spear raised, crouched and alert, head scanning (in place) |
+| `Crew_Hunt` | hunting, the throw | 2.6 s, one-shot | spear (thrown) | - | lines up the goat and throws the spear; from HuntWalk, into Walk |
 | `Crew_SetDown` | dropping a load | 2.4 s, one-shot | any load (dropped) | - | drops the load, slumps, wipes his brow, flicks the sweat off; from Carry, into Walk |
 | `Crew_SickSway` | seasick, standing | 3.0 s | - | - | queasy: swaying, a fist on his stomach, head lolling |
 | `Crew_SickWalk` | seasick, moving | 1.2 s | - | - | queasy walk: short lurching steps, a fist on his stomach (in place) |
@@ -82,7 +83,7 @@ clips.
 
 | File | What |
 |---|---|
-| `deckhand-v15-anims.fbx` | Rig + `CREW_Skin` / `CREW_Cloth` (skin exported white) + all 35 clips as separate takes |
+| `deckhand-v15-anims.fbx` | Rig + `CREW_Skin` / `CREW_Cloth` (skin exported white) + all 36 clips as separate takes |
 | `clips.json` | Takes, lengths, loop flags, which tool goes in which hand |
 | `<Clip>.gif`, `<Clip>-strip.png`, `overview-*.png` | Previews (overview sheets: building jobs, basics and tasks, seasickness, aboard ship) |
 | `../../tools/blender/crew_meshy_v15_anims.py` | Clip definitions, IK solver, bake and export |
@@ -131,8 +132,10 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   waddle from foot to foot. **The carry socket:** the hands are keyed in the spine's frame, so the
   load rides with the spine bone and the fists stay 1 mm under it on every frame. To place any
   asset (the game's stacks of logs, planks, stones, bricks or sacks): put the load's **bottom
-  centre** at the socket in the rest (T) pose and parent it to the **`spine`** bone, keeping that
-  offset. At the 1.7 m game size the socket is **(0, 0.847, 0.523) m** in the model's space
+  centre** at the socket and move it with the **`spine`** bone. Do it the way `HunterProps` places
+  the spear: read the spine's world pose every frame and set the load from it, **not** by
+  parenting (the deckhand's bones carry a ~92x scale, and a child of a bone blows up). The socket
+  is a fixed offset in the spine's rest frame. At the 1.7 m game size, in the rest pose, it is **(0, 0.847, 0.523) m** in the model's space
   (Unity: x across, y up, z forward), which is (0, -0.40, 0.648) at the 1.30 m source (Blender,
   -Y forward), `CARRY_SOCKET` in the script. Loads up to **0.34 m deep** (front to back, centred on
   the socket) clear his belly; width is free; up to about 0.24 m tall keeps his face clear. The
@@ -150,6 +153,22 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   level. Detach it at frame 3 and tween it there (or drop it with physics) — `clips.json` has the
   numbers (`load_drop`), and the viewer plays the same baked fall. Nothing of him is inside the
   load at any frame, and it lands clear of his toes.
+- **Hunting with a spear: HuntWalk, then Hunt** (the spear is the game's own placeholder from
+  `HunterProps`, 1.8 m, grip 0.65 m from the butt; tool frame: grip at the fist centre, +Y to the
+  point). **HuntWalk** (2.2 s loop, two strides, in place) is a stalk: crouched, leaning in,
+  short careful steps that lift and place each foot, the spear raised by his right cheek in a
+  javelin grip pointing level ahead (6 degrees up), the left fist out front for balance, the head
+  scanning left and right once a loop. Its stride is about 0.34 m a cycle (Walk's 0.44 m).
+  **Hunt** (2.6 s, one-shot) starts on HuntWalk's first frame and ends on Walk's first frame
+  (checked: zero difference): he turns side-on, points his left arm at the beast and draws the
+  spear back level behind his right shoulder, holds the aim, then hips, elbow and arm whip
+  through and the spear leaves at 14 degrees up; it flies a real arc (gravity at his scale,
+  peaking about 1.6 m up) and sticks; he follows through onto his front foot, back heel up, and
+  watches. **For the game:** the hunter now throws instead of jabbing, from **4 m** (game) off the
+  beast (`CampWorker.HuntReach` is 1.2 m today). The spear leaves the hand on **frame 35** and
+  its point strikes on **frame 48**, at **(0, 0.39, 3.91) m** from his root (straight ahead, at a
+  goat's flank height) — `clips.json` (`spear_throw`) has the numbers; the flight in between is
+  the viewer's baked track, or any arc between those two points. The preview goat is a stand-in.
 - **Mine is set at a rock** (`CLIPS['Mine']['env']='rock'`: Astra's `Stone_Field`, the commonest
   deposit, from `art-staging/stone-resources-astra-v2`, copied to `env/Stone_Field.fbx`). He stands
   where `StoneDeposit.StandOff` puts a miner: its footprint radius plus 0.7 m, 1.80 m (game) from

@@ -154,11 +154,13 @@ const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 60);
 const HOME = {pos:new THREE.Vector3(-2.3, 1.45, 3.4), target:new THREE.Vector3(0, 0.6, -0.1)};
 // Clips set at a tree or a rock: it stands in front of him, so look past his right shoulder.
 const HOME_TREE = {pos:new THREE.Vector3(-2.7, 1.5, -1.7), target:new THREE.Vector3(0, 0.55, 0.35)};
-function home(){ const h = (current && ['tree','rock'].includes(CLIPS[current].env)) ? HOME_TREE : HOME;
+// A throw reaches 3 m out: stand well off his right side to see him, the flight and the mark.
+const HOME_WIDE = {pos:new THREE.Vector3(-5.6, 2.6, 0.6), target:new THREE.Vector3(0, 0.5, 1.5)};
+function home(){ const h = !current ? HOME : CLIPS[current].wide ? HOME_WIDE : ['tree','rock'].includes(CLIPS[current].env) ? HOME_TREE : HOME;
   camera.position.copy(h.pos); controls.target.copy(h.target); controls.update(); }
 camera.position.copy(HOME.pos);
 const controls = new THREE.OrbitControls(camera, canvas);
-controls.target.copy(HOME.target); controls.enableDamping = true; controls.minDistance = 1; controls.maxDistance = 9;
+controls.target.copy(HOME.target); controls.enableDamping = true; controls.minDistance = 1; controls.maxDistance = 12;
 controls.maxPolarAngle = Math.PI * 0.52; controls.autoRotateSpeed = 1.2;
 
 scene.add(new THREE.HemisphereLight(0xdfeefa, 0x5b4a36, 0.75));
@@ -168,7 +170,7 @@ key.shadow.bias = -0.0005; scene.add(key);
 const fill = new THREE.DirectionalLight(0xcfe0ff, 0.35); fill.position.set(3, 2, -1); scene.add(fill);
 
 const deckMat = new THREE.MeshStandardMaterial({roughness:.95, metalness:0});
-const deck = new THREE.Mesh(new THREE.CircleGeometry(2.4, 64), deckMat);
+const deck = new THREE.Mesh(new THREE.CircleGeometry(3.6, 64), deckMat);
 deck.rotation.x = -Math.PI / 2; deck.position.y = -0.012; deck.receiveShadow = true; scene.add(deck);   // just under a building's own ground
 const rings = new THREE.Group(); scene.add(rings);
 function themeColours(){
@@ -221,7 +223,7 @@ new THREE.GLTFLoader().parse(glbBytes, '', gltf => {
 function select(key, user){
   if (!actions[key]) return;
   if (action) action.stop();
-  const envChanged = !current || CLIPS[current].env !== CLIPS[key].env;
+  const envChanged = !current || CLIPS[current].env !== CLIPS[key].env || !!CLIPS[current].wide !== !!CLIPS[key].wide;
   current = key; action = actions[key];
   if (envChanged) home();
   action.reset(); action.setLoop(THREE.LoopRepeat); action.play(); action.paused = true;
