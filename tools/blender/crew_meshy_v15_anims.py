@@ -141,6 +141,37 @@ class Solver:
         else:hand_up=haft
         self.orient(h,face,hand_up)
 
+    def _arm_frame(self,side):
+        """The forearm's neutral frame (its axis, the neutral thumb) as arm() derives it."""
+        sh=self.pb['upper_arm'+side].head;el=self.pb['forearm'+side].head;wr=self.pb['forearm'+side].tail
+        ua_n=(el-sh).normalized();fa_n=(wr-el).normalized();ref=(-ua_n-fa_n*(-ua_n).dot(fa_n)).normalized()
+        return Matrix((fa_n,ref,fa_n.cross(ref))).transposed()
+
+    def turn_keys(self,keys,spans,side=RIGHT):
+        """Insert midway keys where a hand turns a long way: between keys i
+        and j, k keys whose hand frame is blended *relative to the forearm*
+        (its twist then takes the short way, inside the forearm's range),
+        where a plain blend of the hand's world frame can carry the twist
+        past 180 degrees and flip the forearm over in one frame."""
+        key='rh' if side==RIGHT else 'lh'
+        def hframe(h):
+            f=nrm(h['face']);t=nrm(h['haft']-f*h['haft'].dot(f));return Matrix((f,t,f.cross(t))).transposed()
+        out=list(keys)
+        for i,j,k in sorted(spans,reverse=True):
+            (ta,qa),(tb,qb)=keys[i],keys[j]
+            self.pose(qa);bpy.context.view_layer.update();ra=(self._arm_frame(side).transposed()@hframe(qa[key])).to_quaternion()
+            self.pose(qb);bpy.context.view_layer.update();rb=(self._arm_frame(side).transposed()@hframe(qb[key])).to_quaternion()
+            mids=[]
+            for m in range(1,k+1):
+                u=m/(k+1);q=mix(qa,qb,u*u*(3-2*u));q[key]=hand_turn(qa[key],qb[key],u)
+                for _ in range(3):                  # the arm settles where the hand goes; set the hand relative to it again
+                    self.pose(q);bpy.context.view_layer.update()
+                    M=self._arm_frame(side)@ra.slerp(rb,u).to_matrix()
+                    q[key]=hand(tuple(q[key]['grip']),M.col[0],M.col[1],q[key]['elbow'])
+                mids.append((ta+(tb-ta)*u,q))
+            out[i+1:i+1]=mids
+        return out
+
     def leg(self,side,ankle,foot_dir,knee):
         t,sh,ft='thigh'+side,'shin'+side,'foot'+side
         hip=self.pb[t].head.copy()
@@ -519,9 +550,9 @@ def hoe_hand(p,grip=None,edge=None,elbow=(-1,0,.2)):
     return hand(tuple(g),f,h,elbow)
 
 
-def hoe_left(rh,along,elbow):
+def hoe_left(rh,along,elbow,face=(-.4,-.4,-.8)):
     """His left hand on the haft, along metres from the right fist."""
-    h=rh['haft'];f=V(-.4,-.4,-.8);f=(f-h*f.dot(h)).normalized()
+    h=rh['haft'];f=V(*face);f=(f-h*f.dot(h)).normalized()
     return {'tool_pt':(0,along,0),'face':f,'haft':h,'elbow':V(*elbow)}
 
 
@@ -532,7 +563,7 @@ def farm_keys():
     drag=hoe_hand(10,edge=tuple(V(bite.x,bite.y,.13)-pull*.10))     # dragged 10 cm back through it
     raised=hoe_hand(-10,grip=(-.36,-.06,.60))                       # the blade up at his chest
     feet=dict(rf=(0,.06,0,0),lf=(0,-.08,0,0),yaw=FARM_YAW)
-    R=K_(root=V(0,0,-.02),pelvis=(2,-6,0),spine=(10,0,0),head=(8,0,0),rh=raised,lh=hoe_left(raised,.58,(.8,.2,.3)),**feet)
+    R=K_(root=V(0,0,-.02),pelvis=(2,-6,0),spine=(10,0,0),head=(8,0,0),rh=raised,lh=hoe_left(raised,.58,(.5,.6,.2),face=(0,-1,0)),**feet)
     S=K_(root=V(0,0,-.08),pelvis=(6,-8,0),spine=(40,4,-6),head=(14,0,0),rh=strike,lh=hoe_left(strike,.46,(.5,.6,.2)),**feet)
     D=K_(root=V(0,.02,-.08),pelvis=(4,-16,0),spine=(44,0,-10),head=(12,0,0),rh=drag,lh=hoe_left(drag,.52,(.5,.6,.2)),**feet)
     W=mix(R,S,.648);W['spine']=(20,0,0)                          # on the way down the right fist passes back over his hip, clear of the sash knot
@@ -867,6 +898,28 @@ clip('GunRam',3.2,gunram_keys(),what='gunner: behind the gun, sighting along the
 CLIPS['GunRam']['env']='cannon';CLIPS['GunRam']['gun']=[(0,0.),(1,0.)]
 
 
+def guntend_keys():
+    """At the gun between shots (what a gunner does most of the time at sea):
+    he lets his arm down, steps in and lays his fist on the breech, pats it
+    twice, rests it there looking out past the muzzle, steps back and
+    glances round. Starts and ends on the station, so it chains with GunRam
+    and GunFire."""
+    st=gun_station();R=(-.06,-.04)
+    side=hand((-.35,-.07,.45),(-.2,-.25,-1),(0,-1,0),(-.6,.7,0))            # his right arm hanging at his side
+    on=hand((-.48,-.30,.66),(-.7,-.7,0),(0,0,1),(-.8,.3,-.4))              # the fist against the back of the gun, just touching, elbow bent
+    up=hand(tuple(on['grip']+V(.03,0,.03)),on['face'],on['haft'],on['elbow'])
+    def at(rh,head,spine=(4,-10,0),rz=-.02):
+        return K_(root=V(R[0],R[1],rz),rf=(R[0]-.05,R[1]+.03,0,0),lf=(R[0]+.05,R[1]-.03,0,0),spine=spine,head=head,rh=rh,lh=_rel(GUN_LEFT,R))
+    relax=K_(root=V(0,0,-.03),rf=(-.04,.02,0,0),lf=(.06,0,0,0),spine=(2,0,0),head=(0,-6,0),rh=side,lh=GUN_LEFT)
+    glance=dict(relax,head=(2,14,0))
+    return [(0,st),(.06,relax),(.16,at(on,(-4,-20,0))),(.21,at(up,(-4,-20,0))),(.25,at(on,(-4,-20,0))),(.30,at(up,(-4,-20,0))),(.34,at(on,(-4,-20,0))),
+            (.46,at(on,(-6,-6,0))),(.62,at(on,(-6,-4,0),rz=-.03)),(.74,relax),(.86,glance),(.94,relax)]
+
+
+clip('GunTend',6.0,guntend_keys(),what='gunner at sea: standing by the gun, a hand on the breech, patting it and looking out past the muzzle (loop; chains with GunRam and GunFire)')
+CLIPS['GunTend']['env']='cannon';CLIPS['GunTend']['gun']=[(0,0.),(1,0.)]
+
+
 def hand_turn(a,b,u):
     """A hand target part way from a to b: its position lerped, its frame
     (knuckles, thumb) turned by a true rotation, so a blend through it
@@ -890,15 +943,18 @@ def gunfire_keys():
     pull=touch['rh'];back=hand(tuple(pull['grip']-pull['haft']*.06),pull['face'],pull['haft'],pull['elbow'])
     flinch=dict(touch);flinch['rh']=back;flinch['head']=(8,10,2);flinch['spine']=(6,-4,0)   # the match drawn straight back, head turned from the blast
     watch=K_(root=V(.02,0,-.03),rf=(-.04,.02,0,0),lf=(.06,0,0,0),spine=(2,-2,0),head=(-4,-12,0),rh=_rel(GUN_STAND,(.02,0)),lh=_rel(GUN_LEFT,(.02,0)))
-    def via(qa,qb,u):                                  # part way, the linstock turned by a true rotation
-        q=mix(qa,qb,u*u*(3-2*u));q['rh']=hand_turn(qa['rh'],qb['rh'],u);return q
-    return [(0,st),(T(.25),via(st,touch,1/3)),(T(.50),dict(via(st,touch,2/3),head=(-8,-19,0))),(T(.75),touch),(T(.82),touch),(T(1.00),flinch),
-            (T(1.25),via(flinch,watch,1/3)),(T(1.40),via(flinch,watch,2/3)),(T(1.55),watch),(1,st)]
+    def tipped(h,grip,tip,roll):                      # the station's grip tipped forward and rolled: the linstock leaning out
+        f=Matrix.Rotation(math.radians(tip),3,'X')@h['face'];t=Matrix.Rotation(math.radians(tip),3,'X')@h['haft']
+        return hand(tuple(grip),Matrix.Rotation(math.radians(roll),3,t)@f,t,(-.8,.3,-.3))
+    lift=mix(st,touch,.25);lift['rh']=tipped(st['rh'],st['rh']['grip'].lerp(touch['rh']['grip'],.25)+V(-.08,-.12,.06),20,-15)
+    lower=mix(flinch,watch,.75);lower['rh']=tipped(watch['rh'],flinch['rh']['grip'].lerp(watch['rh']['grip'],.75)+V(-.08,-.12,.06),20,-15)
+    return [(0,st),(T(.15),lift),(T(.75),touch),(T(.82),touch),(T(1.00),flinch),(T(1.55),lower),(T(1.75),watch),(1,st)]
 
 
 clip('GunFire',2.0,gunfire_keys(),loop=False,rtool='linstock',
      what='gunner: from his station beside the back of the gun, touches the linstock to the vent; the gun fires and recoils past him; he flinches away and watches the shot (one-shot)')
 CLIPS['GunFire']['env']='cannon'
+CLIPS['GunFire']['turns']=[(0,1,2),(1,2,2),(4,5,2),(5,6,2)]   # his wrist pronates from the upright linstock to the match and back: blended relative to the forearm, no flip
 CLIPS['GunFire']['gun']=[(0,0.),(.80/2.0,0.),(.86/2.0,GUN_RECOIL),(1.10/2.0,GUN_RECOIL),(1.80/2.0,0.),(1,0.)]   # fires, recoils, runs out again
 
 BOAT=[('hull',(0,-.10,.04),(.76,1.2,.08),'wood',0),('thwart',(0,.12,.15),(.70,.14,.04),'wood_light',0),
@@ -1260,10 +1316,11 @@ def bake(rig,solver):
         act=bpy.data.actions.new('Crew_'+name);act.use_fake_user=True
         rig.animation_data.action=act
         n=max(2,round(c['seconds']*FPS))
+        keys=solver.turn_keys(c['keys'],c['turns']) if c.get('turns') else c['keys']
         last={}
         for f in range(n+1):
             t=f/n
-            solver.pose(sample(c['keys'],t,c['loop']))
+            solver.pose(sample(keys,t,c['loop']))
             for pb in rig.pose.bones:
                 q=pb.rotation_quaternion.copy()
                 if pb.name in last and last[pb.name].dot(q)<0:q.negate();pb.rotation_quaternion=q

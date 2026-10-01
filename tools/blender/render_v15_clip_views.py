@@ -52,8 +52,9 @@ if c.get('throw'):            # the target stands 3 m off: wide side angles taki
 n=int(act.frame_end);keys=[round(n*k/4) for k in range(4)] if c['loop'] else [round(n*k/4) for k in range(5)]
 if name=='Hunt':keys=[0,round(n*.33),round(n*.45),round(n*.52),round(n*.62)]   # stalking, sighting, the release, in flight, the hit
 if name=='PickUp':keys=[0,26,37,45,51,60]   # walking in, the grip, the heave, seated on his belly, fists under, carrying
-if name=='GunFire':keys=[0,12,23,26,30,46]   # at the station, raising the linstock, the match on the vent, the recoil, the flinch, watching the shot
+if name=='GunFire':keys=[0,8,16,23,30,44]   # at the station, raising the linstock, the match on the vent, the recoil, the flinch, watching the shot
 if name=='SetDown':keys=[0,9,16,40,50,72]   # letting go, landed, mid-wipe, the flick, into the walk
+if name=='GunTend':keys=[0,12,29,38,95,155]   # station, arm down, fist on the breech, the pat, looking out, the glance
 if name=='Farm':keys=[0,9,14,20,32]   # raised, coming down, the bite, holding, dragged back
 if name=='Mine':keys=[0,round(n*.26),round(n*.34),round(n*.40)]   # raised, head trailing, tipping over, the strike
 if name=='Chop':keys=[0,round(n*.28),round(n*.33),round(n*.40)]   # cocked, hands dropped, sweeping level, the bite

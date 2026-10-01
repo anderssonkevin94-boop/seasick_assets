@@ -76,6 +76,12 @@ https://claude.ai/artifact/GcDxNt3L667f99DjPvV5Kt). After a rig change, rerun
    a zero-score pose. The scripts under `tmp` in the old session did this; recreate them as needed.
 4. Check **every frame** (`check_v15_clip.py`): in-between frames clip even when the keys don't.
    Route the tool around the head with extra keys (the recovery can retrace the swing's path).
+   Also watch for **snaps** the checker can't see: a forearm that flips 180 degrees in one frame
+   (measure each bone's per-frame turn). It happens when a hand turns a long way and the plain
+   blend carries the forearm's twist past 180; list those spans in `CLIPS[name]['turns']` and the
+   bake inserts midway keys blended relative to the forearm (`Solver.turn_keys`). A nearly
+   straight arm makes the forearm's neutral roll unstable too: keep the elbow bent where the
+   hand works.
 5. Props that leave him (a dropped load, a thrown spear) follow one baked track
    (`prop_track`: `load_track` / `throw_track` / `pickup_track` / `lanyard_track` (unused since the cannon rework); a gun's recoil: `gun_offset`) used by the renders, the checker and the viewer.
    A carried load (`LOADS`, on the spine) is checked both ways: the load in him and
@@ -87,7 +93,7 @@ https://claude.ai/artifact/GcDxNt3L667f99DjPvV5Kt). After a rig change, rerun
 
 | Status | Clips |
 |---|---|
-| **Reworked and clean on every frame** | `Saw` (level 1 lumber mill, lowered bench, sawing the log), `Farm` (Astra's level 1 farm: two-handed hoe into a raised bed, turned stance, chop and drag), `Chop` (Astra's tree, one-handed flat bat swing into the trunk's right flank), `Mine` (Astra's Stone_Field, one-handed vertical overhand swing into its upper front), `Carry` (any load held out on both arms at a spine socket, leaning back, heavy walk), `SetDown` (drops the load, wipes his brow; chains Carry → SetDown → Walk), `PickUp` (squat, side grip, heave; chains Walk → PickUp → Carry), `HuntWalk` (spear-ready stalk), `Hunt` (sights and throws the spear 4 m; chains HuntWalk → Hunt → Walk), `GunRam` / `GunFire` (Astra's cannon, ship layout: station beside the back of the gun; GunRam sights and lays it with the wedge, GunFire touches the linstock to the vent; chain ram → fire → ram) |
+| **Reworked and clean on every frame** | `Saw` (level 1 lumber mill, lowered bench, sawing the log), `Farm` (Astra's level 1 farm: two-handed hoe into a raised bed, turned stance, chop and drag), `Chop` (Astra's tree, one-handed flat bat swing into the trunk's right flank), `Mine` (Astra's Stone_Field, one-handed vertical overhand swing into its upper front), `Carry` (any load held out on both arms at a spine socket, leaning back, heavy walk), `SetDown` (drops the load, wipes his brow; chains Carry → SetDown → Walk), `PickUp` (squat, side grip, heave; chains Walk → PickUp → Carry), `HuntWalk` (spear-ready stalk), `Hunt` (sights and throws the spear 4 m; chains HuntWalk → Hunt → Walk), `GunTend` / `GunRam` / `GunFire` (Astra's cannon, ship layout: station beside the back of the gun; GunTend stands by with a hand on the gun, GunRam sights and lays it with the wedge, GunFire touches the linstock to the vent; all chain through the station pose) |
 | Made before the anatomy rules; **need rework the same way** | Idle, Walk, Forage, Build, Smith, Cook, Mill, Lookout, Quarry, Fletcher, Fisher, SickSway, SickWalk, SickClutch, SickRail, SickCollapse, SickKneel, Bail, ThrowLine, HaulLine, Row, Gangway, Soaked, DeckBrace, RailGrip |
 
 Kevin goes down the list one clip at a time. Ask which is next.

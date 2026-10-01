@@ -57,6 +57,7 @@ embedded, so the one file opens on its own. Rebuild it with
 | `Crew_Bail` | sent to the buckets (`Bailing`) | 1.6 s | bucket | on the bucket | scooping bilge water and tossing it over the side (rail on his right) |
 | `Crew_ThrowLine` | man overboard, rescue (`HaulGoing`) | 1.4 s, one-shot | coiled line | - | throwing the line; then `Crew_HaulLine` |
 | `Crew_HaulLine` | man overboard, rescue (`Hauling`) | 1.2 s | - | - | hauling the swimmer in, hand over hand |
+| `Crew_GunTend` | gunner: standing by | 6.0 s | - | - | at sea between shots: lays his fist on the back of the gun, pats it, looks out past the muzzle, glances round (Astra's cannon) |
 | `Crew_GunRam` | gunner: reloading | 3.2 s | - | - | behind the gun: sights along the barrel and lays it with the elevation wedge, from his station beside it (Astra's cannon) |
 | `Crew_GunFire` | gunner: firing | 2.0 s, one-shot | linstock | - | from his station touches the linstock to the vent; the gun fires and recoils past him; he flinches and watches the shot |
 | `Crew_Row` | jolly boat (`JollyBoatDuty`) | 1.7 s | oar | oar | seated, rowing: reach, pull, feather, return |
@@ -197,6 +198,12 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   station he leans in and **touches the linstock's match to the vent (frames 23-24); the gun fires
   on frame 24 and recoils 0.55 m by frame 26** (`Cannon.recoilDistance`) past his right side; he
   flinches away, watches the shot and settles back as **the gun runs out again (frames 33-54)**.
+  **GunTend** (6.0 s loop) is what he does most of the time at sea: from the station he lets his
+  arm down, steps in and lays his fist against the back of the gun, pats it twice, rests it there
+  looking out past the muzzle, steps back and glances round. All three gun clips start on the same
+  station pose, so tend → ram → fire → tend chains in any order. GunFire's linstock comes up and
+  goes back down with the wrist rolling the short way round (`CLIPS['GunFire']['turns']`: the
+  midway keys are blended relative to the forearm), so the hand no longer snaps over.
   `clips.json` (`cannon`) has the numbers. Poses were found by search against the anatomy checker
   with the gun's parts as props, tested on their real surfaces (not their boxes).
   **For the game:** `CannonBattery` stands the gunner 0.72 m *inboard* of the gun today, which is
@@ -232,8 +239,8 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
 - Walk, Carry and SickWalk need their playback speed matched to the move speed (Carry's stride is shorter: about 0.3 m a cycle against Walk's 0.44 m).
 - Aboard: `CrewAgent`'s states map straight onto the ship clips (Station -> DeckBrace,
   RailHold -> RailGrip, Bailing -> Bail, AtRail -> SickRail, HaulGoing/Hauling -> ThrowLine then
-  HaulLine, JollyBoatDuty -> Row, the post-rescue rest -> Soaked); gunners play GunRam while
-  reloading and GunFire on the shot.
+  HaulLine, JollyBoatDuty -> Row, the post-rescue rest -> Soaked); gunners play GunTend while
+  standing by (most of the voyage), GunRam while reloading and GunFire on the shot.
 - Seasickness: `CrewAgent.Sickness01` could pick SickSway / SickWalk from about 0.4, SickClutch
   from about 0.7 and SickCollapse then SickKneel near 1; SickRail when a sick hand is sent to the
   rail. The vomit itself (a splash or particles) is for the game to add; the preview puddle is

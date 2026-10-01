@@ -292,6 +292,29 @@
       ]
     }
   },
+  "GunTend": {
+    "take": "Crew_GunTend",
+    "seconds": 6.0,
+    "frames": 181,
+    "loop": true,
+    "what": "gunner at sea: standing by the gun, a hand on the breech, patting it and looking out past the muzzle (loop; chains with GunRam and GunFire)",
+    "tool_right_hand": null,
+    "held_left_hand": null,
+    "cannon": {
+      "run_in_m_game": 0.55,
+      "elevation_deg": 4,
+      "keys_frame_runin_game_m": [
+        [
+          0,
+          0.0
+        ],
+        [
+          180,
+          0.0
+        ]
+      ]
+    }
+  },
   "GunFire": {
     "take": "Crew_GunFire",
     "seconds": 2.0,
