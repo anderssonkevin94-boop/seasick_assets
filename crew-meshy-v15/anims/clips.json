@@ -64,12 +64,21 @@
   },
   "PickUp": {
     "take": "Crew_PickUp",
-    "seconds": 1.3,
-    "frames": 40,
+    "seconds": 2.0,
+    "frames": 61,
     "loop": false,
-    "what": "stoop, lift a load to his chest (one-shot)",
-    "tool_right_hand": "sack",
-    "held_left_hand": null
+    "what": "squats, takes the load by its sides and heaves it up onto his arms; from Walk, into Carry (one-shot)",
+    "tool_right_hand": "crate",
+    "held_left_hand": null,
+    "load_pickup": {
+      "grab_frame": 26,
+      "load_bottom_centre_game_m": {
+        "x": 0.0,
+        "up": 0.0,
+        "forward": 0.628
+      },
+      "ends_on": "the carry socket (Carry frame 0)"
+    }
   },
   "Saw": {
     "take": "Crew_Saw",

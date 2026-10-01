@@ -399,7 +399,7 @@ clip('Build',.95,[
 # rides on the forearms on every frame, whatever it is: that socket is the
 # one contract for the game's stacks (logs, planks, stones, bricks, sacks).
 # Arm pose found by search against crew_v15_anatomy with a 0.54 x 0.26 x
-# 0.18 m crate (his scale) on it, its top kept under his chin; no part of him
+# 0.18 m crate (the preview crate is now 0.50 wide, the width PickUp grips) (his scale) on it, its top kept under his chin; no part of him
 # inside the load (the checker tests both ways for a load).
 CARRY_FIST=V(.22,-.34,.54)                          # his left fist, standing (the right mirrors it)
 CARRY_SOCKET=V(0,-.40,.648)                         # the load's bottom centre, on the fists (rest pose, parent: spine): its back face at his belly
@@ -423,12 +423,46 @@ def carry_pose(t):
 
 
 clip('Carry',1.2,carry_pose,rtool='crate',what='a heavy load held out on both arms, leaning back against it, walking slow and short (in place)')
-clip('PickUp',1.3,[
-    (0,K_()),
-    (.45,K_(root=V(0,0,-.17),spine=(46,0,0),head=(20,0,0),rh=hand((-.13,-.36,.13),(0,-.2,-1),(0,-1,.2),(-.7,.4,0)),lh=hand((.13,-.36,.13),(0,-.2,-1),(0,-1,.2),(.7,.4,0)))),
-    (.6,K_(root=V(0,0,-.17),spine=(44,0,0),head=(20,0,0),rh=hand((-.13,-.35,.15),(0,-.2,-1),(0,-1,.2),(-.7,.4,0)),lh=hand((.13,-.35,.15),(0,-.2,-1),(0,-1,.2),(.7,.4,0)))),
-    (1,K_(spine=(4,0,0),rh=hand((-.14,-.24,.56),(.3,-1,0),(0,0,1),(-.7,.4,-.3)),lh=hand((.14,-.24,.56),(-.3,-1,0),(0,0,1),(.7,.4,-.3)))),
-    ],loop=False,ltool=None,rtool='sack',what='stoop, lift a load to his chest (one-shot)')
+PICK_AT=V(0,-.48,0)                                # the load on the ground in front of him (bottom centre)
+PICK_GRAB=hand((-.35,-.48,.12),(0,-.8,-.6),(0,0,1),(-.7,.4,-.6))   # his right fist on the load's right side, palm in (the left mirrors it)
+
+
+def mirror_hand(h):
+    return hand((-h['grip'].x,h['grip'].y,h['grip'].z),(-h['face'].x,h['face'].y,h['face'].z),
+                (-h['haft'].x,h['haft'].y,h['haft'].z),(-h['elbow'].x,h['elbow'].y,h['elbow'].z))
+
+
+# PickUp: from Walk's first frame he steps in over a load on the ground,
+# squats and bends, takes it by both sides, braces, heaves it up with his legs
+# and rolls it onto his fists, ending on Carry's first frame (the load on the
+# carry socket). The load: on the ground until pickup['grab'], then carried
+# in the frame of his two fists up to pickup['seat'], where it settles onto the
+# carry socket against his belly; the fists then drop and slide in under it
+# (pickup_track). Grab found by search against crew_v15_anatomy
+# (the load checked both ways: nothing of him in it, it in nothing of him).
+def pickup_keys():
+    D=2.0;T=lambda sec:sec/D
+    feet=dict(rf=(-.07,.02,0,0),lf=(.07,.02,0,0))
+    look=K_(**feet,root=V(0,.02,-.05),spine=(12,0,0),head=(14,0,0),
+            rh=hand((-.32,-.16,.44),(0,-.6,-.8),(0,0,1),(-.7,.4,-.6)),lh=hand((.32,-.16,.44),(0,-.6,-.8),(0,0,1),(.7,.4,-.6)))
+    grab=K_(**feet,root=V(0,.04,-.18),pelvis=(22,0,0),spine=(42,0,0),head=(-10,0,0),rh=PICK_GRAB,lh=mirror_hand(PICK_GRAB))
+    brace=dict(grab);brace['root']=V(0,.04,-.19);brace['head']=(-18,0,0)          # gripped, eyes up: the effort coming
+    heave_r=hand((-.39,-.46,.50),(0,-.8,-.6),(0,0,1),(-.6,.4,-.7))
+    heave=K_(**feet,root=V(0,.02,-.10),pelvis=(4,0,0),spine=(6,0,0),head=(0,0,0),rh=heave_r,lh=mirror_hand(heave_r))
+    # the rest in the spine's frame, as Carry: the load seated against his belly on the carry
+    # socket, still held by its sides; the fists drop below it, then slide in under it
+    end=carry_pose(0)
+    def on_spine(fist,face=(0,-.8,-.6),haft=(0,0,1),el=(-.7,.4,-.6)):
+        q=dict(end);r=hand(fist,face,haft,el);q['rh']=r;q['lh']=mirror_hand(r);return q
+    seat=on_spine((-.36,-.36,.68),face=(0,-1,0),el=(-.8,.3,-.5))                 # load at carry height, its back on his belly
+    under=on_spine((-.39,-.36,.51),face=(0,-1,0),el=(-.8,.3,-.5))                # fists down past its bottom edge
+    return [(0,walk_pose(0)),(T(.30),look),(T(.70),grab),(T(.85),brace),(T(1.25),heave),(T(1.50),seat),
+            (T(1.68),under),(1,end)]
+
+
+clip('PickUp',2.0,pickup_keys(),loop=False,rtool='crate',
+     what='squats, takes the load by its sides and heaves it up onto his arms; from Walk, into Carry (one-shot)')
+CLIPS['PickUp']['pickup']={'grab':.85/2.0,'seat':1.50/2.0,'at':PICK_AT}
 
 # --- building jobs
 # Saw, at the level 1 lumber mill with its bench lowered for him
@@ -933,7 +967,7 @@ def tool_parts(kind):
        # the game's placeholder hunting spear (HunterProps): 1.8 m, grip at the origin, butt 0.65 m
        # below it, the head 1.15 m above; +Y to the tip
        'spear':[((.035,1.80,.035),(0,.25,0),'wood'),((.045,.07,.045),(0,1.12,0),'rope'),((.07,.20,.018),(0,1.25,0),'steel')],
-       'crate':[((.54,.26,.18),(0,0,.09),'wood'),((.55,.265,.03),(0,0,.04),'wood_bark'),((.55,.265,.03),(0,0,.14),'wood_bark')],
+       'crate':[((.50,.26,.18),(0,0,.09),'wood'),((.51,.265,.03),(0,0,.04),'wood_bark'),((.51,.265,.03),(0,0,.14),'wood_bark')],
        'sack':[((.30,.26,.30),(.18,0,.03),'rope')],
        'bucket':[((.26,.26,.28),(0,0,.24),'wood'),((.27,.27,.03),(0,0,.12),'iron')],
        'coil':[((.26,.06,.26),(0,0,.12),'rope')],
@@ -1022,13 +1056,46 @@ def throw_track(rig,name):
     return out,rel,hit
 
 
+def hands_frame(rig,sv):
+    """A frame on his two fists (posed): origin between the fist centres, X
+    from the right fist to the left, Z the spine's up made square to it."""
+    r=sv.fist(RIGHT)[0];l=sv.fist(LEFT)[0];x=nrm(l-r)
+    up=(rig.pose.bones['spine'].matrix@rig.data.bones['spine'].matrix_local.inverted()).to_3x3()@V(0,0,1)
+    up=nrm(up-x*up.dot(x));y=up.cross(x)
+    M=Matrix((x,y,up)).transposed().to_4x4();M.translation=(r+l)/2;return M
+
+
+def pickup_track(rig,name):
+    """A load picked up: on the ground at pickup['at'] until pickup['grab'],
+    then held in the frame of his fists, its offset there sliding from where
+    it was gripped to where the carry socket puts it at pickup['seat']; from
+    there it rides the socket (so the hand-over to Carry is exact).
+    (matrices, grab frame, seat frame)"""
+    c=CLIPS[name];d=c['pickup'];act=bpy.data.actions['Crew_'+name];n=int(act.frame_end)
+    sc=bpy.context.scene;keep=(rig.animation_data.action,sc.frame_current);rig.animation_data.action=act;sv=Solver(rig)
+    rest=Matrix.Translation(Vector(d['at']));grab=round(d['grab']*n);seat=round(d['seat']*n)
+    def sock():return rig.pose.bones['spine'].matrix@rig.data.bones['spine'].matrix_local.inverted()@Matrix.Translation(CARRY_SOCKET)
+    sc.frame_set(grab);og=hands_frame(rig,sv).inverted()@rest
+    sc.frame_set(seat);oe=hands_frame(rig,sv).inverted()@sock()
+    out=[]
+    for f in range(n+1):
+        if f<=grab:out.append(rest.copy());continue
+        sc.frame_set(f)
+        if f>=seat:out.append(sock());continue     # seated: it rides the carry socket, as in Carry
+        u=(f-grab)/(seat-grab);u=u*u*(3-2*u)
+        loc=og.translation.lerp(oe.translation,u);q=og.to_quaternion().slerp(oe.to_quaternion(),u)
+        out.append(hands_frame(rig,sv)@(Matrix.Translation(loc)@q.to_matrix().to_4x4()))
+    rig.animation_data.action,f0=keep;sc.frame_set(f0)
+    return out,grab,seat
+
+
 def flies(c):
     """A clip whose tool leaves him (a dropped load, a thrown spear)."""
-    return bool(c.get('drop') or c.get('throw'))
+    return bool(c.get('drop') or c.get('throw') or c.get('pickup'))
 
 
 def prop_track(rig,name):
-    return (throw_track if CLIPS[name].get('throw') else load_track)(rig,name)
+    c=CLIPS[name];return (throw_track if c.get('throw') else pickup_track if c.get('pickup') else load_track)(rig,name)
 
 
 # ---------------------------------------------------------------- bake + export
@@ -1056,6 +1123,10 @@ def bake(rig,solver):
             _,rel,hit=throw_track(rig,name);k=1.7/C.HEIGHT;tp=Vector(c['throw']['tip_at'])*k
             info[name]['spear_throw']={'release_frame':rel,'hits_frame':hit,
                 'point_lands_game_m':{'x':round(tp.x,3),'up':round(tp.z,3),'forward':round(-tp.y,3)}}
+        if c.get('pickup'):
+            at=Vector(c['pickup']['at'])*(1.7/C.HEIGHT)
+            info[name]['load_pickup']={'grab_frame':round(c['pickup']['grab']*n),'load_bottom_centre_game_m':{'x':round(at.x,3),'up':round(at.z,3),'forward':round(-at.y,3)},
+                'ends_on':'the carry socket (Carry frame 0)'}
         if c.get('drop'):
             _,rel,land=load_track(rig,name)
             at=Vector(c['drop']['at'])*(1.7/C.HEIGHT)

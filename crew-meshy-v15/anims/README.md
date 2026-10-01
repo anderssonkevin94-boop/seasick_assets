@@ -32,7 +32,7 @@ embedded, so the one file opens on its own. Rebuild it with
 | `Crew_Forage` | spice, food | 1.7 s | - | basket | crouch, pick from a bush, drop it in the basket (spice, food) |
 | `Crew_Build` | raising a building | 0.95 s | hammer | - | nailing a board to a post (raising any building) |
 | `Crew_Carry` | hauling | 1.2 s | any load on the spine socket (crate shown) | same load | a heavy load held out on both arms, leaning back against it, walking slow and short (in place) |
-| `Crew_PickUp` | lifting a load | 1.3 s, one-shot | sack | - | stoop, lift a load to his chest (one-shot) |
+| `Crew_PickUp` | lifting a load | 2.0 s, one-shot | any load (picked up) | - | squats, takes the load by its sides, heaves it up onto his arms; from Walk, into Carry |
 | `Crew_Saw` | Sawmill (sawyer) | 0.9 s | saw | - | sawmill: sawing a plank on a trestle |
 | `Crew_Farm` | Farm plot (farmhand) | 1.25 s | hoe | - | farm plot: hoeing the rows |
 | `Crew_Smith` | Forge (smith) | 0.8 s | hammer | - | forge: hammering hot iron on the anvil |
@@ -142,6 +142,18 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   checker tests a load both ways (the load in him, and any part of him inside the load). This
   replaces the shoulder carry and `VillagerActing`'s code-bent `Carry` arms: the clip owns the
   arms and the legs.
+- **PickUp lifts the load into Carry** and is built to chain **Walk → PickUp → Carry**: its first
+  frame is Walk's first frame and its last frame is Carry's first frame, bone for bone, with the
+  load exactly on the carry socket (checked: zero difference). He steps in over the load, squats
+  and bends, takes it by both sides (fists 4 and 13 mm off its sides), braces with his eyes up,
+  heaves it up with his legs holding it out clear of his belly, seats it against his belly at carry
+  height, drops his fists below it and slides them in underneath. One-shot, 2.0 s, 61 frames.
+  **For the game:** the load sits on the ground with its bottom centre **0.63 m in front of him**
+  (game size) until **frame 26** (the grip), then moves with his hands; from **frame 45** it rides
+  the carry socket, as in Carry. The side grip is made for a load about **0.65 m wide** (game;
+  the preview crate is 0.50 m at his 1.30 m scale): narrower loads leave a gap at the hands,
+  wider ones go into them. `clips.json` has the numbers (`load_pickup`); the viewer plays the
+  same track.
 - **SetDown drops the load** and is built to chain **Carry → SetDown → Walk**: its first frame is
   Carry's first frame and its last frame is Walk's first frame, bone for bone (checked: zero
   difference). He lets go (the fists spring apart and drop), the load falls in front of him, he

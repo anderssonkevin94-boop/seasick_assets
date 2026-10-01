@@ -44,6 +44,7 @@ if c.get('throw'):            # the target stands 3 m off: wide side angles taki
     cd.ortho_scale=3.9;TGT=Vector((0,-1.5,.55))
 n=int(act.frame_end);keys=[round(n*k/4) for k in range(4)] if c['loop'] else [round(n*k/4) for k in range(5)]
 if name=='Hunt':keys=[0,round(n*.33),round(n*.45),round(n*.52),round(n*.62)]   # stalking, sighting, the release, in flight, the hit
+if name=='PickUp':keys=[0,26,37,45,51,60]   # walking in, the grip, the heave, seated on his belly, fists under, carrying
 if name=='SetDown':keys=[0,9,16,40,50,72]   # letting go, landed, mid-wipe, the flick, into the walk
 if name=='Mine':keys=[0,round(n*.26),round(n*.34),round(n*.40)]   # raised, head trailing, tipping over, the strike
 if name=='Chop':keys=[0,round(n*.28),round(n*.33),round(n*.40)]   # cocked, hands dropped, sweeping level, the bite
