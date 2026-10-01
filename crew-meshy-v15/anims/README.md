@@ -38,7 +38,7 @@ embedded, so the one file opens on its own. Rebuild it with
 | `Crew_Farm` | Farm plot (farmhand) | 1.25 s | hoe | - | farm plot: hoeing the rows |
 | `Crew_Smith` | Forge (smith) | 0.8 s | hammer | - | forge: hammering hot iron on the anvil |
 | `Crew_Cook` | Kitchen (cook) | 1.6 s | paddle | - | kitchen: stirring the pot |
-| `Crew_Mill` | Mill (miller) | 1.5 s | peg | - | mill: turning the quern stone by its peg |
+| `Crew_Mill` | Mill (miller) | 1.5 s | - | - | level 1 mill (concept): turning the quern by its peg (reworked 2026-10-02) |
 | `Crew_Lookout` | Watchtower (lookout) | 4.0 s | - | - | watchtower: leaning on the rail, scanning the horizon, pointing out a sail |
 | `Crew_Quarry` | Quarry (quarryman) | 0.95 s | mallet | chisel | quarry: mallet and chisel, dressing stone into brick |
 | `Crew_Fletcher` | Fletcher's (fletcher) | 1.5 s | knife | shaft | fletcher: whittling an arrow shaft |
@@ -113,6 +113,11 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   `MillL1Import`; `env/bench-height.png`). He stands 10 cm behind `Worker_Stand` (baked into the
   root) so his belly clears the log. The saw's blade runs out of the fist along the forearm
   (tool frame +Z), so the game's saw mesh (blade up +Y) needs turning +90 degrees about X (blade +Y to +Z, teeth to -Y).
+- **Mill is the level 1 mill concept's clip** (`CLIPS['Mill']['env']='mill1'`, `../../mill-l1-concept/`),
+  reworked 2026-10-02: the old clip turned a knee-high quern and could not reach the near side of the turn.
+  Now a tall quern on a stump off to his right, the peg at belly height (0.98 m in game), one hand on it,
+  the other hanging. Searched against the anatomy check; clean on every frame, the quern included. No tool
+  in hand: the peg is the building's (`Quern_Runner`, which turns once per loop with its take `Mill1_Grind`).
 - **Crank is the level 2 sawmill concept's clip** (`CLIPS['Crank']['env']='mill2'`,
   `../../sawmill-l2-concept/`). He winds a crank across in front of him with both hands, turned
   90° (the clip's own root yaw) to face along the saw table. The building's `Mill2_CrankWheel` and

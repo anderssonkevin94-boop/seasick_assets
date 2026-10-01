@@ -50,8 +50,12 @@ def main():
             import crew_v15_mill as MILL
             env,stand,_=MILL.load_env(c['env']);rig.location=stand
             extra+=list(env.values());ground.hide_render=False
-            view={'mill':Vector((-2.6,-4.2,3.0)),'mill2':Vector((.1,-3.6,2.2))}.get(c['env'],Vector((-3.2,1.2,2.2)))
+            view={'mill':Vector((-2.6,-4.2,3.0)),'mill2':Vector((.1,-3.6,2.2)),'mill1':Vector((-1.4,-3.4,1.9))}.get(c['env'],Vector((-3.2,1.2,2.2)))
             look=Vector((.35,-.3,.62)) if c['env']=='mill2' else Vector((0,-.3,.5))
+            if c['env']=='mill1':
+                cd.ortho_scale=1.9
+                for o in env.values():
+                    if o.name.startswith('Mill1_Canopy'):o.hide_render=True      # the canvas would hide him from above
             if c['env']=='mill2':
                 cd.ortho_scale=2.3
                 for o in env.values():                    # the shed would hide him: its frame, walls, roof and dressing left out

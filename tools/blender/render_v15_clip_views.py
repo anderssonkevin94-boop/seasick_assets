@@ -28,6 +28,11 @@ views=[('3/4 his right',(-2.2,-2.4,1.3)),('side, his right',(-3,0,.7)),('front',
 if c.get('env')=='mill':      # game-camera angles from the front of the building, clear of its pillars
     views=[('game view, front 3/4',(-2.6,-4.2,3.0)),('front, eye level',(0,-3,.9)),('3/4 his right, low',(-2.4,-2.0,1.1)),('3/4 his left',(2.2,-2.4,1.4)),('above',(-.8,-1.6,3.2))]
     cd.ortho_scale=1.75
+if c.get('env')=='mill1':     # the quern off to his right; the canvas left out
+    views=[('game view, front',(-1.4,-3.4,2.4)),('front, eye level',(-.3,-3,.8)),('side, his right',(-3,-.2,.9)),('3/4 his left',(2.2,-2.4,1.4)),('above',(-.4,-.8,3.2))]
+    cd.ortho_scale=1.75
+    for o in env.values():
+        if o.name.startswith('Mill1_Canopy'):o.hide_render=True
 if c.get('env')=='mill2':     # he faces +X along the saw table; the roof left out
     views=[('game view, front',(.1,-3.6,2.2)),('front, eye level',(.3,-3,.8)),('behind him',(-3,.6,1.1)),('his left, 3/4',(-1.6,2.6,1.4)),('above',(.6,-.8,3.2))]
     cd.ortho_scale=1.9

@@ -460,14 +460,34 @@ POT=[('pot',(0,-.36,.14),(.30,.30,.28),'iron',0),('stew',(0,-.36,.27),(.26,.26,.
 clip('Cook',1.6,stir_pose,rtool='paddle',props=POT,what='kitchen: stirring the pot')
 
 
+# Mill, at the level 1 mill concept (mill_l1_concept.py; reworked
+# 2026-10-02). The old clip turned a knee-high quern and could not reach the
+# near side of the turn. Searched against the anatomy check like Crank: a
+# tall quern on a stump, off to his right, the peg at belly height so the
+# forearm runs level and the wrist stays straight; one hand on the peg (thumb
+# up it), the other hanging free. The mill is built from these numbers
+# (L1M.MILL), and its Quern_Runner turns once per loop with the fist.
+import mill_l1_concept as L1M
+MILL_SH={RIGHT:V(-.218,0,.763),LEFT:V(.218,0,.763)}     # shoulder joints, standing
+
+
+def leaned_shoulder(side,lean):
+    sh=MILL_SH[side].copy();sh.y-=.45*math.sin(math.radians(lean));sh.z-=.45*(1-math.cos(math.radians(lean)));return sh
+
+
 def mill_pose(t):
-    a=t*2*math.pi;g=V(0,-.36,.40)+V(.11*math.cos(a),.11*math.sin(a),.04)
-    return K_(root=V(0,0,-.08),spine=(28,8*math.cos(a),0),head=(22,0,0),
-              rh=hand(g,(0,-.3,-1),(0,-1,0),(-.6,.5,-.1)),lh=hand((.18,-.24,.36),(.3,-.4,-1),(0,-1,0),(.6,.5,0)))
+    m=L1M.MILL;a=2*math.pi*t
+    g=V(-m['right']+m['r']*math.cos(a),-m['ahead']+m['r']*math.sin(a),m['grip'])
+    ln=m['lean']+3*math.sin(a)
+    f=g-leaned_shoulder(RIGHT,ln);f.z=0                                  # knuckles toward the peg, level
+    hang=leaned_shoulder(LEFT,ln)+V(.06,-.02,-.36)
+    return K_(root=V(0,0,-.03),spine=(ln,8*math.cos(a),0),head=(14,0,0),
+              rh=hand(tuple(g),f,(0,0,1),(-.9,.1,-.5)),
+              lh=hand(tuple(hang),(0,0,-1),(0,-1,0),(.6,.5,0)))
 
 
-QUERN=[('quern_base',(0,-.36,.17),(.40,.40,.34),'stone',0),('quern_top',(0,-.36,.37),(.36,.36,.06),'stone_light',0)]
-clip('Mill',1.5,mill_pose,rtool='peg',props=QUERN,what='mill: turning the quern stone by its peg')
+clip('Mill',L1M.CLIP_SECONDS,mill_pose,what='level 1 mill (concept): turning the quern by its peg')
+CLIPS['Mill']['env']='mill1';CLIPS['Mill']['env_tools']=['Quern_Runner','Mill1_QuernBase']
 
 RAIL=[('rail',(0,-.34,.56),(.9,.06,.05),'wood',0),('rail_post',(-.40,-.34,.28),(.05,.05,.56),'wood',0),('rail_post',(.40,-.34,.28),(.05,.05,.56),'wood',0)]
 ON_RAIL_R=hand((-.14,-.28,.60),(0,-.6,-1),(1,0,0),(-.8,.3,0))

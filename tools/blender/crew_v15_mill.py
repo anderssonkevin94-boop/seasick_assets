@@ -117,10 +117,34 @@ def load_l2():
     return objs
 
 
+L1M_FBX=ROOT/'mill-l1-concept/mill-lvl1.fbx'   # mill_l1_concept.py; carries the quern's 'Mill1_Grind' take
+
+
+def load_l1mill():
+    """The level 1 mill concept at his scale, the quern's runner turning in
+    step with the Crew_Mill clip. Returns {name: object}."""
+    before=set(bpy.data.objects);sc=bpy.context.scene;fps=(sc.render.fps,sc.render.fps_base)
+    bpy.ops.import_scene.fbx(filepath=str(L1M_FBX))
+    sc.render.fps,sc.render.fps_base=fps
+    objs={o.name.split('.')[0]:o for o in bpy.data.objects if o not in before}
+    for o in objs.values():                       # the FBX keys every object; only the runner moves
+        if o.animation_data and o.name.split('.')[0]!='Quern_Runner':o.animation_data_clear()
+    objs['Mill_Level_1'].scale=(SCALE,)*3
+    for o in objs.values():
+        if o.type=='MESH':
+            me=o.data;col=me.color_attributes.get('Col')
+            if col:me.color_attributes.active_color=col;me.color_attributes.render_color_index=0
+            for p in me.polygons:p.use_smooth=False
+    bpy.context.view_layer.update()
+    return objs
+
+
 def load_env(kind):
     """(objects, where he stands, props his body must stay out of)."""
     if kind=='mill':
         objs=load('cutting');return objs,marker(objs,'Worker_Stand'),[objs['Bench_Cutting']]
+    if kind=='mill1':
+        objs=load_l1mill();return objs,marker(objs,'Worker_Stand'),[]      # the quern is checked as an env tool (exact mesh)
     if kind=='mill2':
         objs=load_l2();return objs,marker(objs,'Worker_Stand'),[objs['Mill2_SawTable'],objs['Bench2_Cutting']]
     if kind=='tree':

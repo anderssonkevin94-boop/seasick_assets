@@ -7,15 +7,15 @@ committed to the game repo. Each folder's README has the details.
 ## ⚠ First: the Crank clip is not in the game yet
 
 The game repo's last clip import came from **`claude/sharp-wright-iy5jr7`** (commit `a8b6125`), not this
-branch. The `Crew_Crank` clip and the `mill2` environment exist only here. Both branches changed the same
+branch. The `Crew_Crank` clip, the **reworked `Crew_Mill`**, and the `mill1` / `mill2` environments exist only here. Both branches changed the same
 pipeline files: `crew_meshy_v15_anims.py`, `crew_v15_mill.py`, `check_v15_clip.py`, `render_v15_anims.py`,
 `render_v15_clip_views.py`, `export_v15_viewer.py`, the anims README, and the generated `clips.json`, FBX,
 GLB, viewer and .blend.
 
 - [ ] Merge this branch's code into the clip branch (or the reverse). Then **regenerate** the generated files
       with the pipeline. Don't hand-merge the FBX, .blend or GLB.
-- [ ] Run `check_v15_clip.py -- Crank Saw Chop`. All three must print `clean`.
-- [ ] Re-import the clips into the game so `Crew_Crank` is there.
+- [ ] Run `check_v15_clip.py -- Mill Crank Saw Chop`. All four must print `clean`.
+- [ ] Re-import the clips into the game so `Crew_Crank` and the new `Crew_Mill` are there.
 
 ## 1. Sawmill level 2: `sawmill-l2-concept/`
 
@@ -110,6 +110,7 @@ Revised on request: *essentially level 1's tower, half stone, a small extension 
 | `crew_v15_mill.py` | `load_env('mill2')`: the level 2 mill as a clip environment |
 | `wall_l2_concept.py` | Wall pieces, renders |
 | `gate_l2_concept.py` | Gate, breached gate, swing check, renders |
+| `mill_l1_concept.py` | Mill level 1, the runner's take, renders, the grind GIF |
 | `tower_l2_concept.py` | Watchtower (half stone, gun bay), gun-clearance and plot checks, traverse GIF |
 
 Rebuild needs the venv (`python3.11 -m venv venv && venv/bin/pip install bpy==5.0.1 pillow numpy`) and
@@ -123,6 +124,15 @@ game repo's LFS on first run.
 `8bee53a` crude bevels · `3fe28f6` one pillar per bend · `7d0f5e6` gate · `a15a428` fillers, breached
 run, gate without the top beam · then the watchtower and this checklist.
 
-## Next (Kevin)
+## 6. Mill level 1: `mill-l1-concept/` (`mill-lvl1.fbx`)
 
-- [ ] The level 1 mill (asked for after the watchtower).
+The grain mill (`BuildPlan.Mill`, wheat to flour), which wore the sawmill as placeholder art.
+
+- [x] Canvas-roofed (first tier) on the plan's 5.2 × 4.8 m plot, ridge under 3.6 m. A quern on a tree stump,
+      wheat sheaves in (`Input_Sheaf_01..06`), flour sacks out (`Output_Sack_01..06`), sign, sieve, flour bin.
+- [x] **`Crew_Mill` reworked** (the old clip couldn't reach its quern): searched against the anatomy check,
+      clean on every frame with the quern. Crank, Saw and Chop re-checked clean.
+- [x] `Quern_Runner` turns with the clip (take `Mill1_Grind`, 1.5 s).
+- [ ] Unity: an importer and prefab for the `mill` plan (it still points at `Settlement/sawmill`). Play
+      `Crew_Mill` and `Mill1_Grind` together.
+- [ ] See ⚠: the reworked `Crew_Mill` also lives only on this branch.

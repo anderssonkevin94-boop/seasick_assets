@@ -121,8 +121,8 @@
     "seconds": 1.5,
     "frames": 46,
     "loop": true,
-    "what": "mill: turning the quern stone by its peg",
-    "tool_right_hand": "peg",
+    "what": "level 1 mill (concept): turning the quern by its peg",
+    "tool_right_hand": null,
     "held_left_hand": null
   },
   "Lookout": {
