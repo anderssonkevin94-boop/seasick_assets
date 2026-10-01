@@ -50,7 +50,11 @@ POST=.3
 DECK_X=1.25;DECK_Y0=-1.15;BAY=1.2        # deck: x +-1.25, y from the ladder edge to the bay's end
 DECK_Y1=CORNER+.15+BAY                   # 2.35
 GUN=Vector((0,(DECK_Y0+DECK_Y1)/2,DECK_Z))   # the middle of the bigger deck: (0, 0.6, 4.61)
-RAIL=(.34,.66);RAIL_T=.07                # rail heights above the deck (top under the gun barrel); rail thickness
+RAIL_Z=.44;RAIL_SEC=(.14,.16)            # one chunky rail: centre height above the deck, section (thick, tall)
+RAIL_TOP=RAIL_Z+RAIL_SEC[1]/2              # 0.52: under the gun barrel
+RAIL_T=RAIL_SEC[0]
+POST_SEC=.24                             # rail posts: corners and the ladder gap only
+GUN_SCALE=.75                            # Astra's cannon at three quarters: it fits the tower better
 LADDER_BOTTOM=Vector((0,-1.23,.05));LADDER_TOP=Vector((0,-1.10,DECK_Z))
 LADDER_GAP=.36                           # half-width of the rail's gap at the ladder
 
@@ -141,21 +145,20 @@ def deck(name):
 
 
 def rail(name):
-    """Level 1's open rail, round the bigger deck: pointed posts, two rails,
-    a gap at the ladder."""
-    p=Part(name);zt=DECK_Z;e=RAIL_T/2
-    x0,x1,y0,y1=-DECK_X+e,DECK_X-e,DECK_Y0+e,DECK_Y1-e
-    posts=[(x,y) for x in(x0,x1) for y in(y0,y1)]+[(x,y) for x in(x0,x1) for y in(-.3,CORNER+.15)]+[(-LADDER_GAP-.04,y0),(LADDER_GAP+.04,y0),(0,y1)]
+    """Level 1's open rail, simplified for readability: chunky pointed posts
+    at the four corners and either side of the ladder, one heavy rail."""
+    p=Part(name);zt=DECK_Z;e=RAIL_T/2;h=POST_SEC/2
+    x0,x1,y0,y1=-DECK_X+h,DECK_X-h,DECK_Y0+h,DECK_Y1-h
+    posts=[(x,y) for x in(x0,x1) for y in(y0,y1)]+[(-LADDER_GAP-h,y0),(LADDER_GAP+h,y0)]
+    top=zt+RAIL_TOP+.14
     for x,y in posts:
-        top=zt+RAIL[1]+.12
-        p.box((x,y,(zt+top)/2),(.14,.14,top-zt),'oak_d')
-        p._add([Vector((x-.07,y-.07,top)),Vector((x+.07,y-.07,top)),Vector((x+.07,y+.07,top)),Vector((x-.07,y+.07,top)),Vector((x,y,top+.16))],
+        p.box((x,y,(zt-.1+top)/2),(POST_SEC,POST_SEC,top-zt+.1),'oak_d')
+        p._add([Vector((x-h,y-h,top)),Vector((x+h,y-h,top)),Vector((x+h,y+h,top)),Vector((x-h,y+h,top)),Vector((x,y,top+.24))],
                [(0,1,4),(1,2,4),(2,3,4),(3,0,4),(3,2,1,0)],'oak_tip')
-    for h in RAIL:
-        z=zt+h
-        p.box((x0,(y0+y1)/2,z),(RAIL_T,y1-y0,.09),'oak');p.box((x1,(y0+y1)/2,z),(RAIL_T,y1-y0,.09),'oak')
-        p.box((0,y1,z),(x1-x0,RAIL_T,.09),'oak')
-        for a,b in((x0,-LADDER_GAP),(LADDER_GAP,x1)):p.box(((a+b)/2,y0,z),(b-a,RAIL_T,.09),'oak')
+    z=zt+RAIL_Z;t,hh=RAIL_SEC
+    p.box((x0,(y0+y1)/2,z),(t,y1-y0,hh),'oak');p.box((x1,(y0+y1)/2,z),(t,y1-y0,hh),'oak')
+    p.box((0,y1,z),(x1-x0,t,hh),'oak')
+    for a,b in((x0,-LADDER_GAP-h),(LADDER_GAP+h,x1)):p.box(((a+b)/2,y0,z),(b-a,t,hh),'oak')
     return p
 
 
@@ -199,20 +202,21 @@ def import_ref(f):
 
 def cannon(at=GUN,yaw=0.):
     new=import_ref('cannon.fbx');root=next(o for o in new if o.name.startswith('Cannon_Root'))
-    root.location=at;root.rotation_euler.z=math.radians(yaw);return root,new
+    root.location=at;root.rotation_euler.z=math.radians(yaw);root.scale=(GUN_SCALE,)*3;return root,new
 
 
 def gun_reach(new):
     """Radius of the cannon's footprint below the rail's top (it must turn
     inside the rail), of all of it, and of its breech end."""
     bpy.context.view_layer.update()
-    root=next(o for o in new if o.name.startswith('Cannon_Root'));inv=root.matrix_world.inverted()
+    root=next(o for o in new if o.name.startswith('Cannon_Root'))
+    turn=root.matrix_world.to_quaternion().inverted();at=root.matrix_world.translation   # world metres, the gun's own axes
     low=full=rear=0.
     for o in new:
         if o.type!='MESH':continue
         for v in o.data.vertices:
-            q=inv@(o.matrix_world@v.co);r=math.hypot(q.x,q.y);full=max(full,r)
-            if q.z<RAIL[1]+.05:low=max(low,r)
+            q=turn@(o.matrix_world@v.co-at);r=math.hypot(q.x,q.y);full=max(full,r)
+            if q.z<RAIL_TOP+.05:low=max(low,r)
             if q.y>0:rear=max(rear,q.y)
     return low,full,rear
 

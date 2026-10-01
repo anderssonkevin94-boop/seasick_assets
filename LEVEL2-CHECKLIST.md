@@ -86,14 +86,17 @@ Revised on request: *essentially level 1's tower, half stone, a small extension 
 - [x] Level 1's closed box on the same 2.6 × 2.6 m plot. Lower half the wall's crude stone (corner pillars
       and walls, to 2.25 m), upper half oak posts and plank walls, the same open rail with pointed posts.
 - [x] **Gun bay:** the deck runs 1.2 m past the back wall (opposite the ladder) on outriggers and knee
-      braces. Deck 2.5 × 3.5 m. Rail lowered to 0.66 m so the gun barrel clears it.
-- [x] Checked against Astra's cannon at the new **`Gun_Pivot` (0, 0.6, 4.61)**: it turns a full circle inside
-      the rail. Gunner room behind the breech is 0.76 m fore and aft, 0.30 m to the sides.
+      braces. Deck 2.5 × 3.5 m.
+- [x] Rail simplified for readability: six chunky posts and one heavy rail (top 0.52 m, under the barrel).
+- [x] Checked against Astra's cannon **at 0.75 scale** (Kevin: smaller) at the new **`Gun_Pivot`
+      (0, 0.6, 4.61)**: it turns a full circle inside the rail. Gunner room behind the breech is 0.91 m fore
+      and aft, 0.45 m to the sides.
 - [x] Deck 4.61 m and `Ladder_Bottom`, `Ladder_Top`, `Lookout_Anchor` unchanged.
 - [ ] Unity: **`WatchtowerGun` must place its gun at `Gun_Pivot`**, not the tower's origin, or the bay
       doesn't help.
-- [ ] Unity: overall height **5.67 m** (was 5.37): update `BuildPlan` `ridge` for level 2. The bay overhangs
-      the plot at deck height (y to +2.32).
+- [ ] Unity: size the tower gun to about 0.75 of Astra's cannon.
+- [ ] Unity: overall height **5.51 m** (was 5.37): update `BuildPlan` `ridge` for level 2. The bay overhangs
+      the plot at deck height (y to +2.28).
 - [ ] Unity: check that `WatchtowerGun`'s primitive gun (scale 1.1) fits the same circle. Importer, colliders,
       rail limits.
 
