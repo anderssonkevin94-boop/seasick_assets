@@ -8,17 +8,21 @@ Kevin, 2026-10-01: *"half wood (sturdier wood) and half stone blocks towards the
 ## The design
 
 - **Base:** big stone blocks, 1.15 m high (chest height on the 1.7 m deckhand) and 0.40 m thick: three courses
-  of roughly half-metre stones under a wider capstone course. The stones are plain solid blocks in three pale
-  tones over darker mortar. The wide joints (4.5 cm) carry the read at game zoom, not detail on the stones.
+  of roughly half-metre stones under a wider capstone course, in three pale tones over darker mortar. Each
+  stone is **crude and hand-dressed**: every corner knocked off by its own uneven chamfer (2.5–7 cm), the faces
+  a little out of true, and the stone standing up to 1.2 cm proud or shy of its neighbours. The wide joints
+  (4.5 cm) still carry the read at game zoom. The shapes are seeded by position, so every build is identical.
 - **Upper half:** squared timbers in light oak, 0.23 × 0.17 m, about three times the bulk of the level 1 stakes.
   They are hewn to points, stand on an oak sill, and have two riveted iron bands across the front (kept dark
   for contrast) and two rails with pegs at the rear. The tops are at 2.45–2.65 m, varied per run.
 - **Pillar:** the same pale stone all the way up, 0.56 m square, in six chunky courses whose corner stones
-  alternate which face runs long, with a wider capstone and a pointed stone cap, 3.05 m high.
+  alternate which face runs long, with a wider capstone and a pointed stone cap, 3.05 m high. Its stones are
+  dressed the same crude way.
 
 Revised 2026-10-01 (Kevin: *"fewer and chunkier ... keep in mind the readability ... lighter stones and
 lighter wood"*): five courses became three, the pillars went from eleven courses to six, and the stone and
-oak both moved several steps lighter.
+oak both moved several steps lighter. Then (*"too uniform ... more crude, natural bevels"*) the stones were
+given their uneven chamfers. Where two runs' end stones meet as one, that seam side stays square.
 
 ## Same contract as the level 1 palisade
 
@@ -37,8 +41,8 @@ it too:
 
 | Piece | Triangles |
 |---|---|
-| `Wall2_Run_1m_A` / `B` / `C` | 444 each |
-| `Wall2_Post` | 318 |
+| `Wall2_Run_1m_A` / `B` / `C` | 714 each |
+| `Wall2_Post` | 1,118 |
 
 ## Files
 

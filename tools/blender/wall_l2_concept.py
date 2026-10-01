@@ -24,7 +24,9 @@ Writes wall-l2-concept/ (module FBX, renders).
 import math
 import sys
 from pathlib import Path
+import random
 import bpy
+import bmesh
 from mathutils import Vector, Matrix
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -52,10 +54,37 @@ POST_W=.56;POST_H=3.05
 JOINT=.045                              # mortar joint between stones: wide, so each stone reads at game zoom
 
 
-def stone(p,c,size,tone,axis=None):
-    """One chunky block, a plain solid in one tone: the joints round it, not
-    detail on it, make it read."""
-    p.box(c,size,tone)
+def stone(p,c,size,tone,axis=None,flush=()):
+    """One crude, hand-dressed block: every corner knocked off by its own
+    uneven chamfer, the faces a little out of true, and the whole stone
+    standing a little proud or shy of its neighbours. Seeded by position, so
+    the same stone comes out the same every build. flush: sides ('-x', '+x')
+    left square, where two runs' end stones meet as one stone."""
+    c=Vector(c);h=Vector(size)/2
+    rnd=random.Random(f'{c.x:.3f},{c.y:.3f},{c.z:.3f},{tone}')   # str seeds are stable across runs (unlike hash())
+    depth=rnd.uniform(-.012,.012)                  # proud or shy of the wall face
+    pts=[]
+    for sx in(-1,1):
+        for sy in(-1,1):
+            for sz in(-1,1):
+                corner=Vector((sx*h.x,sy*h.y,sz*h.z))
+                if (sx<0 and '-x' in flush) or (sx>0 and '+x' in flush):
+                    b=[0,rnd.uniform(.02,.05),rnd.uniform(.02,.05)]     # square to the seam
+                else:b=[rnd.uniform(.025,.07) for _ in range(3)]
+                b=[min(v,h[i]*.45) for i,v in enumerate(b)]
+                for i in range(3):                # three points per corner: the chamfer
+                    q=corner.copy();q[i]-=(1 if q[i]>0 else -1)*b[i]
+                    for j in range(3):            # faces a little out of true
+                        if j!=i and not ((j==0) and ((sx<0 and '-x' in flush) or (sx>0 and '+x' in flush))):
+                            q[j]+=rnd.uniform(-.008,.008)
+                    pts.append(q)
+    off=Vector((0,0,0))
+    if axis is not None:off[axis]=depth
+    bm=bmesh.new();vs=[bm.verts.new(c+off+q) for q in pts]
+    bmesh.ops.convex_hull(bm,input=vs)
+    bmesh.ops.dissolve_limit(bm,angle_limit=math.radians(2),verts=bm.verts[:],edges=bm.edges[:])
+    for f in bm.faces:p._add([v.co.copy() for v in f.verts],[tuple(range(len(f.verts)))],tone)
+    bm.free()
 
 
 def stone_course(p,x0,x1,z0,h,joints,seed,y0=-BASE_T/2,y1=BASE_T/2,flush=False):
@@ -68,7 +97,8 @@ def stone_course(p,x0,x1,z0,h,joints,seed,y0=-BASE_T/2,y1=BASE_T/2,flush=False):
     for i,(a,b) in enumerate(zip(edges,edges[1:])):
         a2=a if (flush and i==0) else a+JOINT/2;b2=b if (flush and i==last) else b-JOINT/2
         tone=tones[seed%3] if flush and i in(0,last) else tones[(seed+i*2)%3]   # both halves of the shared stone match
-        stone(p,((a2+b2)/2,(y0+y1)/2,z0+h/2),(b2-a2,y1-y0+.02,h-JOINT),tone)
+        fl=tuple(k for k,on in(('-x',flush and i==0),('+x',flush and i==last)) if on)
+        stone(p,((a2+b2)/2,(y0+y1)/2,z0+h/2),(b2-a2,y1-y0+.02,h-JOINT),tone,1,fl)
 
 
 def run(name,variant):
@@ -82,7 +112,7 @@ def run(name,variant):
     for k in range(3):stone_course(p,0,1,k*COURSE,COURSE,inner[k],k+ord(variant) if k!=1 else 1,flush=k==1)
     zc=3*COURSE
     for i,(a,b) in enumerate(zip((0,)+inner[3],inner[3]+(1,))):
-        stone(p,((a+b)/2,0,zc+CAP/2),(b-a-JOINT,BASE_T+.1,CAP-.03),('st3','st1')[i%2])
+        stone(p,((a+b)/2,0,zc+CAP/2),(b-a-JOINT,BASE_T+.1,CAP-.03),('st3','st1')[i%2],2)
     # oak sill
     zs=BASE_H;p.box((.5,0,zs+SILL[1]/2),(1,SILL[0],SILL[1]),'oak_d')
     # timbers: squared, chamfered corners suggested by a darker face strip, adzed points
