@@ -824,15 +824,26 @@ def sick_sway(t):
               lh=hand((.36+.03*math.sin(a),-.02,.42),(.3,-.1,-1),(0,-1,0),(.6,.7,0)))
 
 
+# SickWalk: the gait generator at a queasy shuffle (short uneven steps, a
+# deep sway, hunched), two strides a loop with the second lurch bigger; his
+# right fist pressed to the side of his belly (found by search: touching,
+# not sunk in), his head lolling a beat behind the body, the left arm loose
+# and going out to catch his balance on the lurch to that side.
+SICK_GAIT=dict(cycle=1.3,stride=.07,lift=.03,duty=.66,drop=.04,bounce=.01,lean=16,head=14,twist=3,sway=.035,
+               arm=(.39,-.04,.44),swing=.05,armup=0,face=(-.4,-.2,-.9),elbow=(-.6,.7,0),roll=6)
+SICK_BELLY=hand((-.19,-.27,.49),(.7,-.2,-.7),(0,-1,0),(-1,-.1,.3))   # the fist against the side of his belly
+SICK_LURCH=.6                                       # how much bigger the second lurch is
+
+
 def sick_walk(t):
-    q=walk_pose(t,arms=False);a=t*2*math.pi;c=math.cos(a)
-    q['rf']=(q['rf'][0],q['rf'][1]*.6,q['rf'][2]*.7,q['rf'][3]*.6)
-    q['lf']=(q['lf'][0],q['lf'][1]*.6,q['lf'][2]*.7,q['lf'][3]*.6)
-    q['root']=q['root']+V(.028*math.sin(a+.6),0,-.02)       # lurching side to side
-    q['spine']=(16,-3*c,7*math.sin(a+.6));q['pelvis']=(0,4*c,-4*math.sin(a+.6))
-    q['head']=(14,6*math.sin(a),-12*math.sin(a))
-    q['rh']=belly(RIGHT,.012*c)
-    q['lh']=hand((.38+.04*math.sin(a+.6),-.05-.08*c,.44),(.35,-.2*c,-1),(0,-1,0),(.7,.6,0))
+    q=gait(2*t%1,SICK_GAIT);a=4*math.pi*t;b=a-.9                     # two strides a loop; the head lags the body
+    big=1+SICK_LURCH*max(0,math.sin(2*math.pi*t))                              # the second lurch is the bigger one
+    r=q['root'];q['root']=V(r.x*big,r.y,r.z)
+    p,sp=q['pelvis'],q['spine'];q['pelvis']=(p[0],p[1],p[2]*big);q['spine']=(sp[0],sp[1],sp[2]*big)
+    q['head']=(14+4*math.cos(2*b),-5*math.sin(b),-12*math.sin(b)*big)
+    q['rh']=SICK_BELLY
+    out=max(0.,math.sin(a))*big                                        # lurching to his left: the loose arm goes out
+    l=q['lh'];q['lh']=hand(tuple(l['grip']+V(.05*out,-.02*out,.07*out)),l['face'],l['haft'],l['elbow'])
     return q
 
 
@@ -866,7 +877,8 @@ def sick_kneel(t):
 
 
 clip('SickSway',3.0,sick_sway,what='queasy: swaying, a fist on his stomach, head lolling')
-clip('SickWalk',1.2,sick_walk,what='queasy walk: short lurching steps, a fist on his stomach')
+clip('SickWalk',2.6,sick_walk,what='seasick walk: hunched, short lurching steps, a fist pressed to his belly, the other arm going out for balance (in place)')
+CLIPS['SickWalk']['gait']=SICK_GAIT;CLIPS['SickWalk']['gait_cycles']=2
 clip('SickClutch',1.6,sick_clutch,what='hunched over, both fists on his stomach, a cramp each cycle')
 clip('SickRail',1.5,sick_rail,props=RAIL_SICK,what='leaning over the rail, heaving twice')
 clip('SickCollapse',1.8,[
@@ -1422,7 +1434,7 @@ def bake(rig,solver):
         info[name]={'take':'Crew_'+name,'seconds':c['seconds'],'frames':n+1,'loop':c['loop'],'what':c['what'],
                     'tool_right_hand':c['rtool'],'held_left_hand':c['ltool']}
         if c.get('gait'):                           # the planted foot slides 2*stride while down (duty of the cycle): the body's ground speed
-            g=c['gait'];k=1.7/C.HEIGHT;per=2*g['stride']/g['duty']*k
+            g=c['gait'];k=1.7/C.HEIGHT;per=2*g['stride']/g['duty']*k*c.get('gait_cycles',1)
             info[name]['gait']={'ground_m_per_cycle_game':round(per,3),'speed_m_s_at_1x_game':round(per/c['seconds'],2),'feet_off_ground':bool(g.get('run'))}
         if c.get('throw'):
             _,rel,hit=throw_track(rig,name);k=1.7/C.HEIGHT;tp=Vector(c['throw']['tip_at'])*k

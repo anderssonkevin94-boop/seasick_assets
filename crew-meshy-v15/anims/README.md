@@ -50,7 +50,7 @@ embedded, so the one file opens on its own. Rebuild it with
 | `Crew_Hunt` | hunting, the throw | 2.6 s, one-shot | spear (thrown) | - | lines up the goat and throws the spear; from HuntWalk, into Walk |
 | `Crew_SetDown` | dropping a load | 2.4 s, one-shot | any load (dropped) | - | drops the load, slumps, wipes his brow, flicks the sweat off; from Carry, into Walk |
 | `Crew_SickSway` | seasick, standing | 3.0 s | - | - | queasy: swaying, a fist on his stomach, head lolling |
-| `Crew_SickWalk` | seasick, moving | 1.2 s | - | - | queasy walk: short lurching steps, a fist on his stomach (in place) |
+| `Crew_SickWalk` | Seasick, walking | 2.6 s | - | - | hunched, short lurching steps (the second lurch bigger), a fist pressed to his belly, the other arm going out for balance, head lolling (in place; 0.21 m/s at 1x, 0.56 m a loop) |
 | `Crew_SickClutch` | badly seasick | 1.6 s | - | - | hunched over, both fists on his stomach, a cramp each cycle |
 | `Crew_SickRail` | seasick at the rail | 1.5 s | - | - | leaning over the rail, heaving twice |
 | `Crew_SickCollapse` | worst seasickness | 1.8 s, one-shot | - | - | staggers, knees buckle, down on hands and knees; then `Crew_SickKneel` |
@@ -217,7 +217,7 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   foot is planted for part of the cycle and slides straight back at a steady rate, so at the
   right playback speed the feet don't skate: **play each clip at (move speed / its 1x speed)**,
   from `clips.json` (`gait.speed_m_s_at_1x_game`, `gait.ground_m_per_cycle_game`). Walk 0.58 m/s,
-  WalkBrisk 0.84, WalkTired 0.23, WalkDeck 0.33, Run 2.06 m/s (feet off the ground between
+  WalkBrisk 0.84, WalkTired 0.23, WalkDeck 0.33, SickWalk 0.21, Run 2.06 m/s (feet off the ground between
   steps). `CampWorker.Speed` is 2.6 m/s today: that is Run at about 1.26x, or Walk at 4.5x
   (too fast to read as walking), so the game probably wants a slower walking speed and Run for
   hurrying. The right foot lands on frame 0 in every style. PickUp starts on Walk's first frame
@@ -257,7 +257,7 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   `art-staging/worker-tools-v1`), placed by the game's tool frame.
 - New tools the game doesn't have yet: pickaxe, mallet and chisel, quern peg, knife, arrow
   shaft, bow, basket, bucket, coiled line, rammer, linstock, oars (the clips work without them; they only show in the previews).
-- Carry and SickWalk need their playback speed matched to the move speed too (Carry's stride is about 0.3 m a cycle).
+- Carry needs its playback speed matched to the move speed too (Carry's stride is about 0.3 m a cycle).
 - Aboard: `CrewAgent`'s states map straight onto the ship clips (Station -> DeckBrace,
   RailHold -> RailGrip, Bailing -> Bail, AtRail -> SickRail, HaulGoing/Hauling -> ThrowLine then
   HaulLine, JollyBoatDuty -> Row, the post-rescue rest -> Soaked); gunners play GunTend while

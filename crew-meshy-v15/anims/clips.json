@@ -260,12 +260,17 @@
   },
   "SickWalk": {
     "take": "Crew_SickWalk",
-    "seconds": 1.2,
-    "frames": 37,
+    "seconds": 2.6,
+    "frames": 79,
     "loop": true,
-    "what": "queasy walk: short lurching steps, a fist on his stomach",
+    "what": "seasick walk: hunched, short lurching steps, a fist pressed to his belly, the other arm going out for balance (in place)",
     "tool_right_hand": null,
-    "held_left_hand": null
+    "held_left_hand": null,
+    "gait": {
+      "ground_m_per_cycle_game": 0.555,
+      "speed_m_s_at_1x_game": 0.21,
+      "feet_off_ground": false
+    }
   },
   "SickClutch": {
     "take": "Crew_SickClutch",
