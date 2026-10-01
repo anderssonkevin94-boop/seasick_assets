@@ -61,7 +61,9 @@ def main():
         for pname,centre,size,colour,_ in c['props']:
             extra.append(A.box_mesh(pname,[(size,centre,colour)]))
         sc.frame_set(0)
-        if c['rtool']:extra.append(A.attach_tool(rig,solver,c['rtool'],A.RIGHT))
+        if c['rtool']:
+            extra.append(A.attach_tool(rig,solver,c['rtool'],A.RIGHT))
+            if c.get('drop'):A.animate_load(extra[-1],rig,name)   # the load leaves his arms and falls
         if c['ltool']:extra.append(A.attach_tool(rig,solver,c['ltool'],A.LEFT))
         n=int(act.frame_end);frames=[];step=2
         for f in range(0,n+(0 if c['loop'] else 1),step):

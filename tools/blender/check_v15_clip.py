@@ -16,6 +16,7 @@ for name in sys.argv[sys.argv.index('--')+1:]:
     tools=[]
     rig.animation_data.action=bpy.data.actions['Crew_'+name];bpy.context.scene.frame_set(0)
     if c['rtool']:tools.append(A.attach_tool(rig,sv,c['rtool'],A.RIGHT))
+    if c.get('drop'):A.animate_load(tools[-1],rig,name)          # the load leaves his arms and falls
     if c['ltool']:tools.append(A.attach_tool(rig,sv,c['ltool'],A.LEFT))
     r=N.check_clip(ck,rig,bpy.data.actions['Crew_'+name],None,tools=tools,props=props,step=1)
     print('CHECK',name,{f'{k[0]}:{k[1]}':v for k,v in sorted(r.items())} or 'clean: no clipping, joints in range, every frame')

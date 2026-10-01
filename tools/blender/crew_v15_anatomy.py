@@ -110,6 +110,13 @@ class Checker:
                 d=inside(mw@v.co)
                 if d[0]>deep[0]:deep=d
             if deep[0]*1000>LIMITS['clip_mm']:issues.append(('clip',obj.name+' into '+deep[1],round(deep[0],3)))
+            if obj.get('load'):                            # a carried load is a box: also no part of him inside it (a face can cut in between its corners)
+                inv=mw.inverted();lo=Vector([min(v.co[j] for v in obj.data.vertices) for j in range(3)])
+                hi=Vector([max(v.co[j] for v in obj.data.vertices) for j in range(3)]);dl=0
+                for p in co:
+                    q=inv@p
+                    if all(lo[j]<q[j]<hi[j] for j in range(3)):dl=max(dl,min(min(q[j]-lo[j],hi[j]-q[j]) for j in range(3)))
+                if dl*1000>LIMITS['clip_mm']:issues.append(('clip','body into '+obj.name,round(dl,3)))
         for obj in props:                                  # his body inside a prop box
             mw=obj.matrix_world;inv=mw.inverted()
             lo=Vector([min(v.co[j] for v in obj.data.vertices) for j in range(3)])

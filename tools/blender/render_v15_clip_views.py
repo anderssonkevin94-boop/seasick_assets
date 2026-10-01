@@ -20,7 +20,9 @@ if c.get('env'):
     env,stand,_=MILL.load_env(c['env']);rig.location=stand;bpy.context.view_layer.update()
 else:stand=Vector((0,0,0))
 act=bpy.data.actions['Crew_'+name];rig.animation_data.action=act;sc.frame_set(0)
-if c['rtool']:A.attach_tool(rig,sv,c['rtool'],A.RIGHT)
+if c['rtool']:
+    o=A.attach_tool(rig,sv,c['rtool'],A.RIGHT)
+    if c.get('drop'):A.animate_load(o,rig,name)                # the load leaves his arms and falls
 if c['ltool']:A.attach_tool(rig,sv,c['ltool'],A.LEFT)
 cd=bpy.data.cameras.new('c');cam=bpy.data.objects.new('c',cd);sc.collection.objects.link(cam);sc.camera=cam;cd.type='ORTHO';cd.ortho_scale=1.45
 sc.render.resolution_x=sc.render.resolution_y=380
@@ -37,6 +39,7 @@ if c.get('env')=='rock':      # the rock stands in front of him: side and back a
     views=[('game view, his right',(-3.4,1.6,2.4)),('side, his right',(-3,.2,.8)),('behind him',(-.8,3,1.2)),('3/4 his left, low',(2.6,-.3,.9)),('side, his left',(3,.2,.8))]
     cd.ortho_scale=1.9
 n=int(act.frame_end);keys=[round(n*k/4) for k in range(4)] if c['loop'] else [round(n*k/4) for k in range(5)]
+if name=='SetDown':keys=[0,9,16,40,50,72]   # letting go, landed, mid-wipe, the flick, into the walk
 if name=='Mine':keys=[0,round(n*.26),round(n*.34),round(n*.40)]   # raised, head trailing, tipping over, the strike
 if name=='Chop':keys=[0,round(n*.28),round(n*.33),round(n*.40)]   # cocked, hands dropped, sweeping level, the bite
 rows=[]

@@ -245,11 +245,26 @@ function showExtras(){
   const on = $('props').checked;
   for (const e of extras) e.obj.visible = on && e.clip === current;
 }
+// A dropped load (SetDown) leaves his arms: it follows its own baked track, in the scene's frame.
+const _m = new THREE.Matrix4(), _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(1, 1, 1);
+function placeLoad(frame){
+  const tr = current && CLIPS[current].load;
+  if (!tr) return;
+  const e = extras.find(x => x.clip === current && x.obj.name.startsWith('tool__'));
+  if (!e) return;
+  const k = tr[Math.max(0, Math.min(tr.length - 1, frame))];
+  _p.set(k[0], k[1], k[2]); _q.set(k[3], k[4], k[5], k[6]);
+  _m.compose(_p, _q, _s);
+  e.obj.parent.updateWorldMatrix(true, false);
+  _m.premultiply(new THREE.Matrix4().copy(e.obj.parent.matrixWorld).invert());
+  _m.decompose(e.obj.position, e.obj.quaternion, e.obj.scale);
+}
 function duration(){ return action ? action.getClip().duration : 1; }
 function apply(){
   if (!action) return;
   action.time = Math.min(t, duration()); mixer.update(0);
   const d = duration(), frame = Math.round(Math.min(t, d) * FPS);
+  placeLoad(frame);
   $('scrub').value = String(Math.round(1000 * Math.min(t, d) / d));
   $('time').textContent = `${Math.min(t, d).toFixed(2)} s · frame ${frame + 1} / ${Math.round(d * FPS) + 1}`;
 }

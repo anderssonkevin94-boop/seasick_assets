@@ -17,6 +17,9 @@ import crew_meshy_v15_anims as A
 OUT=A.C.OUT/'viewer'
 
 
+TRACKS={}
+
+
 def main():
     bpy.ops.wm.open_mainfile(filepath=str(A.ROOT/'tools/blender/source/crew-meshy-v15-anims.blend'))
     rig=bpy.data.objects['Deckhand_Rig'];solver=A.Solver(rig)
@@ -28,6 +31,11 @@ def main():
         for kind,side,tag in((c['rtool'],A.RIGHT,'R'),(c['ltool'],A.LEFT,'L')):
             if kind:
                 o=A.attach_tool(rig,solver,kind,side);o.name=f'tool__{name}__{tag}';count+=1
+        if c.get('drop'):                          # a dropped load: the page moves it along this track (glTF axes: x, z, -y)
+            track,_,_=A.load_track(rig,name)
+            TRACKS[name]=[[round(v,4) for v in (M.translation.x,M.translation.z,-M.translation.y)]+
+                          [round(v,4) for v in (lambda q:(q.x,q.z,-q.y,q.w))(M.to_quaternion())] for M in track]
+    rig.animation_data.action=None;solver.reset()
     # Clips set in a building: the building itself is their prop, placed so its
     # Worker_Stand is where he stands (the origin), under one prop__<Clip>__env node.
     import crew_v15_mill as MILL
@@ -79,7 +87,7 @@ def write_page():
     info=json.loads((A.OUT/'clips.json').read_text())
     clips={k:{'label':LABEL.get(k,k),'where':WHERE.get(k,''),'what':v['what'][:1].upper()+v['what'][1:]+'.',
               'seconds':v['seconds'],'frames':v['frames'],'loop':v['loop'],
-              'rtool':TOOLS.get(v['tool_right_hand'],v['tool_right_hand']),'ltool':TOOLS.get(v['held_left_hand'],v['held_left_hand']),'env':A.CLIPS[k].get('env')}
+              'rtool':TOOLS.get(v['tool_right_hand'],v['tool_right_hand']),'ltool':TOOLS.get(v['held_left_hand'],v['held_left_hand']),'env':A.CLIPS[k].get('env'),'load':TRACKS.get(k)}
            for k,v in info.items()}
     groups=[{'name':n,'clips':[c for c in cs if c in clips]} for n,cs in GROUPS]
     missing=set(clips)-{c for g in groups for c in g['clips']}

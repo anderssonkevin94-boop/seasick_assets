@@ -169,8 +169,13 @@ class Solver:
             pitch=math.radians(f[3]) if len(f)>3 else 0
             fd=G@(Matrix.Rotation(pitch,3,'X')@V(0,-.97,-.24))
             self.leg(side,ankle,fd,G@(V(s*.15,-1,0)))
-        if q.get('hands_on_spine'):                 # hand targets authored standing (rest), carried by the spine: a load parented there stays on the arms
-            M=self.pb['spine'].matrix@self.b['spine'].matrix_local.inverted();R=M.to_3x3()
+        w=float(q.get('hands_on_spine',0))
+        if w>0:                                     # hand targets authored standing (rest), carried by the spine: a load parented there stays on the arms
+            M=self.pb['spine'].matrix@self.b['spine'].matrix_local.inverted()
+            if w<1:                                 # part way: blend from the world (G) frame to the spine's, so a clip can hand over smoothly
+                Mg=G.to_4x4();loc=Mg.translation.lerp(M.translation,w)
+                M=Matrix.Translation(loc)@Mg.to_quaternion().slerp(M.to_quaternion(),w).to_matrix().to_4x4()
+            R=M.to_3x3()
             for side,key in((RIGHT,'rh'),(LEFT,'lh')):
                 r=q[key];self.arm(side,M@Vector(r['grip']),R@Vector(r['face']),R@Vector(r['haft']),R@Vector(r['elbow']))
             return
@@ -192,7 +197,7 @@ def hand(grip,face,haft,elbow):return {'grip':V(*grip),'face':nrm(face),'haft':V
 
 RELAX_R=hand((-.35,-.07,.45),(-.2,-.25,-1),(0,-1,0),(-.6,.7,0))
 RELAX_L=hand((.35,-.07,.45),(.2,-.25,-1),(0,-1,0),(.6,.7,0))
-DEFAULT={'root':V(0,0,0),'yaw':0.,'pelvis':(0,0,0),'spine':(0,0,0),'head':(0,0,0),
+DEFAULT={'hands_on_spine':0.,'root':V(0,0,0),'yaw':0.,'pelvis':(0,0,0),'spine':(0,0,0),'head':(0,0,0),
          'rf':(0,0,0,0),'lf':(0,0,0,0),'rh':RELAX_R,'lh':RELAX_L}
 
 
@@ -387,24 +392,25 @@ clip('Build',.95,[
 
 # Carry: a heavy load held out on both arms, walked in place. The arms reach
 # straight ahead at shoulder width, fists just below the shoulders, the load
-# resting across both forearms; he leans back 16 degrees against it, hips
+# resting on both fists, its back against his belly; he leans back 16 degrees against it, hips
 # pushed forward under it, head tipped only half as far forward to see past it, and walks slow and short, sinking into each
 # step with a waddle from foot to foot. The hands are keyed in the spine's
 # frame (hands_on_spine), so a load parented to the spine bone at CARRY_SOCKET
 # rides on the forearms on every frame, whatever it is: that socket is the
 # one contract for the game's stacks (logs, planks, stones, bricks, sacks).
-# Arm pose found by search against crew_v15_anatomy with a 0.54 x 0.28 x
-# 0.20 m crate (his scale) on it, its top kept under his chin.
+# Arm pose found by search against crew_v15_anatomy with a 0.54 x 0.26 x
+# 0.18 m crate (his scale) on it, its top kept under his chin; no part of him
+# inside the load (the checker tests both ways for a load).
 CARRY_FIST=V(.22,-.34,.54)                          # his left fist, standing (the right mirrors it)
-CARRY_SOCKET=V(0,-.25,.585)                         # the load's bottom centre, on the forearms (rest pose, parent: spine)
-CARRY_DEPTH=.28                                     # deepest load that clears his chest, centred on the socket
+CARRY_SOCKET=V(0,-.40,.648)                         # the load's bottom centre, on the fists (rest pose, parent: spine): its back face at his belly
+CARRY_DEPTH=.26                                     # deepest load, centred on the socket, whose back face clears his belly (0.26 m out)
 CARRY_LEAN=-16
 
 
 def carry_pose(t):
     """Heavy in-place walk at phase t, right foot forward at t=0."""
     a=t*2*math.pi;c,sn=math.cos(a),math.sin(a);stride=.075
-    q=K_(hands_on_spine=True)
+    q=K_(hands_on_spine=1.)
     q['rf']=(0,-stride*c,.03*max(0,-sn),-8*c);q['lf']=(0,stride*c,.03*max(0,sn),8*c)
     q['root']=V(-.016*c,-.03,-.06-.024*abs(c))     # hips forward under the load, sinking into each footfall, the weight rolling over the planted foot
     q['pelvis']=(CARRY_LEAN*.3,4*c,-4*c)
@@ -732,7 +738,84 @@ clip('RailGrip',1.8,rail_grip,props=RAIL_SICK,what='gripping the rail through a 
 def reverse(keys):return [(1-t,q) for t,q in keys]
 
 
-clip('SetDown',1.3,reverse(CLIPS['PickUp']['keys']),loop=False,rtool='sack',what='lower the load to the ground and straighten (one-shot)')
+# SetDown: the end of a Carry. From Carry's own first frame he lets the load
+# go: the arms spring apart and drop, the load falls (gravity at his scale) to
+# the ground in front of him, pushed just clear of his toes; he slumps with
+# relief, then wipes his brow with the back of his right wrist (the head tips
+# into the hand: his arms are too short for the middle of that big forehead),
+# flicks the sweat off and ends on Walk's own first frame. One-shot, 2.4 s.
+# The load: held on the spine socket until DROP['release'], then a falling
+# track (load_track) to rest at DROP['at'] (bottom centre, his rig space).
+# The wipe found by search against crew_v15_anatomy, the head surface
+# measured with the head tipped into the hand.
+DROP={'release':.10/2.4,'at':V(0,-.52,0),'yaw':4}
+G_RIG=9.81*C.HEIGHT/1.7                            # gravity at his 1.30 m source scale
+
+
+def setdown_keys():
+    D=2.4;T=lambda sec:sec/D
+    hold=carry_pose(0)
+    def arms(w,fist_r,fist_l,face=(0,-1,-.3),elbow=(.6,.2,-.8)):
+        return {'hands_on_spine':w,'rh':hand(fist_r,face,(0,0,1),(-elbow[0],elbow[1],elbow[2])),
+                'lh':hand(fist_l,(-face[0],face[1],face[2]),(0,0,1),elbow)}
+    feet=dict(rf=hold['rf'],lf=hold['lf'])
+    let_go=K_(**feet,root=V(-.01,-.02,-.05),pelvis=(-4,0,0),spine=(-10,0,0),head=(6,0,0),
+              **arms(1.,(-.32,-.34,.48),(.32,-.34,.48)))                       # fists spring apart and drop: the load is free
+    fling=K_(rf=(0,-.03,0,0),lf=(0,.03,0,0),root=V(0,0,-.05),spine=(2,0,0),head=(8,0,0),
+             **arms(.4,(-.38,-.16,.50),(.38,-.16,.50),face=(0,-.6,-1)))      # arms dropping out to the sides
+    slump=K_(rf=(0,0,0,0),lf=(0,0,0,0),root=V(0,0,-.06),pelvis=(2,0,0),spine=(14,0,0),head=(14,0,0),
+             rh=hand((-.33,-.10,.43),(-.2,-.3,-1),(0,-1,0),(-.6,.7,0)),lh=hand((.33,-.10,.43),(.2,-.3,-1),(0,-1,0),(.6,.7,0)))
+    sigh=K_(root=V(0,0,-.04),spine=(8,0,0),head=(6,0,0))
+    WIPE=dict(root=V(0,0,-.02),spine=(6,0,4),head=(14,-10,-16),lh=RELAX_L)
+    wipe=lambda y,x:K_(**WIPE,rh=hand((x,y,1.03),(.3,-.2,.95),(0,-1,0),(-1,.3,-.1)))   # the back of the hand to the brow, thumb forward
+    flick=K_(root=V(0,0,-.02),spine=(4,0,2),head=(6,-4,-6),lh=RELAX_L,rh=hand((-.46,-.02,.86),(-.6,.2,.75),(0,-1,0),(-.8,.3,-.5)))
+    down=K_(root=V(0,0,-.01),spine=(3,0,0),head=(0,0,0))
+    raise_=K_(root=V(0,0,-.03),spine=(6,0,2),head=(10,-4,-8),lh=RELAX_L,rh=hand((-.46,-.20,.70),(-.3,-.7,.6),(0,-1,0),(-.8,.3,-.5)))   # the hand comes up clear of his side
+    lower=K_(root=V(0,0,-.015),spine=(3,0,1),head=(3,-2,-3),lh=RELAX_L,rh=hand((-.46,-.20,.70),(-.3,-.7,.6),(0,-1,0),(-.8,.3,-.5)))     # and goes down clear of it
+    return [(0,hold),(T(.10),let_go),(T(.30),fling),(T(.55),slump),(T(.85),sigh),(T(.98),raise_),
+            (T(1.10),wipe(-.14,-.337)),(T(1.32),wipe(-.07,-.338)),(T(1.50),wipe(0,-.326)),
+            (T(1.66),flick),(T(1.82),lower),(T(2.02),down),(1,walk_pose(0))]
+
+
+clip('SetDown',2.4,setdown_keys(),loop=False,rtool='crate',
+     what='drops the load off his arms, slumps, wipes his brow and flicks the sweat off; from Carry, into Walk (one-shot)')
+CLIPS['SetDown']['drop']=DROP
+
+
+def load_track(rig,name):
+    """Per-frame armature-space matrices of a clip's load (bottom centre):
+    on the spine socket until the drop's release, then falling under gravity
+    to rest at drop['at'], levelled and turned drop['yaw'] degrees.
+    Returns (matrices, release frame, landing frame)."""
+    c=CLIPS[name];d=c['drop'];act=bpy.data.actions['Crew_'+name];n=int(act.frame_end)
+    sc=bpy.context.scene;keep=(rig.animation_data.action,sc.frame_current);rig.animation_data.action=act
+    sock=Matrix.Translation(CARRY_SOCKET);inv=rig.data.bones['spine'].matrix_local.inverted()
+    def held(f):
+        sc.frame_set(f);return rig.pose.bones['spine'].matrix@inv@sock
+    rel=round(d['release']*n);M0=held(rel);p0=M0.translation.copy();q0=M0.to_quaternion()
+    at=Vector(d['at']);h=max(1e-3,p0.z-at.z);fall=max(1,round(FPS*math.sqrt(2*h/G_RIG)))
+    q1=Quaternion((0,0,1),math.radians(d.get('yaw',0)))
+    out=[]
+    for f in range(n+1):
+        if f<=rel:out.append(held(f));continue
+        u=min(1.,(f-rel)/fall)
+        p=Vector((p0.x+(at.x-p0.x)*u,p0.y+(at.y-p0.y)*u,p0.z-h*u*u))
+        out.append(Matrix.Translation(p)@q0.slerp(q1,u).to_matrix().to_4x4())
+    rig.animation_data.action,f0=keep;sc.frame_set(f0)
+    return out,rel,rel+fall
+
+
+def animate_load(o,rig,name):
+    """Key a load object (from attach_tool) along load_track for a drop clip,
+    as a child of the rig object rather than of the spine bone."""
+    track,rel,land=load_track(rig,name)
+    o.parent=rig;o.parent_type='OBJECT';o.parent_bone='';o.matrix_parent_inverse=Matrix.Identity(4)
+    o.rotation_mode='QUATERNION';o.animation_data_create()
+    o.animation_data.action=bpy.data.actions.new('Load_'+name)
+    for f,M in enumerate(track):
+        o.matrix_basis=M;o.keyframe_insert('location',frame=f);o.keyframe_insert('rotation_quaternion',frame=f)
+    return rel,land
+
 
 
 # ---------------------------------------------------------------- props
@@ -782,7 +865,7 @@ def tool_parts(kind):
        'bow':[((.03,.95,.03),(0,0,.0),'wood'),((.004,.93,.004),(0,0,-.12),'string')],
        'basket':[((.26,.26,.20),(0,0,.20),'rope')],
        'carrylog':[((.16,.80,.16),(.14,0,-.02),'wood_bark')],
-       'crate':[((.54,.28,.20),(0,0,.10),'wood'),((.55,.285,.03),(0,0,.04),'wood_bark'),((.55,.285,.03),(0,0,.16),'wood_bark')],
+       'crate':[((.54,.26,.18),(0,0,.09),'wood'),((.55,.265,.03),(0,0,.04),'wood_bark'),((.55,.265,.03),(0,0,.14),'wood_bark')],
        'sack':[((.30,.26,.30),(.18,0,.03),'rope')],
        'bucket':[((.26,.26,.28),(0,0,.24),'wood'),((.27,.27,.03),(0,0,.12),'iron')],
        'coil':[((.26,.06,.26),(0,0,.12),'rope')],
@@ -828,7 +911,7 @@ def attach_tool(rig,solver,kind,side):
         o=bpy.data.objects.new('Prop_'+kind,astra_tool(kind));bpy.context.scene.collection.objects.link(o);o['preview_prop']=True
     else:o=box_mesh('Prop_'+kind,tool_parts(kind))
     if kind in LOADS:                                # a load rides on the spine at the carry socket
-        solver.reset();o.parent=rig;o.parent_type='BONE';o.parent_bone='spine'
+        o['load']=True;solver.reset();o.parent=rig;o.parent_type='BONE';o.parent_bone='spine'
         bpy.context.view_layer.update();o.matrix_world=rig.matrix_world@Matrix.Translation(CARRY_SOCKET);return o
     s=SIDE_SIGN[side];hb='hand'+side
     # tool frame in the rest pose: +Y thumb (forward), +Z along the fist, X = Y x Z
@@ -861,6 +944,11 @@ def bake(rig,solver):
         act.use_cyclic=c['loop']
         info[name]={'take':'Crew_'+name,'seconds':c['seconds'],'frames':n+1,'loop':c['loop'],'what':c['what'],
                     'tool_right_hand':c['rtool'],'held_left_hand':c['ltool']}
+        if c.get('drop'):
+            _,rel,land=load_track(rig,name)
+            at=Vector(c['drop']['at'])*(1.7/C.HEIGHT)
+            info[name]['load_drop']={'release_frame':rel,'lands_frame':land,
+                'rest_bottom_centre_game_m':{'x':round(at.x,3),'up':round(at.z,3),'forward':round(-at.y,3)},'rest_yaw_deg':c['drop'].get('yaw',0)}
     return info
 
 

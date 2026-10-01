@@ -43,7 +43,7 @@ embedded, so the one file opens on its own. Rebuild it with
 | `Crew_Fletcher` | Fletcher's (fletcher) | 1.5 s | knife | shaft | fletcher: whittling an arrow shaft |
 | `Crew_Fisher` | Fishing hut (fisher) | 1.2 s | knife | - | fishing hut: gutting the catch on the prep bench |
 | `Crew_Hunt` | hunting | 2.2 s | - | bow | hunting: draw, loose, reach back to the quiver for the next arrow |
-| `Crew_SetDown` | dropping a load | 1.3 s, one-shot | sack | - | lower the load to the ground and straighten (one-shot) |
+| `Crew_SetDown` | dropping a load | 2.4 s, one-shot | any load (dropped) | - | drops the load, slumps, wipes his brow, flicks the sweat off; from Carry, into Walk |
 | `Crew_SickSway` | seasick, standing | 3.0 s | - | - | queasy: swaying, a fist on his stomach, head lolling |
 | `Crew_SickWalk` | seasick, moving | 1.2 s | - | - | queasy walk: short lurching steps, a fist on his stomach (in place) |
 | `Crew_SickClutch` | badly seasick | 1.6 s | - | - | hunched over, both fists on his stomach, a cramp each cycle |
@@ -125,18 +125,31 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   placement (`VillagerActing`, 0.11 m up the haft) is not used by this clip. Chest height is lower
   than the tree's own `Trunk_Target` (1.3 m at game size, above his shoulders).
 - **Carry holds any load out on both arms** and looks heavy: arms straight ahead at shoulder
-  width, the load across both forearms, the body leaning back 16 degrees with the hips pushed
-  forward under it, head tipped forward half as far to see past it; a slow, short, sinking walk
-  (1.2 s a cycle, stride about 0.3 m, measured as Walk's 0.44 m) with a waddle from foot to foot. **The carry socket:**
-  the hands are keyed in the spine's frame, so the load rides with the spine bone and the fists
-  stay on its underside on every frame. To place any asset (the game's stacks of logs, planks,
-  stones, bricks or sacks): put the load's **bottom centre** at the socket in the rest (T) pose and
-  parent it to the **`spine`** bone, keeping that offset. At the 1.7 m game size the socket is
-  **(0, 0.765, 0.327) m** in the model's space (Unity: x across, y up, z forward), which is
-  (0, -0.25, 0.585) at the 1.30 m source (Blender, -Y forward), `CARRY_SOCKET` in the script.
-  Loads up to **0.37 m deep** (front to back, centred on the socket) clear his chest; width and
-  height are free (a 0.26 m tall load, game, keeps his face clear). This replaces the shoulder
-  carry and `VillagerActing`'s code-bent `Carry` arms: the clip owns the arms and the legs.
+  width, the load resting on both fists with its back against his belly, the body leaning back 16
+  degrees with the hips pushed forward under it, head tipped forward half as far to see past it; a
+  slow, short, sinking walk (1.2 s a cycle, stride about 0.3 m, measured as Walk's 0.44 m) with a
+  waddle from foot to foot. **The carry socket:** the hands are keyed in the spine's frame, so the
+  load rides with the spine bone and the fists stay 1 mm under it on every frame. To place any
+  asset (the game's stacks of logs, planks, stones, bricks or sacks): put the load's **bottom
+  centre** at the socket in the rest (T) pose and parent it to the **`spine`** bone, keeping that
+  offset. At the 1.7 m game size the socket is **(0, 0.847, 0.523) m** in the model's space
+  (Unity: x across, y up, z forward), which is (0, -0.40, 0.648) at the 1.30 m source (Blender,
+  -Y forward), `CARRY_SOCKET` in the script. Loads up to **0.34 m deep** (front to back, centred on
+  the socket) clear his belly; width is free; up to about 0.24 m tall keeps his face clear. The
+  checker tests a load both ways (the load in him, and any part of him inside the load). This
+  replaces the shoulder carry and `VillagerActing`'s code-bent `Carry` arms: the clip owns the
+  arms and the legs.
+- **SetDown drops the load** and is built to chain **Carry → SetDown → Walk**: its first frame is
+  Carry's first frame and its last frame is Walk's first frame, bone for bone (checked: zero
+  difference). He lets go (the fists spring apart and drop), the load falls in front of him, he
+  slumps with relief, wipes his brow with the back of his right wrist (head tipped into the hand:
+  his arms are too short to reach the middle of that big forehead), flicks the sweat off and steps
+  into the walk. One-shot, 2.4 s, 73 frames. **For the game:** the load stays on the spine socket
+  until **frame 3** (release), then falls under gravity and **lands on frame 16**, its bottom centre
+  at **(0, 0, 0.68) m** from his root (game size: on the ground, 0.68 m in front), turned 4 degrees,
+  level. Detach it at frame 3 and tween it there (or drop it with physics) — `clips.json` has the
+  numbers (`load_drop`), and the viewer plays the same baked fall. Nothing of him is inside the
+  load at any frame, and it lands clear of his toes.
 - **Mine is set at a rock** (`CLIPS['Mine']['env']='rock'`: Astra's `Stone_Field`, the commonest
   deposit, from `art-staging/stone-resources-astra-v2`, copied to `env/Stone_Field.fbx`). He stands
   where `StoneDeposit.StandOff` puts a miner: its footprint radius plus 0.7 m, 1.80 m (game) from

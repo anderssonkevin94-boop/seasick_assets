@@ -76,15 +76,17 @@ https://claude.ai/artifact/GcDxNt3L667f99DjPvV5Kt). After a rig change, rerun
    a zero-score pose. The scripts under `tmp` in the old session did this; recreate them as needed.
 4. Check **every frame** (`check_v15_clip.py`): in-between frames clip even when the keys don't.
    Route the tool around the head with extra keys (the recovery can retrace the swing's path).
-5. Allowed: up to 3.5 cm of contact within 12 cm of the shoulder (under the sleeve). Anything
+5. A carried load (`LOADS`, parented to the spine) is checked both ways: the load in him and
+   any part of him inside the load (a box face can cut in between its corners).
+6. Allowed: up to 3.5 cm of contact within 12 cm of the shoulder (under the sleeve). Anything
    else over 8 mm is a clip.
 
 ## Clip status (35 in the FBX)
 
 | Status | Clips |
 |---|---|
-| **Reworked and clean on every frame** | `Saw` (level 1 lumber mill, lowered bench, sawing the log), `Chop` (Astra's tree, one-handed flat bat swing into the trunk's right flank), `Mine` (Astra's Stone_Field, one-handed vertical overhand swing into its upper front), `Carry` (any load held out on both arms at a spine socket, leaning back, heavy walk) |
-| Made before the anatomy rules; **need rework the same way** | Idle, Walk, Forage, Build, PickUp, SetDown, Hunt, Farm, Smith, Cook, Mill, Lookout, Quarry, Fletcher, Fisher, SickSway, SickWalk, SickClutch, SickRail, SickCollapse, SickKneel, Bail, ThrowLine, HaulLine, GunRam, GunFire, Row, Gangway, Soaked, DeckBrace, RailGrip |
+| **Reworked and clean on every frame** | `Saw` (level 1 lumber mill, lowered bench, sawing the log), `Chop` (Astra's tree, one-handed flat bat swing into the trunk's right flank), `Mine` (Astra's Stone_Field, one-handed vertical overhand swing into its upper front), `Carry` (any load held out on both arms at a spine socket, leaning back, heavy walk), `SetDown` (drops the load, wipes his brow; chains Carry → SetDown → Walk) |
+| Made before the anatomy rules; **need rework the same way** | Idle, Walk, Forage, Build, PickUp, Hunt, Farm, Smith, Cook, Mill, Lookout, Quarry, Fletcher, Fisher, SickSway, SickWalk, SickClutch, SickRail, SickCollapse, SickKneel, Bail, ThrowLine, HaulLine, GunRam, GunFire, Row, Gangway, Soaked, DeckBrace, RailGrip |
 
 Kevin goes down the list one clip at a time. Ask which is next.
 

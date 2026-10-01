@@ -307,11 +307,21 @@
   },
   "SetDown": {
     "take": "Crew_SetDown",
-    "seconds": 1.3,
-    "frames": 40,
+    "seconds": 2.4,
+    "frames": 73,
     "loop": false,
-    "what": "lower the load to the ground and straighten (one-shot)",
-    "tool_right_hand": "sack",
-    "held_left_hand": null
+    "what": "drops the load off his arms, slumps, wipes his brow and flicks the sweat off; from Carry, into Walk (one-shot)",
+    "tool_right_hand": "crate",
+    "held_left_hand": null,
+    "load_drop": {
+      "release_frame": 3,
+      "lands_frame": 16,
+      "rest_bottom_centre_game_m": {
+        "x": 0.0,
+        "up": 0.0,
+        "forward": 0.68
+      },
+      "rest_yaw_deg": 4
+    }
   }
 }
