@@ -36,43 +36,53 @@ OUT=ROOT/'wall-l2-concept'
 L1=Path('/tmp/claude-0/sc/wall')         # level 1 palisade FBX copies, for the comparison render (see fetch_l1)
 L1_URL='https://media.githubusercontent.com/media/anderssonkevin94-boop/seasick/ships-into-unity/art-staging/palisade-astra-lvl1-v2/'
 
-C.update(stone_l=(146,141,128),stone_m=(112,108,99),stone_dd=(84,82,77),mortar_d=(78,74,66),
-         oak=(112,70,34),oak_d=(92,56,27),oak_l=(132,84,42))
+# Light and few: three pale stone tones over darker mortar (the joints carry the
+# read), light oak, dark iron for contrast.
+C.update(st1=(214,207,190),st2=(199,191,173),st3=(226,220,205),mortar_d=(112,105,93),
+         oak=(200,144,86),oak_d=(170,118,66),oak_l=(216,162,102),oak_tip=(232,192,134))
 
 BASE_H=1.15;BASE_T=.40                  # stone base height, thickness (Y -0.2..0.2)
-COURSE=BASE_H/5
+CAP=.19;COURSE=(BASE_H-CAP)/3           # three chunky courses and a capstone course
 SILL=(.32,.10)                          # oak sill on the base: depth, height
 TIMBER=(.23,.17)                        # width along the wall, depth
 PITCH=.25
 POST_W=.56;POST_H=3.05
 
 
-def stone_course(p,x0,x1,z0,h,joints,seed,y0=-BASE_T/2,y1=BASE_T/2):
+JOINT=.045                              # mortar joint between stones: wide, so each stone reads at game zoom
+
+
+def stone(p,c,size,tone,axis=None):
+    """One chunky block, a plain solid in one tone: the joints round it, not
+    detail on it, make it read."""
+    p.box(c,size,tone)
+
+
+def stone_course(p,x0,x1,z0,h,joints,seed,y0=-BASE_T/2,y1=BASE_T/2,flush=False):
     """One course of blocks from x0 to x1 with vertical joints at `joints`
-    (sorted, inside x0..x1), proud of a mortar core on both faces and the top."""
-    tones=('stone','stone_m','stone_l','stone','stone_m','stone_dd')
-    edges=[x0]+list(joints)+[x1]
+    (sorted, inside x0..x1), over a mortar core, through the wall's thickness.
+    flush: the end stones run right to the module ends with no joint there, so
+    they meet the neighbouring run's end stones as one stone."""
+    tones=('st1','st2','st3')
+    edges=[x0]+list(joints)+[x1];last=len(edges)-2
     for i,(a,b) in enumerate(zip(edges,edges[1:])):
-        t=tones[(seed*7+i*5)%len(tones)];inset=.012
-        bulge=.006*((seed+i)%3)
-        p.box(((a+b)/2,(y0+y1)/2,z0+h/2),(b-a-2*inset,y1-y0+.02+bulge,h-.018),t)
+        a2=a if (flush and i==0) else a+JOINT/2;b2=b if (flush and i==last) else b-JOINT/2
+        tone=tones[seed%3] if flush and i in(0,last) else tones[(seed+i*2)%3]   # both halves of the shared stone match
+        stone(p,((a2+b2)/2,(y0+y1)/2,z0+h/2),(b2-a2,y1-y0+.02,h-JOINT),tone)
 
 
 def run(name,variant):
     """A 1 m run: stone base, sill, four timbers, bands, rear rails."""
     p=Part(name)
     p.box((.5,0,BASE_H/2),(1,BASE_T-.03,BASE_H),'mortar_d')           # core
-    # Courses: even ones join at the module ends, odd ones a quarter in; the
-    # inner joints vary by variant so A/B/C read as different stones.
-    inner={'A':[(.5,),(.25,.75),(.45,),(.25,.62,.75),(.55,)],
-           'B':[(.4,),(.25,.75),(.6,),(.25,.5,.75),(.35,)],
-           'C':[(.55,),(.25,.75),(.3,.7),(.25,.75),(.5,)]}[variant]
-    for k in range(4):   # on odd courses the 0.25 m end blocks pair with the neighbour's into one stone
-        stone_course(p,0,1,k*COURSE,COURSE,inner[k],k+ord(variant))
-    # capstone course: thin, wider, overhanging both faces
-    zc=4*COURSE
-    for i,(a,b) in enumerate(zip((0,)+inner[4],inner[4]+(1,))):
-        p.box(((a+b)/2,0,zc+COURSE*.45),(b-a-.02,BASE_T+.08,COURSE*.9),('stone_l','stone')[i%2])
+    # Courses alternate: joints AT the module ends (one inner joint, by variant),
+    # then joints a quarter metre in, whose 0.25 m end stones pair with the
+    # neighbour's into one half-metre stone. The capstones join at the ends.
+    inner={'A':[(.45,),(.25,.75),(.55,),(.5,)],'B':[(.6,),(.25,.75),(.4,),(.45,)],'C':[(.5,),(.25,.75),(.35,),(.6,)]}[variant]
+    for k in range(3):stone_course(p,0,1,k*COURSE,COURSE,inner[k],k+ord(variant) if k!=1 else 1,flush=k==1)
+    zc=3*COURSE
+    for i,(a,b) in enumerate(zip((0,)+inner[3],inner[3]+(1,))):
+        stone(p,((a+b)/2,0,zc+CAP/2),(b-a-JOINT,BASE_T+.1,CAP-.03),('st3','st1')[i%2])
     # oak sill
     zs=BASE_H;p.box((.5,0,zs+SILL[1]/2),(1,SILL[0],SILL[1]),'oak_d')
     # timbers: squared, chamfered corners suggested by a darker face strip, adzed points
@@ -80,16 +90,16 @@ def run(name,variant):
     z0=zs+SILL[1]
     for i in range(4):
         x=.125+i*PITCH;top=tops[i];w,d=TIMBER
-        tone=('oak','oak_l','oak','oak_d')[(i+ord(variant))%4]
+        tone=('oak','oak_l','oak','oak_l')[(i+ord(variant))%4]
         p.box((x,0,(z0+top)/2),(w,d,top-z0),tone)
         tip=top+.22                                           # four-sided point
         hw,hd=w/2,d/2
         p._add([Vector((x-hw,-hd,top)),Vector((x+hw,-hd,top)),Vector((x+hw,hd,top)),Vector((x-hw,hd,top)),Vector((x,0,tip))],
-               [(0,1,4),(1,2,4),(2,3,4),(3,0,4),(3,2,1,0)],'oak_l')
+               [(0,1,4),(1,2,4),(2,3,4),(3,0,4),(3,2,1,0)],'oak_tip')
     # iron bands across the front, riveted to every timber
     for zb in(1.62,2.22):
         p.box((.5,-TIMBER[1]/2-.008,zb),(1,.016,.07),'iron')
-        for i in range(4):p.box((.125+i*PITCH,-TIMBER[1]/2-.02,zb),(.035,.012,.035),'stone_dd')
+        for i in range(4):p.box((.125+i*PITCH,-TIMBER[1]/2-.02,zb),(.035,.012,.035),'iron')
     # rear rails and pegs
     for zr in(1.5,2.25):
         p.box((.5,TIMBER[1]/2+.05,zr),(1,.1,.12),'oak_d')
@@ -98,26 +108,24 @@ def run(name,variant):
 
 
 def post(name):
-    """Stone pillar: quoined courses (long and short faces alternate), a
-    capstone and a pointed cap. Root at the start edge, centre at x=POST_W/2."""
-    p=Part(name);c=POST_W/2;h=POST_H-.45;n=11;ch=h/n
-    p.box((c,0,h/2),(POST_W-.04,POST_W-.04,h),'mortar_d')
-    tones=('stone','stone_m','stone_l','stone_dd','stone')
+    """Stone pillar: six chunky courses, the corner stones alternating which
+    face runs long, a wider capstone and a pointed cap. Root at the start
+    edge, centre at x=POST_W/2."""
+    p=Part(name);c=POST_W/2;h=POST_H-.45;n=6;ch=h/n;W=POST_W;t=.17
+    p.box((c,0,h/2),(W-.06,W-.06,h),'mortar_d')
+    tones=('st1','st2','st3')
     for k in range(n):
-        z=k*ch;t=lambda j:tones[(k*3+j)%len(tones)]
-        if k%2:   # long blocks on the X faces, short on the Y faces
-            for s in(-1,1):p.box((c,s*(POST_W/2-.03),z+ch/2),(POST_W,.08,ch-.018),t(s+1))
-            for s in(-1,1):
-                for j,(a,b) in enumerate(((-.2,.0),(.0,.2))):p.box((c+s*(POST_W/2-.03),(a+b)/2,z+ch/2),(.08,b-a-.016,ch-.018),t(j+2))
+        z=k*ch+ch/2;tn=lambda j:tones[(k+j)%3];hh=ch-JOINT
+        if k%2:   # long stones on the front and back faces, short on the sides
+            for j,sy in enumerate((-1,1)):stone(p,(c,sy*(W/2-t/2),z),(W,t,hh),tn(j),1)
+            for j,sx in enumerate((-1,1)):stone(p,(c+sx*(W/2-t/2),0,z),(t,W-2*t-JOINT,hh),tn(j+2),0)
         else:
-            for s in(-1,1):p.box((c+s*(POST_W/2-.03),0,z+ch/2),(.08,POST_W,ch-.018),t(s+1))
-            for s in(-1,1):
-                for j,(a,b) in enumerate(((-.2,.0),(.0,.2))):p.box((c+(a+b)/2,s*(POST_W/2-.03),z+ch/2),(b-a-.016,.08,ch-.018),t(j+2))
-    p.box((c,0,h+.08),(POST_W+.12,POST_W+.12,.16),'stone_l')            # capstone
-    p.box((c,0,h+.19),(POST_W,POST_W,.06),'stone')
-    a=POST_W/2-.02;top=POST_H
-    p._add([Vector((c-a,-a,h+.22)),Vector((c+a,-a,h+.22)),Vector((c+a,a,h+.22)),Vector((c-a,a,h+.22)),Vector((c,0,top))],
-           [(0,1,4),(1,2,4),(2,3,4),(3,0,4),(3,2,1,0)],'stone_m')
+            for j,sx in enumerate((-1,1)):stone(p,(c+sx*(W/2-t/2),0,z),(t,W,hh),tn(j),0)
+            for j,sy in enumerate((-1,1)):stone(p,(c,sy*(W/2-t/2),z),(W-2*t-JOINT,t,hh),tn(j+2),1)
+    stone(p,(c,0,h+.08),(W+.12,W+.12,.16),'st3',1)                    # capstone
+    a=W/2-.02;top=POST_H
+    p._add([Vector((c-a,-a,h+.2)),Vector((c+a,-a,h+.2)),Vector((c+a,a,h+.2)),Vector((c-a,a,h+.2)),Vector((c,0,top))],
+           [(0,1,4),(1,2,4),(2,3,4),(3,0,4),(3,2,1,0)],'st2')
     return p
 
 
@@ -194,7 +202,7 @@ def main():
         place(o,at,yaw);o.location-=Matrix.Rotation(math.radians(yaw),3,'Z')@Vector((POST_W/2,0,0))
     end=wall_line(mk_run,mk_post,(0,0,0),0,[3,3])
     wall_line(mk_run,mk_post,end,40,[3])
-    ground=Part('ground');ground.box((3.5,1.5,-.03),(16,10,.06),'mortar');g=ground.build(objs)
+    ground=Part('ground');ground.box((3.5,1.5,-.03),(16,10,.06),'mortar_d');g=ground.build(objs)
     g.data.color_attributes['Col'].data.foreach_set('color',[v for _ in range(len(g.data.loops)) for v in (*[S.lin(c) for c in (104,128,78)],1)])
     # the deckhand for scale, outside the wall
     holder,_=S.load_deckhand();holder.location=(2.1,-1.1,0)
