@@ -46,10 +46,10 @@
   },
   "Build": {
     "take": "Crew_Build",
-    "seconds": 0.95,
-    "frames": 29,
+    "seconds": 0.85,
+    "frames": 27,
     "loop": true,
-    "what": "nailing a board to a post (raising any building)",
+    "what": "raising a building: hammering the frame, one-handed, the other hand steadying the beam",
     "tool_right_hand": "hammer",
     "held_left_hand": null
   },

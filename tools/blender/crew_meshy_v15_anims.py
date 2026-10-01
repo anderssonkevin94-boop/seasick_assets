@@ -412,14 +412,46 @@ clip('Forage',1.7,[
             lh=hand((.30,-.12,.40),(.3,-.3,-1),(0,-1,0),(.6,.6,0)))),
     ],ltool='basket',props=BUSH,what='crouch, pick from a bush, drop it in the basket (spice, food)')
 
-POST=[('post',(0,-.44,.52),(.12,.12,1.04),'wood',0),('board',(0,-.38,.62),(.46,.03,.12),'wood_light',0)]
-clip('Build',.95,[
-    (0,K_(spine=(2,-6,0),head=(0,-4,0),rh=hand((-.29,-.10,.84),(-.1,-.4,1),(0,.85,.5),(-.9,.3,-.3)),lh=hand((.09,-.34,.64),(0,-1,0),(0,0,1),(.6,.2,-.4)))),
-    (.40,K_(spine=(2,-6,0),head=(0,-4,0),rh=hand((-.29,-.09,.86),(-.1,-.45,1),(0,.85,.55),(-.9,.3,-.3)),lh=hand((.09,-.34,.64),(0,-1,0),(0,0,1),(.6,.2,-.4)))),
-    (.55,K_(spine=(8,-2,0),head=(4,-2,0),rh=hand((-.07,-.29,.55),(0,-1,0),(0,0,1),(-.6,.3,-.4)),lh=hand((.09,-.34,.64),(0,-1,0),(0,0,1),(.6,.2,-.4)))),
-    (.66,K_(spine=(8,-2,0),head=(4,-2,0),rh=hand((-.07,-.28,.57),(0,-1,.15),(0,.15,1),(-.6,.3,-.4)),lh=hand((.09,-.34,.64),(0,-1,0),(0,0,1),(.6,.2,-.4)))),
-    ],rtool='hammer',props=POST,what='nailing a board to a post (raising any building)')
+# Build: raising a timber frame (the game draws only a blueprint, so the
+# preview stands in a waist-high beam on two posts, his scale). One-handed
+# hammer, as VillagerActing.Hammer swings it: the right fist drives the
+# hammer down onto the beam's top a little right of centre, the face flat
+# on the wood, while his left fist steadies the beam further along. The
+# swing turns about the wrist's hinge from the cocked hammer (head up by his
+# ear) to the strike; 0.85 s, the strike at 58% (Hammer_Period, Strike(.., .58)).
+# Poses found by search against crew_v15_anatomy.
+BEAM_Y,BEAM_TOP=-.44,.44
+FRAME=[('beam',(0,BEAM_Y,BEAM_TOP-.05),(.80,.10,.10),'wood',0),('post',(-.36,BEAM_Y,BEAM_TOP/2),(.09,.09,BEAM_TOP),'wood_light',0),
+       ('post',(.36,BEAM_Y,BEAM_TOP/2),(.09,.09,BEAM_TOP),'wood_light',0)]
+HAMMER_HEAD=V(0,.23,.076)                           # Astra's hammer: the striking face, tool frame
 
+
+def hammer_on(P_,yaw,pitch,elbow):
+    """His right fist with the hammer's face flat on P_ (face down), the haft
+    yawed (deg, + to his left) and pitched (deg, + head down)."""
+    y=math.radians(yaw);p=math.radians(pitch)
+    h=V(math.sin(y)*math.cos(p),-math.cos(y)*math.cos(p),-math.sin(p));f=V(0,0,-1);f=(f-h*f.dot(h)).normalized()
+    return hand(tuple(V(*P_)-h*HAMMER_HEAD.y-f*HAMMER_HEAD.z),f,h,elbow)
+
+
+def swung(h,deg,grip,elbow):
+    """The hammer hand turned deg about the wrist's hinge (- head back and up)."""
+    R=Matrix.Rotation(math.radians(deg),3,h['haft'].cross(h['face']).normalized())
+    return hand(tuple(grip),R@h['face'],R@h['haft'],elbow)
+
+
+def build_keys():
+    strike=hammer_on((-.18,BEAM_Y,BEAM_TOP),25,0,(-.9,.2,.2))
+    cocked=swung(strike,-70,(-.30,-.26,.74),(-.7,.4,-.3))
+    steady=hand((.26,BEAM_Y+.01,BEAM_TOP+.08),(.1,-.3,-1),(-1,0,0),(.7,.4,-.2))   # his left fist on the beam
+    def at(rh,spine,head,rz=-.03):return K_(root=V(0,0,rz),spine=spine,head=head,rh=rh,lh=steady)
+    mid=swung(strike,-35,tuple(V(*cocked['grip']).lerp(strike['grip'],.5)+V(0,0,.03)),(-.9,.2,.2))
+    bounce=swung(strike,-12,tuple(strike['grip']+V(0,0,.03)),(-.9,.2,.2))
+    return [(0,at(cocked,(16,-12,0),(8,-6,0),-.02)),(.42,at(mid,(18,-9,0),(12,-5,0))),(.58,at(strike,(20,-6,0),(16,-4,0))),
+            (.68,at(bounce,(19,-7,0),(14,-4,0)))]
+
+
+clip('Build',.85,build_keys(),rtool='hammer',props=FRAME,what='raising a building: hammering the frame, one-handed, the other hand steadying the beam')
 
 # Carry: a heavy load held out on both arms, walked in place. The arms reach
 # straight ahead at shoulder width, fists just below the shoulders, the load
