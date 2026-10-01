@@ -194,15 +194,20 @@ def import_l1(f):
     return [o for o in new if o.parent is None]
 
 
-def wall_line(make_run,make_post,start,yaw,spans):
-    """Posts and runs along a polyline: spans = metres between post centres
-    (whole metres, as the adapter would tile them)."""
-    d=Vector((math.cos(math.radians(yaw)),math.sin(math.radians(yaw)),0));at=Vector(start)
-    make_post(at,yaw)
-    for L in spans:
-        for i in range(L):make_run(at+d*i,yaw,i)
-        at=at+d*L;make_post(at,yaw)
-    return at
+def wall_line(make_run,make_post,start,legs):
+    """A wall along a polyline: legs = [(yaw degrees, whole metres)], as the
+    adapter would tile them. One pillar per node, never two: an end node
+    faces its leg, a bend node is turned to the bisector of the two legs
+    that meet there (a square pillar looks right from both)."""
+    nodes=[Vector(start)];dirs=[]
+    for yaw,L in legs:
+        d=Vector((math.cos(math.radians(yaw)),math.sin(math.radians(yaw)),0))
+        for i in range(L):make_run(nodes[-1]+d*i,yaw,i)
+        nodes.append(nodes[-1]+d*L);dirs.append(yaw)
+    for k,at in enumerate(nodes):
+        inc=dirs[max(0,k-1):k+1]                     # the legs meeting at this node
+        make_post(at,sum(inc)/len(inc))
+    return nodes[-1]
 
 
 def main():
@@ -230,8 +235,7 @@ def main():
     def mk_post(at,yaw):
         o=bpy.data.objects.new('post',pk.data);sc.collection.objects.link(o)
         place(o,at,yaw);o.location-=Matrix.Rotation(math.radians(yaw),3,'Z')@Vector((POST_W/2,0,0))
-    end=wall_line(mk_run,mk_post,(0,0,0),0,[3,3])
-    wall_line(mk_run,mk_post,end,40,[3])
+    wall_line(mk_run,mk_post,(0,0,0),[(0,3),(0,3),(40,3)])
     ground=Part('ground');ground.box((3.5,1.5,-.03),(16,10,.06),'mortar_d');g=ground.build(objs)
     g.data.color_attributes['Col'].data.foreach_set('color',[v for _ in range(len(g.data.loops)) for v in (*[S.lin(c) for c in (104,128,78)],1)])
     # the deckhand for scale, outside the wall
@@ -243,6 +247,9 @@ def main():
     S.shoot(cam,OUT/'wall-l2-front.png',0,8,6.5,target=(3,0,1.4),res=(1500,900))
     S.shoot(cam,OUT/'wall-l2-rear.png',165,24,9.5,target=(4.3,1.0,1.2),res=(1600,1000))
     S.shoot(cam,OUT/'wall-l2-closeup.png',-38,16,3.3,target=(3.1,0,1.5),res=(1200,1100))
+    S.shoot(cam,OUT/'wall-l2-bend.png',-25,30,3.6,target=(6.1,.2,1.6),res=(1000,1100))      # the 40-degree bend: one pillar
+    S.shoot(cam,OUT/'wall-l2-bend-rear.png',150,30,3.6,target=(6.1,.2,1.6),res=(1000,1100))
+    S.shoot(cam,OUT/'wall-l2-bend-top.png',0,89.9,2.4,target=(6.0,0,1.0),res=(1000,1000))
 
     # level 1 and level 2 side by side, same camera and scale
     fetch_l1()

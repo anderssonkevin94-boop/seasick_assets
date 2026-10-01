@@ -44,12 +44,17 @@ it too:
 | `Wall2_Run_1m_A` / `B` / `C` | 714 each |
 | `Wall2_Post` | 1,118 |
 
+**At a bend:** one pillar per node, never two, turned halfway between the two legs that meet there. The
+first version put a pillar at the end of one leg and another at the start of the next, crossed at 40°.
+The renders' `wall_line` now walks the whole polyline once. The game's wall adapter needs the same rule.
+
 ## Files
 
 | File | What |
 |---|---|
 | `wall-l2-kit.fbx` | The three runs and the pillar, with their snap and centre markers |
 | `wall-l2-hero.png`, `wall-l2-rear.png`, `wall-l2-front.png`, `wall-l2-closeup.png` | A 9 m stretch with a 40° bend, and the deckhand for scale |
+| `wall-l2-bend.png`, `wall-l2-bend-rear.png`, `wall-l2-bend-top.png` | The 40° bend close up: one pillar, turned to the bisector |
 | `wall-l1-vs-l2.png` | The level 1 palisade (left) and level 2 on one line, same camera |
 | `wall-l2-kit.png` | The modules on their own |
 
