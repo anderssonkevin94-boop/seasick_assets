@@ -271,21 +271,66 @@
   },
   "GunRam": {
     "take": "Crew_GunRam",
-    "seconds": 1.5,
-    "frames": 46,
+    "seconds": 1.6,
+    "frames": 49,
     "loop": true,
-    "what": "gunner: ramming the charge home, twice (gun on his left, muzzle beside him)",
+    "what": "gunner: the gun run in, ramming the charge home with two lunges",
     "tool_right_hand": "rammer",
-    "held_left_hand": null
+    "held_left_hand": null,
+    "cannon": {
+      "run_in_m_game": 0.55,
+      "elevation_deg": 6,
+      "keys_frame_runin_game_m": [
+        [
+          0,
+          0.55
+        ],
+        [
+          48,
+          0.55
+        ]
+      ]
+    }
   },
   "GunFire": {
     "take": "Crew_GunFire",
-    "seconds": 1.8,
-    "frames": 55,
+    "seconds": 2.4,
+    "frames": 73,
     "loop": false,
-    "what": "gunner: touching off the gun with the linstock and flinching from the blast (one-shot)",
-    "tool_right_hand": "linstock",
-    "held_left_hand": null
+    "what": "gunner: back to the station as the gun runs out, yanks the firing lanyard, flinches as it recoils past him, back to ramming (one-shot)",
+    "tool_right_hand": "rammer",
+    "held_left_hand": "lanyard",
+    "cannon": {
+      "run_in_m_game": 0.55,
+      "elevation_deg": 6,
+      "keys_frame_runin_game_m": [
+        [
+          0,
+          0.55
+        ],
+        [
+          11,
+          0.55
+        ],
+        [
+          20,
+          0.0
+        ],
+        [
+          30,
+          0.0
+        ],
+        [
+          33,
+          0.55
+        ],
+        [
+          72,
+          0.55
+        ]
+      ],
+      "fires_frame": 30
+    }
   },
   "Row": {
     "take": "Crew_Row",

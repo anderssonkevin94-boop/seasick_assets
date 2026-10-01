@@ -20,10 +20,11 @@ if c.get('env'):
     env,stand,_=MILL.load_env(c['env']);rig.location=stand;bpy.context.view_layer.update()
 else:stand=Vector((0,0,0))
 act=bpy.data.actions['Crew_'+name];rig.animation_data.action=act;sc.frame_set(0)
-if c['rtool']:
-    o=A.attach_tool(rig,sv,c['rtool'],A.RIGHT)
-    if A.flies(c):A.animate_load(o,rig,name)                # the tool leaves him (dropped, thrown)
-if c['ltool']:A.attach_tool(rig,sv,c['ltool'],A.LEFT)
+held={}
+if c['rtool']:held[A.RIGHT]=A.attach_tool(rig,sv,c['rtool'],A.RIGHT)
+if c['ltool']:held[A.LEFT]=A.attach_tool(rig,sv,c['ltool'],A.LEFT)
+A.animate_props(rig,name,held)                             # a tool with its own track (dropped, thrown, a lanyard)
+if c.get('gun'):A.animate_env(env,name,int(act.frame_end))  # the gun runs out and recoils
 cd=bpy.data.cameras.new('c');cam=bpy.data.objects.new('c',cd);sc.collection.objects.link(cam);sc.camera=cam;cd.type='ORTHO';cd.ortho_scale=1.45
 sc.render.resolution_x=sc.render.resolution_y=380
 views=[('3/4 his right',(-2.2,-2.4,1.3)),('side, his right',(-3,0,.7)),('front',(0,-3,.8)),('3/4 his left',(2.2,-2.4,1.3)),('above',(-.8,-1.6,3.2))]
@@ -35,16 +36,20 @@ if c.get('env')=='tree':      # the canopy hides him from above: side and low an
     cd.ortho_scale=1.9
     for o in env.values():
         if 'Canopy' in o.name:o.hide_render=True
+if c.get('env')=='cannon':    # the gun on his left: from his right, behind, and the game's angle
+    views=[('game view, his right',(-3.0,-1.6,2.6)),('side, his right',(-3,0,.8)),('behind him',(-.4,3.2,1.4)),('3/4 his left, high',(3.2,-1.8,2.4)),('above',(-.4,-.6,4.2))]
+    cd.ortho_scale=2.6
 if c.get('env')=='rock':      # the rock stands in front of him: side and back angles
     views=[('game view, his right',(-3.4,1.6,2.4)),('side, his right',(-3,.2,.8)),('behind him',(-.8,3,1.2)),('3/4 his left, low',(2.6,-.3,.9)),('side, his left',(3,.2,.8))]
     cd.ortho_scale=1.9
-TGT=Vector((0,-.2,.55))
+TGT=Vector((.3,.3,.55)) if c.get('env')=='cannon' else Vector((0,-.2,.55))
 if c.get('throw'):            # the target stands 3 m off: wide side angles taking in him, the flight and the goat
     views=[('side, his right',(-4.2,-1.5,1.0)),('game view, his right',(-3.4,1.4,3.0)),('behind him',(-.5,3.2,1.4)),('3/4 his left',(3.2,.4,1.6)),('above',(-1.0,-1.5,4.8))]
     cd.ortho_scale=3.9;TGT=Vector((0,-1.5,.55))
 n=int(act.frame_end);keys=[round(n*k/4) for k in range(4)] if c['loop'] else [round(n*k/4) for k in range(5)]
 if name=='Hunt':keys=[0,round(n*.33),round(n*.45),round(n*.52),round(n*.62)]   # stalking, sighting, the release, in flight, the hit
 if name=='PickUp':keys=[0,26,37,45,51,60]   # walking in, the grip, the heave, seated on his belly, fists under, carrying
+if name=='GunFire':keys=[0,11,24,30,34,57]   # ramming, at the station, lanyard taut, the yank, the recoil, looking out
 if name=='SetDown':keys=[0,9,16,40,50,72]   # letting go, landed, mid-wipe, the flick, into the walk
 if name=='Mine':keys=[0,round(n*.26),round(n*.34),round(n*.40)]   # raised, head trailing, tipping over, the strike
 if name=='Chop':keys=[0,round(n*.28),round(n*.33),round(n*.40)]   # cocked, hands dropped, sweeping level, the bite

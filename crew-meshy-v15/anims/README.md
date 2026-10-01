@@ -57,8 +57,8 @@ embedded, so the one file opens on its own. Rebuild it with
 | `Crew_Bail` | sent to the buckets (`Bailing`) | 1.6 s | bucket | on the bucket | scooping bilge water and tossing it over the side (rail on his right) |
 | `Crew_ThrowLine` | man overboard, rescue (`HaulGoing`) | 1.4 s, one-shot | coiled line | - | throwing the line; then `Crew_HaulLine` |
 | `Crew_HaulLine` | man overboard, rescue (`Hauling`) | 1.2 s | - | - | hauling the swimmer in, hand over hand |
-| `Crew_GunRam` | gunner (`CannonBattery`) | 1.5 s | rammer | on the rammer | ramming the charge home, twice (gun on his left, muzzle beside him) |
-| `Crew_GunFire` | gunner | 1.8 s, one-shot | linstock | - | touching off the gun and flinching from the blast (breech on his left front) |
+| `Crew_GunRam` | gunner: reloading | 1.6 s | rammer | - | the gun run in, ramming the charge home with two lunges (Astra's cannon) |
+| `Crew_GunFire` | gunner: firing | 2.4 s, one-shot | rammer | lanyard | back to the station as the gun runs out, yanks the firing lanyard, flinches as it recoils past him, back to ramming |
 | `Crew_Row` | jolly boat (`JollyBoatDuty`) | 1.7 s | oar | oar | seated, rowing: reach, pull, feather, return |
 | `Crew_Soaked` | resting after a rescue (`restLeft`) | 1.0 s | - | - | arms wrapped round himself, shivering |
 
@@ -181,6 +181,26 @@ importer names the takes `Deckhand_Rig|Crew_<Clip>`, and Unity may show a simila
   its point strikes on **frame 48**, at **(0, 0.39, 3.91) m** from his root (straight ahead, at a
   goat's flank height) — `clips.json` (`spear_throw`) has the numbers; the flight in between is
   the viewer's baked track, or any arc between those two points. The preview goat is a stand-in.
+- **Manning the cannon: GunRam and GunFire** at Astra's naval deck cannon (`art-staging/cannon-astra-v1`,
+  copied to `env/cannon.fbx`). One gunner, standing **beside the muzzle with the gun on his left**,
+  clear of its recoil, facing outboard like the gun. **The station, in game metres from the gun's
+  origin:** 0.85 m to the gun's side, 1.29 m outboard (level with the run-out muzzle). The barrel
+  is laid at **6 degrees** while he works it, so the bore is at the height he can ram (the model's
+  default is 4; the game fires at 9). **GunRam** (1.6 s loop) has the gun **run in 0.55 m** (as
+  after firing, `Cannon.recoilDistance`): he has turned to the muzzle behind him and rams the
+  charge home with the rammer level in his right fist, two lunges of the whole body, the rammer
+  exactly on the bore's line, its head 5 to 21 cm into the bore. **GunFire** (2.4 s, one-shot)
+  starts and ends on GunRam's first frame (checked: zero difference, so ram → fire → ram chains):
+  he stands the rammer upright, turns back to the station, and **the gun runs out from frame 11
+  to 20**; he takes the lanyard (frame 14), leans clear and yanks; **the gun fires on frame 30
+  and recoils 0.55 m by frame 33**; he flinches, lets the lanyard go (frame 46), looks out after
+  the shot and turns back to ram. The lanyard runs from his left fist to the vent on the breech
+  (0.46 m behind the gun's origin, 1.20 m up, game). `clips.json` (`cannon`) has the numbers.
+  **For the game:** `CannonBattery` stands the gunner 0.72 m *inboard* of the gun today, which is
+  inside this gun's breech and in its recoil path; with this kit he belongs at the station above.
+  The muzzle (and so the station) is 1.29 m outboard of the gun's origin while the rail is set
+  0.55 m outboard (`gunportOutboard`), so the gun has to sit further inboard for him to stand
+  there. The gun should stay run in while he reloads and run out at the start of GunFire.
 - **Mine is set at a rock** (`CLIPS['Mine']['env']='rock'`: Astra's `Stone_Field`, the commonest
   deposit, from `art-staging/stone-resources-astra-v2`, copied to `env/Stone_Field.fbx`). He stands
   where `StoneDeposit.StandOff` puts a miner: its footprint radius plus 0.7 m, 1.80 m (game) from

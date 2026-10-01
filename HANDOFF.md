@@ -54,7 +54,7 @@ Tools go in his **right hand, the bone named `hand.L` (Blender -X)**, as the gam
 | `check_v15_clip.py -- Clip ...` | Runs the check on every frame, with tools, props and environment |
 | `render_v15_clip_views.py -- Clip` (env `OUT=dir`) | Five-angle review sheet at key frames |
 | `render_v15_anims.py -- Clip ...` | GIF and filmstrip per clip in `crew-meshy-v15/anims/` |
-| `crew_v15_mill.py` | Environments: `load_env('mill')` (lowered level 1 lumber mill), `load_env('tree')` (Astra's tree), `load_env('rock')` (Astra's Stone_Field) |
+| `crew_v15_mill.py` | Environments: `load_env('mill')` (lowered level 1 lumber mill), `load_env('tree')` (Astra's tree), `load_env('rock')` (Astra's Stone_Field), `load_env('cannon')` (Astra's deck cannon) |
 | `mill_l1_lowbench.py` | Makes the lowered-bench mill FBX from the game's kit |
 | `export_v15_viewer.py` | GLB + the self-contained viewer page `crew-meshy-v15/viewer/index.html` |
 | `verify_crew_meshy_v15.py` | FBX re-import check (names, weights, white skin, every take moves, lengths) |
@@ -77,7 +77,7 @@ https://claude.ai/artifact/GcDxNt3L667f99DjPvV5Kt). After a rig change, rerun
 4. Check **every frame** (`check_v15_clip.py`): in-between frames clip even when the keys don't.
    Route the tool around the head with extra keys (the recovery can retrace the swing's path).
 5. Props that leave him (a dropped load, a thrown spear) follow one baked track
-   (`prop_track`: `load_track` / `throw_track` / `pickup_track`) used by the renders, the checker and the viewer.
+   (`prop_track`: `load_track` / `throw_track` / `pickup_track` / `lanyard_track`; a gun's recoil: `gun_offset`) used by the renders, the checker and the viewer.
    A carried load (`LOADS`, on the spine) is checked both ways: the load in him and
    any part of him inside the load (a box face can cut in between its corners).
 6. Allowed: up to 3.5 cm of contact within 12 cm of the shoulder (under the sleeve). Anything
@@ -87,8 +87,8 @@ https://claude.ai/artifact/GcDxNt3L667f99DjPvV5Kt). After a rig change, rerun
 
 | Status | Clips |
 |---|---|
-| **Reworked and clean on every frame** | `Saw` (level 1 lumber mill, lowered bench, sawing the log), `Chop` (Astra's tree, one-handed flat bat swing into the trunk's right flank), `Mine` (Astra's Stone_Field, one-handed vertical overhand swing into its upper front), `Carry` (any load held out on both arms at a spine socket, leaning back, heavy walk), `SetDown` (drops the load, wipes his brow; chains Carry → SetDown → Walk), `PickUp` (squat, side grip, heave; chains Walk → PickUp → Carry), `HuntWalk` (spear-ready stalk), `Hunt` (sights and throws the spear 4 m; chains HuntWalk → Hunt → Walk) |
-| Made before the anatomy rules; **need rework the same way** | Idle, Walk, Forage, Build, Farm, Smith, Cook, Mill, Lookout, Quarry, Fletcher, Fisher, SickSway, SickWalk, SickClutch, SickRail, SickCollapse, SickKneel, Bail, ThrowLine, HaulLine, GunRam, GunFire, Row, Gangway, Soaked, DeckBrace, RailGrip |
+| **Reworked and clean on every frame** | `Saw` (level 1 lumber mill, lowered bench, sawing the log), `Chop` (Astra's tree, one-handed flat bat swing into the trunk's right flank), `Mine` (Astra's Stone_Field, one-handed vertical overhand swing into its upper front), `Carry` (any load held out on both arms at a spine socket, leaning back, heavy walk), `SetDown` (drops the load, wipes his brow; chains Carry → SetDown → Walk), `PickUp` (squat, side grip, heave; chains Walk → PickUp → Carry), `HuntWalk` (spear-ready stalk), `Hunt` (sights and throws the spear 4 m; chains HuntWalk → Hunt → Walk), `GunRam` / `GunFire` (Astra's cannon: rams at the run-in muzzle, fires by lanyard from beside the muzzle; chain ram → fire → ram) |
+| Made before the anatomy rules; **need rework the same way** | Idle, Walk, Forage, Build, Farm, Smith, Cook, Mill, Lookout, Quarry, Fletcher, Fisher, SickSway, SickWalk, SickClutch, SickRail, SickCollapse, SickKneel, Bail, ThrowLine, HaulLine, Row, Gangway, Soaked, DeckBrace, RailGrip |
 
 Kevin goes down the list one clip at a time. Ask which is next.
 

@@ -115,6 +115,33 @@ def load_rock():
     return objs
 
 
+CANNON_FBX=ROOT/'crew-meshy-v15/anims/env/cannon.fbx'   # Astra's naval deck cannon (art-staging/cannon-astra-v1)
+GUN_AT=(.65,.985,0.)           # the gun's origin at his 1.30 m scale: on his left, its muzzle (run out) level with him
+GUN_ELEV=6                     # barrel elevation, degrees (the model's default is 4): the bore at the height he can ram
+GUN_RECOIL=.55*SCALE           # Cannon.recoilDistance (0.55 m game): run in, the muzzle is this far further back
+
+
+def load_cannon():
+    """Astra's cannon at his scale, muzzle toward -Y (his forward), its origin
+    at GUN_AT: he stands beside the muzzle with the gun on his left, the
+    barrel laid at GUN_ELEV degrees.
+    Returns ({name: object}, [parts his body must stay out of])."""
+    before=set(bpy.data.objects);sc=bpy.context.scene;fps=(sc.render.fps,sc.render.fps_base)
+    bpy.ops.import_scene.fbx(filepath=str(CANNON_FBX))
+    sc.render.fps,sc.render.fps_base=fps
+    objs={o.name:o for o in bpy.data.objects if o not in before}
+    for o in objs.values():
+        if o.parent is None:o.scale=(SCALE,)*3;o.location=GUN_AT
+        if o.name.split('.')[0]=='Elevation_Pivot':o.rotation_euler.x-=math.radians(GUN_ELEV-4)   # muzzle up
+        if o.type=='MESH':
+            me=o.data;col=me.color_attributes.get('Col')
+            if col:me.color_attributes.active_color=col;me.color_attributes.render_color_index=0
+            for p in me.polygons:p.use_smooth=False
+    bpy.context.view_layer.update()
+    solid=[o for n,o in objs.items() if o.type=='MESH' and n.split('.')[0] in('Barrel','Carriage_Cheek_-1','Carriage_Cheek_1','Truck_Wheel','Trunnion','Bearing_Cap_-1','Bearing_Cap_1')]
+    return objs,solid
+
+
 def load_env(kind):
     """(objects, where he stands, props his body must stay out of)."""
     if kind=='mill':
@@ -122,6 +149,9 @@ def load_env(kind):
     if kind=='tree':
         from mathutils import Vector
         objs=load_tree();return objs,Vector((0,0,0)),[]
+    if kind=='cannon':
+        from mathutils import Vector
+        objs,solid=load_cannon();return objs,Vector((0,0,0)),solid
     if kind=='rock':
         from mathutils import Vector
         objs=load_rock();return objs,Vector((0,0,0)),[]

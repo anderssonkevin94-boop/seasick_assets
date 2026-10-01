@@ -17,7 +17,7 @@ import crew_meshy_v15_anims as A
 OUT=A.C.OUT/'viewer'
 
 
-TRACKS={}
+TRACKS={};TAGS={};ENVTRACKS={}
 
 
 def main():
@@ -34,7 +34,11 @@ def main():
         if A.flies(c):                             # a dropped load, a thrown spear: the page moves it along this track (glTF axes: x, z, -y)
             track,_,_=A.prop_track(rig,name)
             TRACKS[name]=[[round(v,4) for v in (M.translation.x,M.translation.z,-M.translation.y)]+
-                          [round(v,4) for v in (lambda q:(q.x,q.z,-q.y,q.w))(M.to_quaternion())] for M in track]
+                          [round(v,4) for v in (lambda q:(q.x,q.z,-q.y,q.w))(M.to_quaternion())]+
+                          [round(M.to_scale().y,4)] for M in track]          # last: the stretch along the prop's own length (a lanyard)
+            TAGS[name]='L' if A.flying_side(c)==A.LEFT else 'R'
+        if c.get('gun'):                           # the cannon's run-out and recoil: its env node moves along -Z (glTF) by this
+            n=int(bpy.data.actions['Crew_'+name].frame_end);ENVTRACKS[name]=[round(A.gun_offset(name,f,n),4) for f in range(n+1)]
     rig.animation_data.action=None;solver.reset()
     # Clips set in a building: the building itself is their prop, placed so its
     # Worker_Stand is where he stands (the origin), under one prop__<Clip>__env node.
@@ -87,7 +91,7 @@ def write_page():
     info=json.loads((A.OUT/'clips.json').read_text())
     clips={k:{'label':LABEL.get(k,k),'where':WHERE.get(k,''),'what':v['what'][:1].upper()+v['what'][1:]+'.',
               'seconds':v['seconds'],'frames':v['frames'],'loop':v['loop'],
-              'rtool':TOOLS.get(v['tool_right_hand'],v['tool_right_hand']),'ltool':TOOLS.get(v['held_left_hand'],v['held_left_hand']),'env':A.CLIPS[k].get('env'),'load':TRACKS.get(k),'wide':bool(A.CLIPS[k].get('throw'))}
+              'rtool':TOOLS.get(v['tool_right_hand'],v['tool_right_hand']),'ltool':TOOLS.get(v['held_left_hand'],v['held_left_hand']),'env':A.CLIPS[k].get('env'),'load':TRACKS.get(k),'loadTag':TAGS.get(k,'R'),'envTrack':ENVTRACKS.get(k),'wide':bool(A.CLIPS[k].get('throw'))}
            for k,v in info.items()}
     groups=[{'name':n,'clips':[c for c in cs if c in clips]} for n,cs in GROUPS]
     missing=set(clips)-{c for g in groups for c in g['clips']}

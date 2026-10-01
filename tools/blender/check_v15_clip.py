@@ -15,8 +15,10 @@ for name in sys.argv[sys.argv.index('--')+1:]:
     bpy.context.view_layer.update()
     tools=[]
     rig.animation_data.action=bpy.data.actions['Crew_'+name];bpy.context.scene.frame_set(0)
-    if c['rtool']:tools.append(A.attach_tool(rig,sv,c['rtool'],A.RIGHT))
-    if A.flies(c):A.animate_load(tools[-1],rig,name)          # the tool leaves him (dropped, thrown)
-    if c['ltool']:tools.append(A.attach_tool(rig,sv,c['ltool'],A.LEFT))
+    held={}
+    if c['rtool']:held[A.RIGHT]=A.attach_tool(rig,sv,c['rtool'],A.RIGHT)
+    if c['ltool']:held[A.LEFT]=A.attach_tool(rig,sv,c['ltool'],A.LEFT)
+    tools=list(held.values());A.animate_props(rig,name,held)   # a tool with its own track (dropped, thrown, a lanyard)
+    if c.get('gun'):A.animate_env(env,name,int(bpy.data.actions['Crew_'+name].frame_end))   # the gun runs out and recoils
     r=N.check_clip(ck,rig,bpy.data.actions['Crew_'+name],None,tools=tools,props=props,step=1)
     print('CHECK',name,{f'{k[0]}:{k[1]}':v for k,v in sorted(r.items())} or 'clean: no clipping, joints in range, every frame')

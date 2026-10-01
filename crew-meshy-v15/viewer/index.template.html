@@ -156,7 +156,9 @@ const HOME = {pos:new THREE.Vector3(-2.3, 1.45, 3.4), target:new THREE.Vector3(0
 const HOME_TREE = {pos:new THREE.Vector3(-2.7, 1.5, -1.7), target:new THREE.Vector3(0, 0.55, 0.35)};
 // A throw reaches 3 m out: stand well off his right side to see him, the flight and the mark.
 const HOME_WIDE = {pos:new THREE.Vector3(-5.6, 2.6, 0.6), target:new THREE.Vector3(0, 0.5, 1.5)};
-function home(){ const h = !current ? HOME : CLIPS[current].wide ? HOME_WIDE : ['tree','rock'].includes(CLIPS[current].env) ? HOME_TREE : HOME;
+// At the cannon: from his right, square to the gun, so the ram, the lanyard and the recoil all read.
+const HOME_GUN = {pos:new THREE.Vector3(-3.8, 1.8, -0.9), target:new THREE.Vector3(0.3, 0.5, -0.45)};
+function home(){ const h = !current ? HOME : CLIPS[current].wide ? HOME_WIDE : CLIPS[current].env === 'cannon' ? HOME_GUN : ['tree','rock'].includes(CLIPS[current].env) ? HOME_TREE : HOME;
   camera.position.copy(h.pos); controls.target.copy(h.target); controls.update(); }
 camera.position.copy(HOME.pos);
 const controls = new THREE.OrbitControls(camera, canvas);
@@ -249,13 +251,21 @@ function showExtras(){
 }
 // A dropped load (SetDown) leaves his arms: it follows its own baked track, in the scene's frame.
 const _m = new THREE.Matrix4(), _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(1, 1, 1);
+// A clip's cannon runs out and recoils: its env node slides along the gun (glTF -Z is Blender +Y).
+function placeEnv(frame){
+  const tr = current && CLIPS[current].envTrack;
+  if (!tr) return;
+  const e = extras.find(x => x.clip === current && x.obj.name.endsWith('__env'));
+  if (e) e.obj.position.z = -tr[Math.max(0, Math.min(tr.length - 1, frame))];
+}
 function placeLoad(frame){
   const tr = current && CLIPS[current].load;
   if (!tr) return;
-  const e = extras.find(x => x.clip === current && x.obj.name.startsWith('tool__'));
+  const tag = '__' + (CLIPS[current].loadTag || 'R');
+  const e = extras.find(x => x.clip === current && x.obj.name.startsWith('tool__') && x.obj.name.endsWith(tag));
   if (!e) return;
   const k = tr[Math.max(0, Math.min(tr.length - 1, frame))];
-  _p.set(k[0], k[1], k[2]); _q.set(k[3], k[4], k[5], k[6]);
+  _p.set(k[0], k[1], k[2]); _q.set(k[3], k[4], k[5], k[6]); _s.set(1, 1, k.length > 7 ? k[7] : 1);   // a lanyard stretches along its own length
   _m.compose(_p, _q, _s);
   e.obj.parent.updateWorldMatrix(true, false);
   _m.premultiply(new THREE.Matrix4().copy(e.obj.parent.matrixWorld).invert());
@@ -266,7 +276,7 @@ function apply(){
   if (!action) return;
   action.time = Math.min(t, duration()); mixer.update(0);
   const d = duration(), frame = Math.round(Math.min(t, d) * FPS);
-  placeLoad(frame);
+  placeLoad(frame); placeEnv(frame);
   $('scrub').value = String(Math.round(1000 * Math.min(t, d) / d));
   $('time').textContent = `${Math.min(t, d).toFixed(2)} s · frame ${frame + 1} / ${Math.round(d * FPS) + 1}`;
 }
