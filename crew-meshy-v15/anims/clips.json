@@ -78,6 +78,20 @@
       "feet_off_ground": true
     }
   },
+  "RunScared": {
+    "take": "Crew_RunScared",
+    "seconds": 0.55,
+    "frames": 17,
+    "loop": true,
+    "what": "running scared: arms flailing over his head, glancing back (in place)",
+    "tool_right_hand": null,
+    "held_left_hand": null,
+    "gait": {
+      "ground_m_per_cycle_game": 1.235,
+      "speed_m_s_at_1x_game": 2.25,
+      "feet_off_ground": true
+    }
+  },
   "Chop": {
     "take": "Crew_Chop",
     "seconds": 1.3,

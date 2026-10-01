@@ -31,6 +31,7 @@ embedded, so the one file opens on its own. Rebuild it with
 | `Crew_WalkTired` | tired or hungry | 1.3 s | - | - | slumped, head down, short shuffling steps, arms dangling (in place; 0.23 m/s at 1x) |
 | `Crew_WalkDeck` | walking a rolling deck | 1.1 s | - | - | sea legs: wide stance, rolling side to side, arms out for balance (in place; 0.33 m/s at 1x) |
 | `Crew_Run` | running | 0.6 s | - | - | leaning in, arms pumping, heel kick, both feet off the ground between steps (in place; 2.06 m/s at 1x) |
+| `Crew_RunScared` | running scared | 0.55 s | - | - | the run's legs, upright, head glancing back over each shoulder, both arms flailing in loops by his head, twice a stride and out of step (in place; 2.25 m/s at 1x) |
 | `Crew_Chop` | timber, clearing | 1.3 s | axe | - | one-handed flat swing like a bat, from his right into the trunk's side |
 | `Crew_Mine` | stone, ore | 1.1 s | pick | - | one-handed vertical pickaxe swing, overhand like a bat, into the rock |
 | `Crew_Forage` | spice, food | 1.7 s | - | basket | crouch, pick from a bush, drop it in the basket (spice, food) |

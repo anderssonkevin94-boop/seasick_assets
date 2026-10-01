@@ -56,6 +56,7 @@ if name=='GunFire':keys=[0,8,16,23,30,44]   # at the station, raising the linsto
 if name=='SetDown':keys=[0,9,16,40,50,72]   # letting go, landed, mid-wipe, the flick, into the walk
 if name=='GunTend':keys=[0,12,29,38,95,155]   # station, arm down, fist on the breech, the pat, looking out, the glance
 if name=='Build':keys=[0,6,11,15,18]   # cocked, starting down, mid swing, the strike, the bounce
+if name=='RunScared':keys=[0,3,6,9,12]   # through one stride: two flails
 if name=='Farm':keys=[0,9,14,20,32]   # raised, coming down, the bite, holding, dragged back
 if name=='Mine':keys=[0,round(n*.26),round(n*.34),round(n*.40)]   # raised, head trailing, tipping over, the strike
 if name=='Chop':keys=[0,round(n*.28),round(n*.33),round(n*.40)]   # cocked, hands dropped, sweeping level, the bite

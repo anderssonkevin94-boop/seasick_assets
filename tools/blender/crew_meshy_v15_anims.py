@@ -351,6 +351,26 @@ clip('WalkBrisk',GAITS['brisk']['cycle'],lambda t:gait(t,GAITS['brisk']),what='b
 clip('WalkTired',GAITS['tired']['cycle'],lambda t:gait(t,GAITS['tired']),what='tired walk: slumped, head down, short shuffling steps, arms dangling (in place)')
 clip('WalkDeck',GAITS['deck']['cycle'],lambda t:gait(t,GAITS['deck']),what='sea legs on a moving deck: wide stance, rolling side to side, arms out for balance (in place)')
 clip('Run',GAITS['run']['cycle'],lambda t:gait(t,GAITS['run']),what='running: leaning in, arms pumping, both feet off the ground between steps (in place)')
+# RunScared: the run's legs, a little more upright and quicker, his head
+# thrown back and glancing over his shoulder, both arms flailing up and out
+# in loops twice a stride, out of step with each other.
+SCARED=dict(GAITS['run'],cycle=.55,lean=4,head=-12)
+FLAIL=dict(c=(.42,-.16,.86),rx=.08,rz=.12,face=(-.3,-.8,.5),elbow=(-.8,.5,-.3),turns=2)   # loop centre (right hand mirrored), radii
+
+
+def scared_run(t):
+    q=gait(t,SCARED);F=FLAIL;cx,cy,cz=F['c'];fx,fy,fz=F['face'];ex,ey,ez=F['elbow']
+    for side,s,ph in ((RIGHT,-1,0.),(LEFT,1,.37)):
+        a=2*math.pi*(F['turns']*t+ph)
+        g=(s*(cx+F['rx']*math.cos(a)),cy+.03*math.sin(a),cz+F['rz']*math.sin(a))
+        q['rh' if side==RIGHT else 'lh']=hand(g,(s*-fx,fy,fz),(0,-1,0),(s*-ex,ey,ez))
+    q['head']=(-12,22*math.sin(2*math.pi*t),0)       # glancing back over one shoulder, then the other
+    return q
+
+
+clip('RunScared',SCARED['cycle'],scared_run,what='running scared: arms flailing over his head, glancing back (in place)')
+
+CLIPS['RunScared']['gait']=SCARED
 for _n,_g in (('Walk','walk'),('WalkBrisk','brisk'),('WalkTired','tired'),('WalkDeck','deck'),('Run','run')):CLIPS[_n]['gait']=GAITS[_g]
 WALK0=gait(0,GAITS['walk'])                         # the walk's first frame, where PickUp, SetDown and Hunt join it
 
